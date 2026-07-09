@@ -1,111 +1,76 @@
-:root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+@import "tailwindcss";
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+@theme {
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  --color-background: #F9FAFB;
 
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
-}
+  --color-green-100: #E8F5EE;
+  --color-green-200: #DDE9E2;
+  --color-green-300: #B8D2C3;
+  --color-green-400: #00993E;
+  --color-green-primary: #1A6E3C;
+  --color-green-hover: #176336;
+  --color-green-500: #155830;
+  --color-green-600: #14532D;
+  --color-green-700: #104224;
+  --color-green-800: #0C311B;
+  --color-green-900: #092715;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
+  --color-teal-100: #EBF8F7;
+  --color-teal-200: #E1F4F3;
+  --color-teal-300: #C1E9E7;
+  --color-teal-primary: #37B7B0;
+  --color-teal-hover: #32A59E;
+  --color-teal-400: #2C928D;
+  --color-teal-500: #298984;
+  --color-teal-600: #216E6A;
 
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
-}
+  --color-white-primary: #FFFFFF;
+  --color-white-hover: #E6E6E6;
+  --color-white-100: #E8E5E5;
+  --color-white-200: #D9D9D9;
+  --color-white-300: #CFCFCF;
+  --color-white-400: #BFBFBF;
 
-body {
-  margin: 0;
-}
+  --color-red-100: #FEE8E8;
+  --color-red-200: #FEDDDD;
+  --color-red-300: #FCB9B9;
+  --color-red-primary: #F51C1C;
+  --color-red-hover: #DD1919;
+  --color-red-600: #C41616;
+  --color-red-700: #B81515;
 
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-}
+  --color-orange-100: #FCF3EA;
+  --color-orange-200: #FAEDDF;
+  --color-orange-300: #F5DABD;
+  --color-orange-primary: #DF8729;
+  --color-orange-hover: #C97A25;
+  --color-orange-600: #B26C21;
 
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
-}
+  --color-yellow-100: #FEF8E7;
+  --color-yellow-200: #FDF5DB;
+  --color-yellow-300: #FBEBB5;
+  --color-yellow-primary: #F1BD0F;
+  --color-yellow-400: #D9AA0E;
+  --color-yellow-500: #C1970C;
 
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
-p {
-  margin: 0;
-}
+  --color-blue-100: #E8EFF7;
+  --color-blue-200: #DDE7F3;
+  --color-blue-300: #B9CEE6;
+  --color-blue-primary: #1C60AF;
+  --color-blue-400: #19569E;
+  --color-blue-500: #164D8C;
+  --color-blue-600: #154883;
 
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
-}
+  --color-violet-100: #F3EFFB;
+  --color-violet-200: #EEE7F9;
+  --color-violet-300: #DBCEF3;
+  --color-violet-primary: #8B60D8;
+  --color-violet-400: #7D56C2;
+  --color-violet-500: #6F4DAD;
+  --color-violet-600: #6848A2;
 
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+  --color-black-100: #6C7381;
+  --color-black-primary: #000000;
+  --color-black-200: #515151;
 }
