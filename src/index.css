@@ -2,6 +2,8 @@
 
 @theme {
 
+  --font-sans: 'Nunito', sans-serif;
+
   --color-background: #F9FAFB;
 
   --color-green-100: #E8F5EE;
@@ -73,4 +75,8 @@
   --color-black-100: #6C7381;
   --color-black-primary: #000000;
   --color-black-200: #515151;
+}
+
+body {
+  font-family: var(--font-sans);
 }
