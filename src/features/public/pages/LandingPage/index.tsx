@@ -3,10 +3,6 @@ import { useNavigate } from "react-router-dom";
 function LandingPage() {
     const navigate = useNavigate();
 
-    const handleClick = () => {
-        navigate ("/Register");
-    }
-
     return (
         <div className="flex flex-col h-screen">
             <header className="flex items-center justify-between px-4 md:px-8 py-3 bg-white shadow-sm h-20">
