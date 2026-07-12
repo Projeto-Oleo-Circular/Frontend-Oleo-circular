@@ -24,7 +24,7 @@ function Login() {
                             <Input type="password" icon="cadeado" placeholder="Sua senha" noBorder />
                         </div>
                     <div className="flex justify-end mb-6">
-                        <button className="text-green-primary text-sm font-bold" onClick={() => navigate("/ForgotPassword")}>
+                        <button className="text-green-primary text-sm font-medium" onClick={() => navigate("/Forgot-Password")}>
                             Esqueci minha senha?
                         </button>
                     </div>
@@ -34,7 +34,7 @@ function Login() {
                     </button>
 
                     <p className="text-center text-sm text-black-100">
-                        Não tem um conta? {' '}
+                        Não tem uma conta? {' '}
                         <button className="text-green-primary font-bold" onClick={() => navigate("/Register")}>
                             Criar conta
                         </button>
