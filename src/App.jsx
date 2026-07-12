@@ -41,7 +41,7 @@ function App() {
 
       {/*Rotas de autenticação*/}
       <Route path="/login" element={<Login />} />
-      <Route path="/cadastro" element={<Register />} />
+      <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/new-password" element={<NewPassword />} />
 

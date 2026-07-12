@@ -22,7 +22,7 @@ function ForgotPassword() {
                             Digite seu e-mail ou CNPJ cadastrado
                         </label>
                         <div className="bg-white rounded-xl shadow-sm mb-8">
-                            <Input type="email" icon="cadeado" placeholder="Seu e-mail" noBorder />
+                            <Input type="email" icon="email" placeholder="Seu e-mail" noBorder />
                         </div>
 
                     <div className="flex flex-col gap-8 md:gap-4">

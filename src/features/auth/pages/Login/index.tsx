@@ -35,7 +35,7 @@ function Login() {
 
                     <p className="text-center text-sm text-black-100">
                         Não tem uma conta? {' '}
-                        <button className="text-green-primary font-bold" onClick={() => navigate("/Register")}>
+                        <button className="text-green-primary font-bold" onClick={() => navigate("/register")}>
                             Criar conta
                         </button>
                     </p>
