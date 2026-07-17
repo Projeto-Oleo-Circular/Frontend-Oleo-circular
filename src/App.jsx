@@ -41,9 +41,9 @@ function App() {
 
       {/*Rotas de autenticação*/}
       <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/new-password" element={<NewPassword />} />
+      <Route path="/register" element={<Register />} />
 
       {/*Rotas do usuário logado*/}
       <Route path="/home" element={<Home />} />
