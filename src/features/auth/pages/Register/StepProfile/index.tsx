@@ -11,24 +11,46 @@ interface Props {
 const profiles = [
   {
     id: 'institucional',
-    title: 'Parceiros Institucionais',
+    icon: 'icon-parceiros.svg',
+    label: 'Parceiros',
+    title:  'Institucionais',
     description: 'Organizações com alta capacidade de doação.',
     totalSteps: 6,
-    tags: ['Cozinha Industrial', 'Empresa / Indústria', 'Escolas / Universidade', 'Hospital / Unidade de Saúde', 'Hotel / Pousada', 'Restaurante / Bar'],
+    tags: [
+      { label: 'Cozinha Industrial', icon: 'icon-CozinhaIndustrial.svg' },
+      { label: 'Empresa / Indústria', icon: 'icon-empresa.svg' },
+      { label: 'Escolas / Universidade', icon: 'icon-universidade.svg' },
+      { label: 'Hospital / Unidade de Saúde', icon: 'icon-hospital.svg' },
+      { label: 'Hotel / Pousada', icon: 'icon-hotel.svg' },
+      { label: 'Restaurante / Bar', icon: 'icon-restaurante.svg' },
+    ],
   },
   {
     id: 'comunitario',
-    title: 'Parceiros Comunitários',
+    icon: 'icon-parceiros.svg',
+    label: 'Parceiros',
+    title: 'Comunitários',
     description: 'Organizações com alta capacidade de doação.',
     totalSteps: 5,
-    tags: ['Condomínio', 'Unidade de Saúde', 'Feira Livre', 'Evento Fechado'],
+    tags: [
+      { label: 'Condomínio', icon: 'icon-condominio.svg' },
+      { label: 'Unidade de Saúde', icon: 'icon-unidadeSaude.svg' },
+      { label: 'Feira Livre', icon: 'icon-feira.svg' },
+      { label: 'Evento Fechado', icon: 'icon-evento.svg' },
+    ],
   },
   {
     id: 'solidario',
-    title: 'Parceiros Solidários',
+    icon:  'icon-parceiros.svg',
+    label: 'Parceiros',
+    title: 'Solidários',
     description: 'Organizações com alta capacidade de doação.',
     totalSteps: 5,
-    tags: ['Pessoa Física', 'Doador Avulso', 'Outros'],
+    tags: [
+      { label: 'Pessoa Física', icon: 'icon-profileFisica.svg' },
+      { label: 'Doador Avulso', icon: 'icon-doadorAvulso.svg' },
+      { label: 'Outros', icon: 'icon-outros.svg' },
+    ],
   },
 ]
 
@@ -66,25 +88,30 @@ function StepProfile({ onSelectProfile, onBack, step, userName = 'Milena' }: Pro
                     <button
                       key={profile.id}
                       onClick={() => handleSelectProfile(profile.id)}
-                      className={`w-full text-left rounded-md border-2 p-4 transition-all duration-200 ${
+                      className={`w-full text-left rounded-md border-2 p-4 transition-all duration-200 bg-green-100 shadow-card ${
                         selected === profile.id
-                          ? 'border-green-primary bg-green-100'
-                          : 'border-white-100 bg-white'
+                          ? 'border-2 border-green-primary'
+                          : 'border-2 border-transparent'
                       }`}
                     >
-                      <p className={`font-bold text-base mb-1 ${
-                        selected === profile.id ? 'text-green-primary' : 'text-black-primary'
-                      }`}>
-                        {profile.title}
-                      </p>
+                      <div className="flex items-center gap-2 mb-1">
+                        <img src={`src/assets/icons/${profile.icon}`} alt="" className="w-5 h-5" />
+                        <p className="font-bold text-base">
+                          <span className="text-black-primary">{profile.label}</span>
+                          <span className="text-green-primary">{profile.title}</span>
+                        </p>
+                      </div>
+
                       <p className="text-xs text-black-100 mb-3">{profile.description}</p>
+
                       <div className="flex flex-wrap gap-2">
                         {profile.tags.map(tag => (
                           <span
-                            key={tag}
-                            className="text-xs bg-white-100 text-black-200 px-2 py-1 rounded-md border border-white-200"
+                            key={tag.label}
+                            className="flex item-center gap-1 text-xs bg-[rgba(156,163,175,0.3)]  text-black-200 px-2 py-1 rounded-md border border-white-200"
                           >
-                            {tag}
+                            <img src={`src/assets/icons/${tag.icon}`} alt="" className="w-3 h-3"/>
+                            {tag.label}
                           </span>
                         ))}
                       </div>
@@ -98,7 +125,7 @@ function StepProfile({ onSelectProfile, onBack, step, userName = 'Milena' }: Pro
                     className={`w-full font-bold py-3 rounded-xl transition-all duration-200 ${
                       selected
                         ? 'bg-green-primary text-white-primary hover:bg-green-hover'
-                        : 'bg-white-300 text-white-400 cursor-not-allowed'
+                        : 'bg-white-300 text-black-200 cursor-not-allowed'
                     }`}
                   >
                     Avançar

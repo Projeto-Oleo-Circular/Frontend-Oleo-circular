@@ -76,6 +76,8 @@
   --color-black-100: #6C7381;
   --color-black-primary: #000000;
   --color-black-200: #515151;
+
+  --shadow-card: 1px 1px 3px 0px rgba(0, 0, 0, 0.25);
 }
 
 body {
