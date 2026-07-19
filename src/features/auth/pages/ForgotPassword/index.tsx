@@ -26,7 +26,7 @@ function ForgotPassword() {
                         </div>
 
                     <div className="flex flex-col gap-8 md:gap-4">
-                        <button className="w-full bg-green-primary text-white-primary font-bold py-3 rounded-xl hover:bg-green-hover transition-all duration-200">
+                        <button className="w-full bg-green-primary text-white-primary font-bold py-3 rounded-xl hover:bg-green-hover transition-all duration-200" onClick={() => navigate("/New-Password")}>
                             Enviar
                         </button>
 

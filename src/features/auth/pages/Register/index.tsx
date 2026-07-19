@@ -23,9 +23,7 @@ import FeedbackSo from "./Solidario/FeedbackSo"
 function Register() {
     const navigate = useNavigate();
     const [step, setStep] = useState(0)
-    const [profile, setProfile] = useState<String | null>(null)
-
-    const totalSteps = profile === 'institucional' ? 6 : 5
+    const [profile, setProfile] = useState<string | null>(null)
 
     const onNext = () => setStep(prev => prev + 1)
     const onBack = () => {
@@ -38,29 +36,39 @@ function Register() {
         setStep(2)
     }
 
+    const getTotalSteps = () => {
+        if (profile === 'institucional') return 6;
+        if (profile === 'comunitario' || profile === 'solidario') return 5;
+        return 5
+    }
+
     const renderStep = () => {
-        if (step === 1) return <StepProfile onSelectProfile={onSelectProfile} onBack={onBack} />
+        if (step === 1) {
+            return <StepProfile onSelectProfile={onSelectProfile} onBack={onBack} step={step} userName="Milena" />
+        }
+
+        const currentTotalSteps = getTotalSteps()
 
         if (profile === 'institucional') {
-            if (step === 2) return <InfoIns onNext={onNext} onBack={onBack} step={step} totalSteps={totalSteps} />
-            if (step === 3) return <ComunicacaoIns onNext={onNext} onBack={onBack} step={step} totalSteps={totalSteps} />
-            if (step === 4) return <VolumeIns onNext={onNext} onBack={onBack} step={step} totalSteps={totalSteps} />
-            if (step === 5) return <AboutProjectIns onNext={onNext} onBack={onBack} step={step} totalSteps={totalSteps} />
-            if (step === 6) return <FeedbackIns onBack={onBack} step={step} totalSteps={totalSteps} />
+            if (step === 2) return <InfoIns onNext={onNext} onBack={onBack} step={step} totalSteps={currentTotalSteps} />
+            if (step === 3) return <ComunicacaoIns onNext={onNext} onBack={onBack} step={step} totalSteps={currentTotalSteps} />
+            if (step === 4) return <VolumeIns onNext={onNext} onBack={onBack} step={step} totalSteps={currentTotalSteps} />
+            if (step === 5) return <AboutProjectIns onNext={onNext} onBack={onBack} step={step} totalSteps={currentTotalSteps} />
+            if (step === 6) return <FeedbackIns onBack={onBack} step={step} totalSteps={currentTotalSteps} />
         }
 
         if (profile === 'comunitario') {
-            if (step === 2) return <InfoCt onNext={onNext} onBack={onBack} step={step} totalSteps={totalSteps} />
-            if (step === 3) return <VolumeCt onNext={onNext} onBack={onBack} step={step} totalSteps={totalSteps} />
-            if (step === 4) return <AboutProjectCt onNext={onNext} onBack={onBack} step={step} totalSteps={totalSteps} />
-            if (step === 5) return <FeedbackCt onBack={onBack} step={step} totalSteps={totalSteps} />
+            if (step === 2) return <InfoCt onNext={onNext} onBack={onBack} step={step} totalSteps={currentTotalSteps} />
+            if (step === 3) return <VolumeCt onNext={onNext} onBack={onBack} step={step} totalSteps={currentTotalSteps} />
+            if (step === 4) return <AboutProjectCt onNext={onNext} onBack={onBack} step={step} totalSteps={currentTotalSteps} />
+            if (step === 5) return <FeedbackCt onBack={onBack} step={step} totalSteps={currentTotalSteps} />
         }
 
           if (profile === 'solidario') {
-            if (step === 2) return <InfoSo onNext={onNext} onBack={onBack} step={step} totalSteps={totalSteps} />
-            if (step === 3) return <VolumeSo onNext={onNext} onBack={onBack} step={step} totalSteps={totalSteps} />
-            if (step === 4) return <AboutProjectSo onNext={onNext} onBack={onBack} step={step} totalSteps={totalSteps} />
-            if (step === 5) return <FeedbackSo onBack={onBack} step={step} totalSteps={totalSteps} />
+            if (step === 2) return <InfoSo onNext={onNext} onBack={onBack} step={step} totalSteps={currentTotalSteps} />
+            if (step === 3) return <VolumeSo onNext={onNext} onBack={onBack} step={step} totalSteps={currentTotalSteps} />
+            if (step === 4) return <AboutProjectSo onNext={onNext} onBack={onBack} step={step} totalSteps={currentTotalSteps} />
+            if (step === 5) return <FeedbackSo onBack={onBack} step={step} totalSteps={currentTotalSteps} />
         }
 
         return null
