@@ -70,20 +70,27 @@ function StepProfile({ onSelectProfile, onBack, step, userName = 'Milena' }: Pro
   }
 
     return (
-        <div className="flex flex-col h-screen bg-background">
+        <div className="flex flex-col h-screen">
             <HeaderCadastro title="Criar Conta" onBack={onBack} />
 
-            <main className="flex flex-col flex-1 px-5 pb-8 overflow-y-auto">
-                <div className="pt-6 pb-3">
-                  <h1 className="text-xl md:text-2xl font-bold text-green-primary">Bem-vindo(a), {userName}!</h1>
-                  <p className="text-sm md:text-base font-medium text-white-500">
-                    Para começar, selecione o seu perfil de doador
-                  </p>
+          <div className="flex flex-1 overflow-hidden">
+            <aside className="hidden md:flex md:w-1/2">
+              <img src="src/assets/Parque-ecologico.jpeg" alt="Projeto Óleo Circular" className="w-full h-full object-cover" />
+            </aside>
+
+            <main className="flex flex-col w-full md:w-1/2 px-8 md:px-16 bg-background overflow-y-auto">
+                <div className="flex-1 flex flex-col">
+                  <div className="text-left pb-3 pt-8 md:pt-10">
+                    <h1 className="text-xl md:text-2xl font-bold text-green-primary">Bem-vindo(a), {userName}!</h1>
+                    <p className="text-sm md:text-base font-medium text-white-500">
+                      Para começar, selecione o seu perfil de doador
+                    </p>
+                  </div>
                 </div>
 
                 <ProgressBar step={step} totalSteps={totalSteps} />
 
-                <div className="flex flex-col gap-4 mb-8">
+                <div className="flex flex-col gap-4 mt-4 mb-8">
                   {profiles.map(profile => (
                     <button
                       key={profile.id}
@@ -130,11 +137,14 @@ function StepProfile({ onSelectProfile, onBack, step, userName = 'Milena' }: Pro
                   >
                     Avançar
                   </button>
-
-                    <p className="text-center text-xs text-black-100 mt-6">
-                        © 2026 HS Tecnologia. Todos os direitos reservados.
-                    </p>
+                  
+                    <div className="flex justify-center py-4 mt-2">
+                      <p className="text-xs text-black-100">
+                          © 2026 HS Tecnologia. Todos os direitos reservados.
+                      </p>
+                    </div>
                 </main>
+              </div>
             </div>
     )
 }
