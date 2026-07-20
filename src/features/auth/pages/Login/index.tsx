@@ -9,12 +9,12 @@ function Login() {
         <div className="flex flex-col h-screen">
             <HeaderPublic />
 
-            <div className="flex flex-1">
+            <div className="flex flex-1 overflow-hidden">
                 <aside className="hidden md:flex md:w-1/2">
-                    <img src="src/assets/Parque-ecologico.jpeg" alt="Projeto Óleo Circular" className="w-full h-158 object-cover" />
+                    <img src="src/assets/Parque-ecologico.jpeg" alt="Projeto Óleo Circular" className="w-full h-full object-cover" />
                 </aside>
 
-                <main className="flex flex-col items-center w-full md:w-1/2 px-8 bg-background">
+                <main className="flex flex-col items-center w-full md:w-1/2 px-8 bg-background overflow-y-auto">
                     <img src="src/assets/LogoVertical.png" alt="Logo do Óleo Circular" className="h-30 md:h-36 w-auto m-12" />
                     <div className="w-full max-w-sm">
                         <p className="text-xs font-extrabold text-white-500 tracking-widest mb-3">DADOS DE ACESSO</p>

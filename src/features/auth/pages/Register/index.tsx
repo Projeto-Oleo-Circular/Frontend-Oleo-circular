@@ -92,13 +92,13 @@ function Register() {
                         <div className="w-full max-w-sm py-4">
                             <p className="text-xs font-extrabold text-white-500 tracking-widest mb-3">DADOS DE ACESSO</p>
                             <div className="bg-white rounded-xl shadow-sm mb-4">
-                                <Input type="text" icon="name" placeholder="Nome completo" noBorder />
+                                <Input type="text" icon="icon-name" placeholder="Seu nome completo" noBorder />
                                 <hr className="border-white-100 mx-full" />
                                 <Input type="email" icon="email" placeholder="Seu e-mail" noBorder />
                                 <hr className="border-white-100 mx-full" />
                                 <Input type="password" icon="cadeado" placeholder="Sua senha" noBorder />
                                 <hr className="border-white-100 mx-full" />
-                                <Input type="password" icon="cadeado" placeholder="Confirmar senha" noBorder />
+                                <Input type="password" icon="cadeado" placeholder="Confirme sua senha" noBorder />
                             </div>
     
     

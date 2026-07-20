@@ -71,7 +71,7 @@ function StepProfile({ onSelectProfile, onBack, step, userName = 'Milena' }: Pro
 
     return (
         <div className="flex flex-col h-screen">
-            <HeaderCadastro title="Criar Conta" onBack={onBack} />
+          <HeaderCadastro title="Criar Conta" onBack={onBack} />
 
           <div className="flex flex-1 overflow-hidden">
             <aside className="hidden md:flex md:w-1/2">
@@ -104,7 +104,7 @@ function StepProfile({ onSelectProfile, onBack, step, userName = 'Milena' }: Pro
                       <div className="flex items-center gap-2 mb-1">
                         <img src={`src/assets/icons/${profile.icon}`} alt="" className="w-5 h-5" />
                         <p className="font-bold text-base">
-                          <span className="text-black-primary">{profile.label}</span>
+                          <span className="text-black-primary">{profile.label} </span>
                           <span className="text-green-primary">{profile.title}</span>
                         </p>
                       </div>
