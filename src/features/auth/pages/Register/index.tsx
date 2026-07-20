@@ -75,6 +75,7 @@ function Register() {
     }
 
     if (step === 0) {
+        
         return (
              <div className="flex flex-col h-screen">
                 <HeaderCadastro
@@ -100,9 +101,7 @@ function Register() {
                                 <hr className="border-white-100 mx-full" />
                                 <Input type="password" icon="cadeado" placeholder="Confirme sua senha" noBorder />
                             </div>
-    
-    
-    
+
                             <p className="text-xs font-extrabold text-white-500 tracking-widest mb-3 mt-8">CONTATO</p>
                             <div className="bg-white rounded-xl shadow-sm mb-4">
                                 <Input type="tel" icon="phone" placeholder="Telefone / WhatsApp" noBorder />

@@ -36,6 +36,10 @@ function InfoIns({ onNext, onBack, step, totalSteps, userName = 'Milena'}: Props
                     
                     <div className="flex flex-col gap-4">
                         <div className="bg-white rounded-xl shadow-sm">
+                            <Input type="text" icon="icon-name" placeholder="Nome do responsável legal" noBorder />
+                        </div>
+                        
+                        <div className="bg-white rounded-xl shadow-sm">
                             <Input type="text" icon="icon-CNPJ" placeholder="CNPJ" noBorder />
                         </div>
 
@@ -44,11 +48,11 @@ function InfoIns({ onNext, onBack, step, totalSteps, userName = 'Milena'}: Props
                         </div>
 
                         <div className="bg-white rounded-xl shadow-sm">
-                            <Input type="text" icon="icon-city" placeholder="Cidade" noBorder />
+                            <Input type="text" icon="icon-CEP" placeholder="CEP" noBorder />
                         </div>
 
                         <div className="bg-white rounded-xl shadow-sm">
-                            <Input type="text" icon="icon-CEP" placeholder="CEP" noBorder />
+                            <Input type="text" icon="icon-city" placeholder="Cidade" noBorder />
                         </div>
 
                         <div className="bg-white rounded-xl shadow-sm">
@@ -63,9 +67,6 @@ function InfoIns({ onNext, onBack, step, totalSteps, userName = 'Milena'}: Props
                             <Input type="text" icon="icon-number" placeholder="Número do estabelecimento" noBorder />
                         </div>
 
-                        <div className="bg-white rounded-xl shadow-sm">
-                            <Input type="text" icon="icon-name" placeholder="Nome do responsável legal" noBorder />
-                        </div>
                     </div>
 
                     <div className="flex flex-col gap-6 md:gap-8 mt-8">
