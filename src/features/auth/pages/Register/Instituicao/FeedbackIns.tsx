@@ -1,49 +1,60 @@
-import { useState } from 'react';
-import Popup from '../../../../../components/ui/Popup';
+import HeaderCadastro from "../../../../../components/layout/HeaderCadastro";
+import ProgressBar from "../../../../../components/ui/ProgressBar";
 
-interface FeedbackProps {
+interface Props {
+    onNext: () => void;
     onBack: () => void;
-    step: number;
-    totalSteps: number;
+    step: number
+    totalSteps: number
+    userName?: string
 }
 
-function FeedbackIns({ onBack, step, totalSteps }: FeedbackProps) {
-    const [showPopup, setShowPopup] = useState(false);
+function FeedbackIns({ onNext, onBack, step, totalSteps, userName = 'Milena'}: Props) {
 
-    const handleFinish = () => {
-        // Enviar dados para a central...
-        setShowPopup(true);
-    };
-
+    
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-background">
-            <div className="bg-white rounded-xl shadow-lg p-8 max-w-md w-full">
-                <h2 className="text-2xl font-bold text-center mb-6">
-                    Passo {step} de {totalSteps}
-                </h2>
-                <p className="text-center text-gray-600 mb-6">
-                    Revise suas informações e finalize o cadastro.
-                </p>
-                
-                <div className="flex justify-between gap-4">
-                    <button 
-                        onClick={onBack}
-                        className="flex-1 bg-gray-200 text-gray-700 font-bold py-3 rounded-xl hover:bg-gray-300"
-                    >
-                        Voltar
-                    </button>
-                    <button 
-                        onClick={handleFinish}
-                        className="flex-1 bg-green-primary text-white font-bold py-3 rounded-xl hover:bg-green-hover"
-                    >
-                        Finalizar Cadastro
-                    </button>
-                </div>
-            </div>
+        <div className="flex flex-col h-screen">
+            <HeaderCadastro title="Criar Conta" onBack={onBack} />
 
-            <Popup isOpen={showPopup} />
+            <div className="flex flex-1 overflow-hidden">
+                <aside className="hidden md:flex md:w-1/2">
+                    <img src="src/assets/Parque-ecologico.jpeg" alt="Projeto Óleo Circular" className="w-full h-full object-cover" />
+                </aside>
+
+                <main className="flex flex-col w-full md:w-1/2 px-6 sm:px-8 md:px-16 bg-background overflow-y-auto">
+                    <div className="flex-1">
+                        <div className="pt-6 pb-3">
+                            <h1 className="text-xl md:text-2xl font-bold text-green-primary">Bem-vindo(a), {userName}!</h1>
+                            <p className="text-sm md:text-base font-medium text-white-500">
+                                Aguarde a sua aprovação para ter acesso ao aplicativo.
+                            </p>
+                        </div>
+                        
+                        <ProgressBar step={step} totalSteps={totalSteps} />
+
+                        <div className="w-full pb-4">                            
+                            <div className="flex flex-col gap-3 mb-6">
+
+                            </div>
+
+                            <div className="flex flex-col gap-6 md:gap-8 mt-8">
+                                <button 
+                                    className="w-full bg-green-primary text-white-primary font-bold py-3 rounded-xl hover:bg-green-hover transition-all duration-200" 
+                                    onClick={onNext}
+                                >
+                                    Avançar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p className="text-center text-xs text-black-100 py-6">
+                        © 2026 HS Tecnologia. Todos os direitos reservados.
+                    </p>
+                </main>
+            </div>
         </div>
-    );
+    )
 }
 
 export default FeedbackIns;
