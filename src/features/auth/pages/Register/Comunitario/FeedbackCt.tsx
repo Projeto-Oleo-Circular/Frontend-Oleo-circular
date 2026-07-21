@@ -1,49 +1,62 @@
-import { useState } from 'react';
-import Popup from '../../../../../components/ui/Popup';
+import { useNavigate } from "react-router-dom";
+import HeaderCadastro from "../../../../../components/layout/HeaderCadastro";
+import ProgressBar from "../../../../../components/ui/ProgressBar";
 
-interface FeedbackProps {
+interface Props {
     onBack: () => void;
-    step: number;
-    totalSteps: number;
+    step: number
+    totalSteps: number
+    userName?: string
 }
 
-function FeedbackCt({ onBack, step, totalSteps }: FeedbackProps) {
-    const [showPopup, setShowPopup] = useState(false);
-
-    const handleFinish = () => {
-        // Enviar dados para a central...
-        setShowPopup(true);
-    };
+function FeedbackCt({  onBack, step, totalSteps, userName = 'Milena'}: Props) {
+    const navigate = useNavigate();
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-background">
-            <div className="bg-white rounded-xl shadow-lg p-8 max-w-md w-full">
-                <h2 className="text-2xl font-bold text-center mb-6">
-                    Passo {step} de {totalSteps}
-                </h2>
-                <p className="text-center text-gray-600 mb-6">
-                    Revise suas informações e finalize o cadastro.
-                </p>
-                
-                <div className="flex justify-between gap-4">
-                    <button 
-                        onClick={onBack}
-                        className="flex-1 bg-gray-200 text-gray-700 font-bold py-3 rounded-xl hover:bg-gray-300"
-                    >
-                        Voltar
-                    </button>
-                    <button 
-                        onClick={handleFinish}
-                        className="flex-1 bg-green-primary text-white font-bold py-3 rounded-xl hover:bg-green-hover"
-                    >
-                        Finalizar Cadastro
-                    </button>
-                </div>
-            </div>
+        <div className="flex flex-col h-screen">
+            <HeaderCadastro title="Criar Conta" onBack={onBack} />
 
-            <Popup isOpen={showPopup} />
+            <div className="flex flex-1 overflow-hidden">
+                <aside className="hidden md:flex md:w-1/2">
+                    <img src="src/assets/Parque-ecologico.jpeg" alt="Projeto Óleo Circular" className="w-full h-full object-cover" />
+                </aside>
+
+                <main className="flex flex-col w-full md:w-1/2 bg-background overflow-y-auto relative">
+                    <div className="flex-1 flex flex-col px-6 sm:px-8 md:px-16">
+                        <div className="pt-6 pb-3">
+                            <h1 className="text-xl md:text-2xl font-bold text-green-primary">Bem-vindo(a), {userName}!</h1>
+                            <p className="text-sm md:text-base font-medium text-white-500">
+                                Aguarde a sua aprovação para ter acesso ao aplicativo.
+                            </p>
+                        </div>
+                        
+                        <ProgressBar step={step} totalSteps={totalSteps} />
+
+                        <div className="flex-1 flex flex-col items-center justify-center pb-4">                            
+                            <img src="/src/assets/icons/icon-relogio.svg" alt="Imagem de um relógio" className="h-16 md:h-24 mt-4" />
+                            <h2 className="text-2xl md:text-3xl font-bold text-green-primary mb-3 text-center">Cadastro enviado!</h2>
+                            <p className="text-sm md:text-base text-green-primary text-center max-w-sm">Aguarde a aprovação da{' '} <span className="font-bold">Equipe Óleo Circular</span> {' '} para ter acesso ao aplicativo. Você receberá um e-mail em breve.</p>
+    
+                            <button 
+                                className="w-full max-w-sm mt-6 bg-green-primary text-white-primary font-bold py-3 rounded-xl hover:bg-green-hover transition-all duration-200" 
+                                onClick={() => navigate("/Login")}
+                            >
+                                Ir para o Login
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="md:hidden w-70 flex-shrink-0">
+                        <img src="/src/assets/Slogan.png" alt="Mulher segurando uma garrafa de óleo" className="w-full h-auto object-cover"/>
+                    </div>
+
+                    <p className="text-center text-xs text-black-100 py-6">
+                        © 2026 HS Tecnologia. Todos os direitos reservados.
+                    </p>
+                </main>
+            </div>
         </div>
-    );
+    )
 }
 
 export default FeedbackCt;
