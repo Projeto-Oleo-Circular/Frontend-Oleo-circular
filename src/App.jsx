@@ -1,3 +1,4 @@
+// App.jsx
 import { Routes, Route } from 'react-router-dom'
 
 //Rotas publicas
@@ -29,7 +30,6 @@ import AdminMap from './features/admin/pages/Map'
 import List from './features/admin/pages/List'
 import AdminMyPoints from './features/admin/pages/MyPoints'
 
-
 function App() {
   return (
     <Routes>
@@ -43,7 +43,14 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/new-password" element={<NewPassword />} />
-      <Route path="/register" element={<Register />} />
+      {/* <Route 
+        path="/register" 
+        element={
+          <RegisterProvider>
+            <Register />
+          </RegisterProvider>
+        } 
+      /> */}
 
       {/*Rotas do usuário logado*/}
       <Route path="/home" element={<Home />} />
