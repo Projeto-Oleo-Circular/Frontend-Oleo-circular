@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import HeaderPublic from '../../../../components/layout/HeaderPublic';
 import { authService } from '../../../../../src/services/authService';
+import Input from '../../../../components/ui/Input';
 
 function Login() {
     const navigate = useNavigate();
@@ -12,8 +13,8 @@ function Login() {
         senha: ''
     });
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
+    const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target as HTMLInputElement;
         setFormData(prev => ({
             ...prev,
             [name]: value
@@ -28,12 +29,12 @@ function Login() {
 
         try {
             if (!formData.email || !formData.senha) {
-                setError('Preencha todos os campos');
+                setError('Os campos não podem estar vazios');
                 setLoading(false);
                 return;
             }
 
-            console.log('Tentando login com:', formData); // Debug
+            console.log('Tentando login com:', formData);
 
             const response = await authService.login({
                 email: formData.email,
@@ -55,15 +56,20 @@ function Login() {
         <div className="flex flex-col h-screen">
             <HeaderPublic />
 
-            <div className="flex flex-1">
+            <div className="flex flex-1 overflow-hidden">
                 <aside className="hidden md:flex md:w-1/2">
-                    <img src="src/assets/Parque-ecologico.jpeg" alt="Projeto Óleo Circular" className="w-full h-158 object-cover" />
+                    <img src="src/assets/Imagem 4.jpg" alt="Projeto Óleo Circular" className="w-full h-full object-cover" />
                 </aside>
 
-                <main className="flex flex-col items-center w-full md:w-1/2 px-8 bg-background">
-                    <img src="src/assets/LogoVertical.png" alt="Logo do Óleo Circular" className="h-30 md:h-36 w-auto m-12" />
+                <main className="flex flex-col items-center w-full md:w-1/2 px-8 bg-background overflow-y-auto relative">
+                    <div className="flex flex-col items-center w-full max-w-sm mt-8">
+                        <div className="flex flex-col items-center mb-8">
+                            <img src="src/assets/logo-horizontal.svg" alt="Logo do Óleo Circular" className="h-32 md:h-36 w-auto" />
+                            <p className="text-sm md:text-base text-black-100 font-medium mt-2 text-center">Plataforma de Coleta Solidária</p>
+                        </div>
+                    </div>
                     
-                    <form onSubmit={handleLogin} className="w-full max-w-sm">
+                    <form onSubmit={handleLogin} className="w-full max-w-sm mt-4">
                         <p className="text-xs font-extrabold text-white-500 tracking-widest mb-3">DADOS DE ACESSO</p>
                         
                         {error && (
@@ -72,37 +78,34 @@ function Login() {
                             </div>
                         )}
 
-                        <div className="bg-white rounded-xl shadow-sm mb-4">
-                            {/* Input nativo para teste */}
-                            <div className="px-4 py-3">
-                                <input
-                                    type="email"
-                                    name="email"
-                                    placeholder="Seu e-mail"
-                                    value={formData.email}
-                                    onChange={handleInputChange}
-                                    className="w-full outline-none bg-transparent"
-                                    disabled={loading}
-                                />
-                            </div>
-                            <hr className="border-white-100 mx-full" />
-                            <div className="px-4 py-3">
-                                <input
-                                    type="password"
-                                    name="senha"
-                                    placeholder="Sua senha"
-                                    value={formData.senha}
-                                    onChange={handleInputChange}
-                                    className="w-full outline-none bg-transparent"
-                                    disabled={loading}
-                                />
-                            </div>
+                        <div className="bg-white rounded-xl shadow-sm mb-4 overflow-hidden">
+                            <Input
+                                type="email"
+                                name="email"
+                                icon="email"
+                                placeholder="Seu e-mail"
+                                value={formData.email}
+                                onChange={handleInputChange}
+                                disabled={loading}
+                                noBorder
+                            />
+                            <hr className="border-white-100" />
+                            <Input
+                                type="password"
+                                name="senha"
+                                icon="cadeado"
+                                placeholder="Sua senha"
+                                value={formData.senha}
+                                onChange={handleInputChange}
+                                disabled={loading}
+                                noBorder
+                            />
                         </div>
 
                         <div className="flex justify-end mb-6">
                             <button 
                                 type="button"
-                                className="text-green-primary text-sm font-medium" 
+                                className="text-green-primary text-sm font-medium hover:text-green-hover transition-colors" 
                                 onClick={() => navigate("/forgot-password")}
                                 disabled={loading}
                             >
@@ -122,7 +125,7 @@ function Login() {
                             Não tem uma conta? {' '}
                             <button 
                                 type="button"
-                                className="text-green-primary font-bold" 
+                                className="text-green-primary font-bold hover:text-green-hover transition-colors" 
                                 onClick={() => navigate("/register")}
                                 disabled={loading}
                             >
