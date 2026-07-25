@@ -17,13 +17,15 @@ function ToastContainer({ toasts, onClose }: Props) {
   const toast = toasts[0]
 
   return (
-    <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50">
-      <Toast
-        key={toast.id}
-        message={toast.message}
-        type={toast.type}
-        onClose={() => onClose(toast.id)}
-      />
+    <div className="fixed top-4 left-0 right-0 z-[9999] flex flex-col items-center pointer-events-none px-4 sm:px-6">
+      <div className="pointer-events-auto w-full max-w-sm sm:max-w-md">
+        <Toast
+          key={toast.id}
+          message={toast.message}
+          type={toast.type}
+          onClose={() => onClose(toast.id)}
+        />
+      </div>
     </div>
   )
 }

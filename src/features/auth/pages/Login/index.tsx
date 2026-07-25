@@ -55,8 +55,16 @@ function Login() {
       await login(formData.email, formData.senha)
       navigate('/home')
     } catch (err: any) {
+      console.error('Erro no login:', err)
+      
       if (err.response?.status === 401) {
-        addToast('E-mail ou senha incorretos. Tente novamente', 'error')
+        const message = err.response?.data?.message || ''
+
+        if (message.includes('pendente de aprovação')) {
+          addToast('Seu cadastro está pendente de aprovação. Aguarde o contato da equipe!', 'info')
+        } else {
+          addToast('E-mail ou senha incorretos. Tente novamente', 'error')
+        }
       } else if (err.response?.data?.message) {
         addToast(err.response.data.message, 'error')
       } else {
@@ -75,7 +83,7 @@ function Login() {
 
       <div className="flex flex-1 overflow-hidden">
         <aside className="hidden md:flex md:w-1/2">
-          <img src="src/assets/Imagem 4.jpg" alt="Projeto Óleo Circular" className="w-full h-full object-cover" />
+          <img src="src/assets/Imagem 1.jpg" alt="Projeto Óleo Circular" className="w-full h-full object-cover" />
         </aside>
 
         <main className="flex flex-col items-center w-full md:w-1/2 px-8 bg-background overflow-y-auto relative">
@@ -87,8 +95,8 @@ function Login() {
           <form onSubmit={handleLogin} className="w-full max-w-sm">
             <p className="text-xs font-extrabold text-black-100 tracking-widest mb-3">DADOS DE ACESSO</p>
 
-           <div className="bg-white rounded-xl shadow-sm mb-4 overflow-hidden">
-            <Input
+            <div className="bg-white rounded-xl shadow-sm mb-4 overflow-hidden">
+              <Input
                 type="email"
                 name="email"
                 icon="email"
@@ -98,9 +106,9 @@ function Login() {
                 disabled={loading}
                 error={fieldErrors.email}
                 noBorder
-            />
-            <hr className="border-white-100" />
-            <Input
+              />
+              <hr className="border-white-100" />
+              <Input
                 type="password"
                 name="senha"
                 icon="cadeado"
@@ -110,7 +118,7 @@ function Login() {
                 disabled={loading}
                 error={fieldErrors.senha}
                 noBorder
-            />
+              />
             </div>
 
             <div className="flex justify-end mb-6">

@@ -1,40 +1,127 @@
 import HeaderPublic from '../../../../components/layout/HeaderPublic';
 import Input from '../../../../components/ui/Input';
 import { useNavigate } from 'react-router-dom';
+import ToastContainer from '../../../../components/ui/ToastContainer';
+import useToast from '../../../../hooks/useToast';
+import { ChangeEvent, useState } from 'react';
+import { authService } from '../../../../services/authService';
 
 function ForgotPassword() {
     const navigate = useNavigate();
+    const { toasts, addToast, removeToast } = useToast()
+    const [fieldErrors, setFieldErrors] = useState({ email: '' })
+    const [formData, setFormData] = useState({ email: ''})
+    const [loading, setLoading] = useState(false)
+
+    const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target as HTMLInputElement
+        setFormData(prev => ({ ...prev, [name]: value }))
+        if (fieldErrors[name as keyof typeof fieldErrors]) {
+          setFieldErrors(prev => ({ ...prev, [name]: '' }))
+        }
+      }
+      
+    const validateForm = () => {
+        let hasError = false
+        const errors = { email: '' }
+
+        if (!formData.email) {
+            errors.email = 'E-mail é obrigatório'
+            hasError = true
+        } else if (!formData.email.includes('@') || !formData.email.includes('.')) {
+            errors.email = 'E-mail inválido'
+            hasError = true
+        }
+
+        setFieldErrors(errors)
+        return !hasError
+    }
+
+    const handleForgotPassword = async (e: React.FormEvent) => {
+        e.preventDefault()
+        if (!validateForm()) return
+
+        setLoading(true)
+        try {
+            await authService.ForgotPassword(formData.email)
+
+            addToast('E-mail enviado com sucesso!', 'success')
+
+            setTimeout(() => {
+                navigate('/login')
+            }, 3000)
+
+        } catch (err: any) {
+            console.error('Erro ao recuperar senha:', err)
+
+        if (err.response?.status === 404) {
+            addToast('E-mail não encontrado. Verifique e tente novamente', 'error')
+        } else if (err.response?.data?.message) {
+            addToast(err.response.data.message, 'error')
+        } else {
+            addToast('Erro ao enviar link de recuperação. Tente novamente', 'error')
+        }
+        }finally {
+                setLoading(false)
+        }
+    }
 
     return (
         <div className="flex flex-col h-screen">
             <HeaderPublic />
+            
+            <ToastContainer toasts={toasts} onClose={removeToast} />
 
-            <div className="flex flex-1">
+            <div className="flex flex-1 overflow-hidden">
                 <aside className="hidden md:flex md:w-1/2">
-                    <img src="src/assets/Parque-ecologico.jpeg" alt="Projeto Óleo Circular" className="w-full h-158 object-cover" />
+                    <img src="src/assets/Imagem 2.jpg" alt="Projeto Óleo Circular" className="w-full h-full object-cover" />
                 </aside>
 
-                <main className="flex flex-col items-center w-full md:w-1/2 px-8 bg-background">
-                    <img src="src/assets/LogoVertical.png" alt="Logo do Óleo Circular" className="h-30 md:h-36 w-auto m-12" />
-                    <div className="w-full max-w-sm">
-                        <p className="text-xs font-extrabold text-white-500 tracking-widest mb-2">RECUPERAR SENHA</p>
-                        <label className="block text-sm font-medium text-white-400 mb-4">
-                            Digite seu e-mail ou CNPJ cadastrado
-                        </label>
-                        <div className="bg-white rounded-xl shadow-sm mb-8">
-                            <Input type="email" icon="email" placeholder="Seu e-mail" noBorder />
-                        </div>
+                <main className="flex flex-col items-center w-full md:w-1/2 px-8 bg-background overflow-y-auto relative">
+                    <div className="flex flex-col items-center w-full max-w-sm mt-8 mb-4">
+                        <img src="src/assets/logo-horizontal.svg" alt="Logo Óleo Circular" className="h-32 md:h-36 w-auto" />
+                        <p className="text-sm text-black-100 font-medium mt-2 text-center">Plataforma de Coleta Solidária</p>
+                    </div>
 
-                    <div className="flex flex-col gap-8 md:gap-4">
-                        <button className="w-full bg-green-primary text-white-primary font-bold py-3 rounded-xl hover:bg-green-hover transition-all duration-200" onClick={() => navigate("/New-Password")}>
-                            Enviar
+                    <form onSubmit={handleForgotPassword} className="w-full max-w-sm mt-6">
+                        <p className="text-xs font-extrabold text-black-100 tracking-widest mb-3">RECUPERAR SENHA</p>
+                        <label className="block text-sm font-medium text-white-400 mb-4">
+                            Digite seu e-mail cadastrado para receber o link de recuperação
+                        </label>
+
+                    <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+                        <Input
+                            type="email"
+                            name="email"
+                            icon="email"
+                            placeholder="Seu e-mail"
+                            value={formData.email}
+                            onChange={handleInputChange}
+                            disabled={loading}
+                            error={fieldErrors.email}
+                            noBorder
+                        />
+                    </div>
+
+                    <div className="flex flex-col gap-3 mt-8">
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full bg-green-primary text-white-primary font-bold py-3 rounded-xl hover:bg-green-hover transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {loading ? 'Enviando...' : 'Enviar'}
                         </button>
 
-                        <button className="w-full bg-white-primary text-green-primary font-bold py-3 rounded-xl border-2 border-green-primary hover:bg-green-100 transition-all duration-200" onClick={() => navigate("/Login")}>
+                        <button
+                            type="button"
+                            className="w-full bg-white-primary text-green-primary font-bold py-3 rounded-xl border-2 border-green-primary hover:bg-green-100 transition-all duration-200" 
+                            onClick={() => navigate("/login")}
+                            disabled={loading}
+                        >
                             Voltar
                         </button>
                     </div>
-                    </div>
+                </form>
 
                     <p className="absolute bottom-6 text-xs text-black-100">
                         © 2026 HS Tecnologia. Todos os direitos reservados.

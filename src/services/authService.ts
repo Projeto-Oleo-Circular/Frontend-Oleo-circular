@@ -1,4 +1,4 @@
-// src/services/authService.ts
+import ForgotPassword from '../features/auth/pages/ForgotPassword';
 import api from './api';
 
 export interface User {
@@ -23,6 +23,15 @@ interface LoginResponse {
   };
 }
 
+interface ForgotPasswordResponse {
+  message: string;
+}
+
+interface ResetPasswordCredentials {
+  token: string;
+  senha: string;
+  confirmarSenha?: string;
+}
 
 export const authService = {
   async login(credentials: LoginCredentials): Promise<LoginResponse> {
@@ -43,6 +52,21 @@ export const authService = {
     api.put('/parceiros/logout').catch(() => {});
   },
 
+  async ForgotPassword(email: string): Promise<ForgotPasswordResponse> {
+    const response = await api.post('/parceiros/forgot-password', { email })
+    return response.data;
+  },
+
+  async resetPassword(data: ResetPasswordCredentials): Promise<ForgotPasswordResponse> {
+    const response = await api.post('/parceiros/reset-password', data);
+    return response.data;
+  },
+
+  async verifyResetToken(token: string): Promise<{ valid: boolean}> {
+    const response = await api.post(`/parceiros/verify-reset-token?token=${token}`);
+    return response.data;
+  },
+
    getCurrentUser(): User | null {
     const userStr = localStorage.getItem('user');
     if (!userStr) return null;
@@ -52,6 +76,7 @@ export const authService = {
       return null;
     }
   },
+  
   isAuthenticated(): boolean {
     return !!localStorage.getItem('token');
   }
