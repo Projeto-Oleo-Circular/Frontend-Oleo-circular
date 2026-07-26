@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import { authService } from '../services/authService';
 
-// Define a interface do usuário
 export interface User {
   id: string;
   email: string;
@@ -37,18 +36,28 @@ export function useAuth() {
       throw error;
     }
   };
-
+  
   const logout = () => {
     authService.logout();
     setIsAuthenticated(false);
     setUser(null);
   };
 
+  const register = async (data: any) => {
+    try {
+      await authService.register(data)
+    } catch (error) {
+      throw error
+    }
+  }
+
   return {
     isAuthenticated,
     loading,
     user,
     login,
-    logout
-  };
+    logout,
+    register
+  }
+
 }

@@ -1,14 +1,18 @@
-import { useState } from "react";
+import { useState, ChangeEvent } from "react";
+import { useNavigate } from "react-router-dom";
 import HeaderCadastro from "../../../../../components/layout/HeaderCadastro";
 import ProgressBar from "../../../../../components/ui/ProgressBar";
 import Dropdown from '../../../../../components/ui/Dropdown';
+import Button from '../../../../../components/ui/Button';
 
 interface Props {
     onNext: () => void;
     onBack: () => void;
-    step: number
-    totalSteps: number
-    userName?: string
+    step: number;
+    totalSteps: number;
+    userName?: string;
+    onDataChange?: (data: any) => void;
+    initialData?: any;
 }
 
 const partnerOptions = [
@@ -16,13 +20,45 @@ const partnerOptions = [
     { value: 'associerecicle', label: 'Associerecicle' },
     { value: 'coomarp', label: 'Coomarp' },
     { value: 'outro', label: 'Outro' },
-]
+];
 
-function AboutProjectSo({ onNext, onBack, step, totalSteps, userName = 'Milena'}: Props) {
-    const [partner, setPartner] = useState<string | null>(null)
-    const [howFound, setHowFound] = useState('')
-    const [observation, setObservation] = useState('')
+function AboutProjectSo({ 
+    onNext, 
+    onBack, 
+    step, 
+    totalSteps, 
+    userName = 'Usuário',
+    onDataChange,
+    initialData = {}
+}: Props) {
+    const navigate = useNavigate();
     
+    const [formData, setFormData] = useState({
+        partner: initialData.partner || null,
+        howFound: initialData.comoConheceu || '',
+        observation: initialData.observacao || ''
+    });
+
+    const handleTextareaChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleDropdownChange = (value: string) => {
+        setFormData(prev => ({ ...prev, partner: value }));
+    };
+
+    const handleNext = () => {
+        if (onDataChange) {
+            onDataChange({
+                comoConheceu: formData.howFound,
+                observacao: formData.observation,
+                partner: formData.partner
+            });
+        }
+        onNext();
+    };
+
     return (
         <div className="flex flex-col h-screen">
             <HeaderCadastro title="Criar Conta" onBack={onBack} />
@@ -33,61 +69,68 @@ function AboutProjectSo({ onNext, onBack, step, totalSteps, userName = 'Milena'}
                 </aside>
 
                 <main className="flex flex-col w-full md:w-1/2 px-6 sm:px-8 md:px-16 bg-background overflow-y-auto">
-                    <div className="flex-1">
-                        <div className="pt-6 pb-3">
-                            <h1 className="text-xl md:text-2xl font-bold text-green-primary">Bem-vindo(a), {userName}!</h1>
-                            <p className="text-sm md:text-base font-medium text-white-500">
-                                Nos conte como conheceu o projeto.
-                            </p>
-                        </div>
+                    <div className="pt-6 pb-3">
+                        <h1 className="text-xl md:text-2xl font-bold text-green-primary">
+                            Bem-vindo(a), {userName}!
+                        </h1>
+                        <p className="text-sm md:text-base font-medium text-white-500">
+                            Nos conte como conheceu o projeto.
+                        </p>
+                    </div>
+                    
+                    <ProgressBar step={step} totalSteps={totalSteps} />
+
+                    <div className="w-full pb-4">
+                        <p className="text-xs font-extrabold text-white-500 tracking-widest py-4">
+                            COMO CONHECEU O ÓLEO CIRCULAR
+                        </p>
                         
-                        <ProgressBar step={step} totalSteps={totalSteps} />
+                        <div className="flex flex-col gap-3 mb-6">
+                            <Dropdown
+                                placeholder="Selecione um parceiro"
+                                options={partnerOptions}
+                                value={formData.partner}
+                                onChange={handleDropdownChange}
+                            />
 
-                        <div className="w-full pb-4">
-                            <p className="text-xs font-extrabold text-white-500 tracking-widest py-4">COMO CONHECEU O ÓLEO CIRCULAR</p>
-                            
-                            <div className="flex flex-col gap-3 mb-6">
-                               <Dropdown
-                                    placeholder="Selecione um parceiro"
-                                    options={partnerOptions}
-                                    value={partner}
-                                    onChange={setPartner}
-                                />
+                            <textarea
+                                name="howFound"
+                                value={formData.howFound}
+                                onChange={handleTextareaChange}
+                                placeholder="Como descobriu o projeto?"
+                                className="w-full bg-white rounded-xl border border-white-200 px-4 py-3 text-sm text-black-primary outline-none resize-none h-28 placeholder:text-black-100 focus:border-green-primary transition-colors duration-200"
+                            />
 
-                                <textarea
-                                    value={howFound}
-                                    onChange={e => setHowFound(e.target.value)}
-                                    placeholder="Como descobriu o projeto?"
-                                    className="w-full bg-white rounded-xl border border-white-200 px-4 py-3 text-sm text-white-500 outline-none resize-none h-28 placeholder:text-white-500"
-                                />
+                            <textarea
+                                name="observation"
+                                value={formData.observation}
+                                onChange={handleTextareaChange}
+                                placeholder="Quer deixar alguma observação?"
+                                className="w-full bg-white rounded-xl border border-white-200 px-4 py-3 text-sm text-black-primary outline-none resize-none h-28 placeholder:text-black-100 focus:border-green-primary transition-colors duration-200"
+                            />
+                        </div>
 
-                                <textarea
-                                    value={observation}
-                                    onChange={e => setObservation(e.target.value)}
-                                    placeholder="Quer deixar alguma observação?"
-                                    className="w-full bg-white rounded-xl border border-white-200 px-4 py-3 text-sm text-white-500 outline-none resize-none h-28 placeholder:text-white-500"
-                                />
+                        <div className="flex flex-col gap-4 mt-4">
+                            <Button
+                                type="button"
+                                onClick={handleNext}
+                                variant="primary"
+                                fullWidth
+                            >
+                                Avançar
+                            </Button>
 
-                            </div>
-
-                            <div className="flex flex-col gap-6 md:gap-8 mt-8">
-                                <button 
-                                    className="w-full bg-green-primary text-white-primary font-bold py-3 rounded-xl hover:bg-green-hover transition-all duration-200" 
-                                    onClick={onNext}
-                                >
-                                    Avançar
-                                </button>
-
-                                <button 
-                                    className="w-full bg-white-primary text-green-primary font-bold py-3 rounded-xl border-2 border-green-primary hover:bg-green-100 transition-all duration-200" 
-                                    onClick={onBack}
-                                >
-                                    Voltar
-                                </button>
-                            </div>
+                            <Button
+                                type="button"
+                                onClick={onBack}
+                                variant="secondary"
+                                fullWidth
+                            >
+                                Voltar
+                            </Button>
                         </div>
                     </div>
-
+                    
                     <p className="text-center text-xs text-black-100 py-6">
                         © 2026 HS Tecnologia. Todos os direitos reservados.
                     </p>

@@ -1,19 +1,58 @@
+import { useState, ChangeEvent } from 'react'; // <-- ADICIONE ChangeEvent
+import { useNavigate } from "react-router-dom";
 import HeaderCadastro from "../../../../../components/layout/HeaderCadastro";
 import ProgressBar from "../../../../../components/ui/ProgressBar";
 import Input from '../../../../../components/ui/Input';
-import { useNavigate } from "react-router-dom";
+import Button from '../../../../../components/ui/Button';
 
 interface Props {
     onNext: () => void;
     onBack: () => void;
-    step: number
-    totalSteps: number
-    userName?: string
+    step: number;
+    totalSteps: number;
+    userName?: string;
+    onDataChange?: (data: any) => void;
+    initialData?: any;
 }
 
-function ComunicacaoIns({ onNext, onBack, step, totalSteps, userName = 'Milena'}: Props) {
+function ComunicacaoIns({ 
+    onNext, 
+    onBack, 
+    step, 
+    totalSteps, 
+    userName = 'Usuário',
+    onDataChange,
+    initialData = {}
+}: Props) {
     const navigate = useNavigate();
     
+    const [formData, setFormData] = useState({
+        redesSociais: initialData.redesSociais || '',
+        site: initialData.site || '',
+        aceiteDivulgacao: initialData.aceiteDivulgacao || false
+    });
+
+    // CORRIGIDO: agora aceita ChangeEvent com HTMLInputElement | HTMLTextAreaElement
+    const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const target = e.target as HTMLInputElement;
+        const { name, value, type, checked } = target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value
+        }));
+    };
+
+    const handleNext = () => {
+        if (onDataChange) {
+            onDataChange({
+                redesSociais: formData.redesSociais,
+                site: formData.site,
+                aceiteDivulgacao: formData.aceiteDivulgacao
+            });
+        }
+        onNext();
+    };
+
     return (
         <div className="flex flex-col h-screen">
             <HeaderCadastro title="Criar Conta" onBack={onBack} />
@@ -24,59 +63,88 @@ function ComunicacaoIns({ onNext, onBack, step, totalSteps, userName = 'Milena'}
                 </aside>
 
                 <main className="flex flex-col w-full md:w-1/2 px-6 sm:px-8 md:px-16 bg-background overflow-y-auto">
-                    <div className="flex-1">
-                        <div className="pt-6 pb-3">
-                            <h1 className="text-xl md:text-2xl font-bold text-green-primary">Bem-vindo(a), {userName}!</h1>
-                            <p className="text-sm md:text-base font-medium text-white-500">
-                                Gostaria de ser divulgado nas nossas redes sociais?
-                            </p>
+                    <div className="pt-6 pb-3">
+                        <h1 className="text-xl md:text-2xl font-bold text-green-primary">
+                            Bem-vindo(a), {userName}!
+                        </h1>
+                        <p className="text-sm md:text-base font-medium text-white-500">
+                            Gostaria de ser divulgado nas nossas redes sociais?
+                        </p>
+                    </div>
+                    
+                    <ProgressBar step={step} totalSteps={totalSteps} />
+
+                    <div className="w-full pb-4">
+                        <p className="text-xs font-extrabold text-white-500 tracking-widest py-4">
+                            COMUNICAÇÃO
+                        </p>
+                        
+                        <div className="bg-white rounded-xl shadow-sm mb-6 overflow-hidden">
+                            <Input 
+                                type="text" 
+                                icon="icon-redesSociais" 
+                                placeholder="Redes sociais" 
+                                name="redesSociais"
+                                value={formData.redesSociais}
+                                onChange={handleInputChange}
+                                noBorder 
+                            />
+                            <hr className="border-white-100" />
+                            
+                            <Input 
+                                type="text" 
+                                icon="icon-site" 
+                                placeholder="Site" 
+                                name="site"
+                                value={formData.site}
+                                onChange={handleInputChange}
+                                noBorder 
+                            />
                         </div>
                         
-                        <ProgressBar step={step} totalSteps={totalSteps} />
-
-                        <div className="w-full pb-4">
-                            <p className="text-xs font-extrabold text-white-500 tracking-widest py-4">COMUNICAÇÃO</p>
-                            
-                            <div className="flex flex-col gap-3">
-                                <div className="bg-white rounded-xl shadow-sm">
-                                    <Input type="text" icon="icon-redesSociais" placeholder="Redes sociais" noBorder />
-                                </div>
-
-                                <div className="bg-white rounded-xl shadow-sm">
-                                    <Input type="text" icon="icon-site" placeholder="Site" noBorder />
-                                </div>
-                            </div>
-                            
-                            <div className="flex items-center gap-2 pt-4">
-                                <input type="checkbox" className="w-4 h-4 accent-green-primary" />
-                                <label className="text-sm md:text-sm text-black-200">
-                                    Aceito os{' '}
-                                    <button className="text-green-primary font-bold underline" onClick={() => navigate('/termos')}>
-                                        Termos de Divulgação
-                                    </button>
-                                    {' '} de parceria{' '}
-                                </label>
-                            </div>
-
-                            <div className="flex flex-col gap-6 md:gap-8 mt-8">
+                        <div className="flex items-center gap-2 pt-2 pb-4">
+                            <input 
+                                type="checkbox" 
+                                name="aceiteDivulgacao"
+                                checked={formData.aceiteDivulgacao}
+                                onChange={handleInputChange}
+                                className="w-4 h-4 accent-green-primary cursor-pointer" 
+                            />
+                            <label className="text-sm md:text-sm text-black-200 cursor-pointer">
+                                Aceito os{' '}
                                 <button 
-                                    className="w-full bg-green-primary text-white-primary font-bold py-3 rounded-xl hover:bg-green-hover transition-all duration-200" 
-                                    onClick={onNext}
+                                    className="text-green-primary font-bold underline hover:text-green-hover transition-colors" 
+                                    onClick={() => navigate('/termos')}
+                                    type="button"
                                 >
-                                    Avançar
+                                    Termos de Divulgação
                                 </button>
+                                {' '} de parceria
+                            </label>
+                        </div>
 
-                                <button 
-                                    className="w-full bg-white-primary text-green-primary font-bold py-3 rounded-xl border-2 border-green-primary hover:bg-green-100 transition-all duration-200" 
-                                    onClick={onBack}
-                                >
-                                    Voltar
-                                </button>
-                            </div>
+                        <div className="flex flex-col gap-4 mt-4">
+                            <Button
+                                type="button"
+                                onClick={handleNext}
+                                variant="primary"
+                                fullWidth
+                            >
+                                Avançar
+                            </Button>
+
+                            <Button
+                                type="button"
+                                onClick={onBack}
+                                variant="secondary"
+                                fullWidth
+                            >
+                                Voltar
+                            </Button>
                         </div>
                     </div>
-
-                    <p className="text-center text-xs text-black-100 py-4 flex-shrink-0">
+                    
+                    <p className="text-center text-xs text-black-100 py-6">
                         © 2026 HS Tecnologia. Todos os direitos reservados.
                     </p>
                 </main>

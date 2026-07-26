@@ -61,7 +61,6 @@ interface RegisterResponse {
 export const authService = {
   async login(credentials: LoginCredentials): Promise<LoginResponse> {
     const response = await api.post('/parceiros/login', credentials);
-    // Armazena o token e dados do usuário
     if (response.data.token) {
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
@@ -73,7 +72,6 @@ export const authService = {
   logout(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    // Opcional: chamar o endpoint de logout
     api.put('/parceiros/logout').catch(() => {});
   },
 
