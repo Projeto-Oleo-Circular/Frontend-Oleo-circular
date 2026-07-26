@@ -1,9 +1,10 @@
-import { useState, ChangeEvent } from 'react'; // <-- ADICIONE ChangeEvent
+import { useState, ChangeEvent } from 'react';
 import { useNavigate } from "react-router-dom";
 import HeaderCadastro from "../../../../../components/layout/HeaderCadastro";
 import ProgressBar from "../../../../../components/ui/ProgressBar";
 import Input from '../../../../../components/ui/Input';
 import Button from '../../../../../components/ui/Button';
+import Checkbox from '../../../../../components/ui/Checkbox';
 
 interface Props {
     onNext: () => void;
@@ -32,14 +33,14 @@ function ComunicacaoIns({
         aceiteDivulgacao: initialData.aceiteDivulgacao || false
     });
 
-    // CORRIGIDO: agora aceita ChangeEvent com HTMLInputElement | HTMLTextAreaElement
     const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const target = e.target as HTMLInputElement;
-        const { name, value, type, checked } = target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: type === 'checkbox' ? checked : value
-        }));
+        const { name, value } = target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleCheckboxChange = (checked: boolean) => {
+        setFormData(prev => ({ ...prev, aceiteDivulgacao: checked }));
     };
 
     const handleNext = () => {
@@ -59,7 +60,7 @@ function ComunicacaoIns({
 
             <div className="flex flex-1 overflow-hidden">
                 <aside className="hidden md:flex md:w-1/2">
-                    <img src="src/assets/Parque-ecologico.jpeg" alt="Projeto Óleo Circular" className="w-full h-full object-cover" />
+                    <img src="src/assets/Imagem 1.jpg" alt="Projeto Óleo Circular" className="w-full h-full object-cover" />
                 </aside>
 
                 <main className="flex flex-col w-full md:w-1/2 px-6 sm:px-8 md:px-16 bg-background overflow-y-auto">
@@ -83,7 +84,7 @@ function ComunicacaoIns({
                             <Input 
                                 type="text" 
                                 icon="icon-redesSociais" 
-                                placeholder="Redes sociais" 
+                                placeholder="Redes sociais (opcional)" 
                                 name="redesSociais"
                                 value={formData.redesSociais}
                                 onChange={handleInputChange}
@@ -94,7 +95,7 @@ function ComunicacaoIns({
                             <Input 
                                 type="text" 
                                 icon="icon-site" 
-                                placeholder="Site" 
+                                placeholder="Site (opcional)" 
                                 name="site"
                                 value={formData.site}
                                 onChange={handleInputChange}
@@ -103,18 +104,16 @@ function ComunicacaoIns({
                         </div>
                         
                         <div className="flex items-center gap-2 pt-2 pb-4">
-                            <input 
-                                type="checkbox" 
-                                name="aceiteDivulgacao"
+                            <Checkbox 
+                                id="aceiteDivulgacao"
                                 checked={formData.aceiteDivulgacao}
-                                onChange={handleInputChange}
-                                className="w-4 h-4 accent-green-primary cursor-pointer" 
+                                onChange={handleCheckboxChange}
                             />
-                            <label className="text-sm md:text-sm text-black-200 cursor-pointer">
+                            <label htmlFor="aceiteDivulgacao" className="text-sm md:text-sm text-black-200 cursor-pointer">
                                 Aceito os{' '}
                                 <button 
                                     className="text-green-primary font-bold underline hover:text-green-hover transition-colors" 
-                                    onClick={() => navigate('/termos')}
+                                    /*onClick={() => navigate('/termos')}*/
                                     type="button"
                                 >
                                     Termos de Divulgação

@@ -1,44 +1,54 @@
-import { useNavigate } from "react-router-dom";
-import HeaderCadastro from "../../../../../components/layout/HeaderCadastro";
-import ProgressBar from "../../../../../components/ui/ProgressBar";
-import Button from '../../../../../components/ui/Button';
+import { useNavigate } from "react-router-dom"
+import { useState } from "react"
+import HeaderCadastro from "../../../../../components/layout/HeaderCadastro"
+import ProgressBar from "../../../../../components/ui/ProgressBar"
+import Button from '../../../../../components/ui/Button'
 
 interface Props {
-    onBack: () => void;
-    step: number;
-    totalSteps: number;
-    userName?: string;
-    onSubmit?: () => void;
+    step: number
+    totalSteps: number
+    userName?: string
+    onSubmit?: () => Promise<void>
+    loading?: boolean
 }
 
-function FeedbackSo({ 
-    onBack, 
+function FeedbackSo({  
     step, 
     totalSteps, 
     userName = 'Usuário',
-    onSubmit
+    onSubmit,
+    loading = false
 }: Props) {
-    const navigate = useNavigate();
+    const navigate = useNavigate()
+    const [isSubmitting, setIsSubmitting] = useState(false)
 
-    const handleSubmit = () => {
-        if (onSubmit) {
-            onSubmit();
+    const handleSubmit = async () => {
+        if (isSubmitting || loading) return
+
+        setIsSubmitting(true)
+        try {
+            if (onSubmit) {
+                await onSubmit()
+            }
+            navigate("/login")
+        } catch (error) {
+            console.error('Erro ao finalizar cadastro:', error)
+            setIsSubmitting(false)
         }
-        setTimeout(() => {
-            navigate("/Login");
-        }, 500);
-    };
+    }
 
     return (
         <div className="flex flex-col h-screen">
-            <HeaderCadastro title="Criar Conta" onBack={onBack} />
+            <header className="flex items-center px-4 md:px-8 py-3 bg-white border-b border-white-100 h-20">
+                <img src="/src/assets/logo-horizontal.svg" alt="Óleo Circular" className="h-10 w-auto" />
+            </header>
 
             <div className="flex flex-1 overflow-hidden">
                 <aside className="hidden md:flex md:w-1/2">
-                    <img src="src/assets/Parque-ecologico.jpeg" alt="Projeto Óleo Circular" className="w-full h-full object-cover" />
+                    <img src="src/assets/Imagem 1.jpg" alt="Projeto Óleo Circular" className="w-full h-full object-cover" />
                 </aside>
 
-                <main className="flex flex-col w-full md:w-1/2 bg-background overflow-y-auto relative">
+                <main className="flex flex-col w-full md:w-1/2 bg-background overflow-y-auto">
                     <div className="flex-1 flex flex-col px-6 sm:px-8 md:px-16">
                         <div className="pt-6 pb-3">
                             <h1 className="text-xl md:text-2xl font-bold text-green-primary">
@@ -54,7 +64,7 @@ function FeedbackSo({
                         <div className="flex-1 flex flex-col items-center justify-center pb-4">                            
                             <img 
                                 src="/src/assets/icons/icon-relogio.svg" 
-                                alt="Imagem de um relógio" 
+                                alt="Relógio" 
                                 className="h-16 md:h-24 mt-4" 
                             />
                             
@@ -74,8 +84,9 @@ function FeedbackSo({
                                 variant="primary"
                                 fullWidth={false}
                                 className="w-full max-w-sm mt-6"
+                                disabled={loading || isSubmitting}
                             >
-                                Ir para o Login
+                                {isSubmitting ? 'Finalizando...' : 'Ir para o Login'}
                             </Button>
                         </div>
                     </div>
@@ -97,4 +108,4 @@ function FeedbackSo({
     )
 }
 
-export default FeedbackSo;
+export default FeedbackSo

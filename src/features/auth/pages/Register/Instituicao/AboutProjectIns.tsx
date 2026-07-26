@@ -31,33 +31,67 @@ function AboutProjectIns({
     onDataChange,
     initialData = {}
 }: Props) {
-    const navigate = useNavigate();
+    const navigate = useNavigate()
     
     const [formData, setFormData] = useState({
         partner: initialData.partner || null,
         howFound: initialData.comoConheceu || '',
         observation: initialData.observacao || ''
-    });
+    })
+
+    const [fieldErrors, setFieldErrors] = useState({
+        partner: '',
+        howFound: '',
+        observation: ''
+    })
 
     const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-    };
+        setFormData(prev => ({ ...prev, [name]: value }))
+
+        if (fieldErrors[name as keyof typeof fieldErrors]) {
+            setFieldErrors(prev => ({ ...prev, [name]: '' }))
+        }
+    }
 
     const handleDropdownChange = (value: string) => {
-        setFormData(prev => ({ ...prev, partner: value }));
+        setFormData(prev => ({ ...prev, partner: value }))
+        if (fieldErrors.partner) {
+            setFieldErrors(prev => ({ ...prev, partner: '' }));
+        }
+    }
+
+    const validateForm = (): boolean => {
+        let hasError = false;
+        const errors = {
+            partner: '',
+            howFound: '',
+            observation: ''
+        }
+
+        if (!formData.partner) {
+            errors.partner = 'Selecione um parceiro para continuar';
+            hasError = true;
+        }
+
+        setFieldErrors(errors);
+        return !hasError;
     };
 
     const handleNext = () => {
+        if (!validateForm()) {
+            return
+        }
+
         if (onDataChange) {
             onDataChange({
                 comoConheceu: formData.howFound,
                 observacao: formData.observation,
                 partner: formData.partner
-            });
+            })
         }
-        onNext();
-    };
+        onNext()
+    }
 
     return (
         <div className="flex flex-col h-screen">
@@ -65,7 +99,7 @@ function AboutProjectIns({
 
             <div className="flex flex-1 overflow-hidden">
                 <aside className="hidden md:flex md:w-1/2">
-                    <img src="src/assets/Parque-ecologico.jpeg" alt="Projeto Óleo Circular" className="w-full h-full object-cover" />
+                    <img src="src/assets/Imagem 3.jpg" alt="Projeto Óleo Circular" className="w-full h-full object-cover" />
                 </aside>
 
                 <main className="flex flex-col w-full md:w-1/2 px-6 sm:px-8 md:px-16 bg-background overflow-y-auto">
@@ -86,18 +120,25 @@ function AboutProjectIns({
                         </p>
                         
                         <div className="flex flex-col gap-3 mb-6">
-                            <Dropdown
-                                placeholder="Selecione um parceiro"
-                                options={partnerOptions}
-                                value={formData.partner}
-                                onChange={handleDropdownChange}
-                            />
-
+                            <div>
+                                <Dropdown
+                                    placeholder="Selecione um parceiro"
+                                    options={partnerOptions}
+                                    value={formData.partner}
+                                    onChange={handleDropdownChange}
+                                />
+                                {fieldErrors.partner && (
+                                    <p className="text-red-500 text-xs mt-1 font-medium">
+                                        {fieldErrors.partner}
+                                    </p>
+                                )}
+                            </div>
+                            
                             <textarea
                                 name="howFound"
                                 value={formData.howFound}
                                 onChange={handleTextareaChange}
-                                placeholder="Como descobriu o projeto?"
+                                placeholder="Como descobriu o projeto? (opcional)"
                                 className="w-full bg-white rounded-xl border border-white-200 px-4 py-3 text-sm text-black-primary outline-none resize-none h-28 placeholder:text-black-100 focus:border-green-primary transition-colors duration-200"
                             />
 
@@ -105,31 +146,31 @@ function AboutProjectIns({
                                 name="observation"
                                 value={formData.observation}
                                 onChange={handleTextareaChange}
-                                placeholder="Quer deixar alguma observação?"
+                                placeholder="Quer deixar alguma observação? (opcional)"
                                 className="w-full bg-white rounded-xl border border-white-200 px-4 py-3 text-sm text-black-primary outline-none resize-none h-28 placeholder:text-black-100 focus:border-green-primary transition-colors duration-200"
                             />
-                        </div>
+                            </div>
 
-                        <div className="flex flex-col gap-4 mt-4">
-                            <Button
-                                type="button"
-                                onClick={handleNext}
-                                variant="primary"
-                                fullWidth
-                            >
-                                Avançar
-                            </Button>
+                            <div className="flex flex-col gap-4 mt-4">
+                                <Button
+                                    type="button"
+                                    onClick={handleNext}
+                                    variant="primary"
+                                    fullWidth
+                                >
+                                    Avançar
+                                </Button>
 
-                            <Button
-                                type="button"
-                                onClick={onBack}
-                                variant="secondary"
-                                fullWidth
-                            >
-                                Voltar
-                            </Button>
+                                <Button
+                                    type="button"
+                                    onClick={onBack}
+                                    variant="secondary"
+                                    fullWidth
+                                >
+                                    Voltar
+                                </Button>
+                            </div>
                         </div>
-                    </div>
                     
                     <p className="text-center text-xs text-black-100 py-6">
                         © 2026 HS Tecnologia. Todos os direitos reservados.

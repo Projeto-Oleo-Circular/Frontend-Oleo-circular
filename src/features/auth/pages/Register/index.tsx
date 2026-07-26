@@ -274,9 +274,9 @@ function Register() {
         return null
 
       case 6:
-        if (profile === 'institucional') return <FeedbackIns onSubmit={handleFinalSubmit} onBack={onBack} step={step} totalSteps={currentTotalSteps} userName={userName} />
-        if (profile === 'comunitario') return <FeedbackCt onSubmit={handleFinalSubmit} onBack={onBack} step={step} totalSteps={currentTotalSteps} userName={userName} />
-        if (profile === 'solidario') return <FeedbackSo onSubmit={handleFinalSubmit} onBack={onBack} step={step} totalSteps={currentTotalSteps} userName={userName} />
+        if (profile === 'institucional') return <FeedbackIns onSubmit={handleFinalSubmit} step={step} totalSteps={currentTotalSteps} userName={userName} loading={loading}/>
+        if (profile === 'comunitario') return <FeedbackCt onSubmit={handleFinalSubmit} step={step} totalSteps={currentTotalSteps} userName={userName} loading={loading}/>
+        if (profile === 'solidario') return <FeedbackSo onSubmit={handleFinalSubmit} step={step} totalSteps={currentTotalSteps} userName={userName} loading={loading}/>
         return null
 
       default:
