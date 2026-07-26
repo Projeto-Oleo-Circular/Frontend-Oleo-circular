@@ -5,6 +5,7 @@ import ToastContainer from '../../../../components/ui/ToastContainer';
 import useToast from '../../../../hooks/useToast';
 import { ChangeEvent, useState } from 'react';
 import { authService } from '../../../../services/authService';
+import Button from '../../../../components/ui/Button';
 
 function ForgotPassword() {
     const navigate = useNavigate();
@@ -104,22 +105,21 @@ function ForgotPassword() {
                     </div>
 
                     <div className="flex flex-col gap-3 mt-8">
-                        <button
+                        <Button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-green-primary text-white-primary font-bold py-3 rounded-xl hover:bg-green-hover transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            variant="primary"
                         >
-                            {loading ? 'Enviando...' : 'Enviar'}
-                        </button>
+                            Enviar
+                        </Button>
 
-                        <button
+                        <Button
                             type="button"
-                            className="w-full bg-white-primary text-green-primary font-bold py-3 rounded-xl border-2 border-green-primary hover:bg-green-100 transition-all duration-200" 
                             onClick={() => navigate("/login")}
-                            disabled={loading}
+                            variant="secondary"
                         >
                             Voltar
-                        </button>
+                        </Button>
                     </div>
                 </form>
 

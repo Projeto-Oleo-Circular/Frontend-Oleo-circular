@@ -23,6 +23,7 @@ import VolumeSo from "./Solidario/VolumeSo"
 import AboutProjectSo from "./Solidario/AboutProjectSo"
 import FeedbackSo from "./Solidario/FeedbackSo"
 import Checkbox from "../../../../components/ui/Checkbox"
+import Button from "../../../../components/ui/Button"
 
 function Register() {
     const navigate = useNavigate()
@@ -344,13 +345,14 @@ function Register() {
                             )}
                         </div>
 
-                        <button 
-                            className="w-full bg-green-primary text-white-primary font-bold py-3 rounded-xl mb-4 hover:bg-green-hover transition-all duration-200" 
+                        <Button
+                            type="button"
                             onClick={onNext} 
                             disabled={loading}
+                            variant="primary"
                         >
-                            {loading ? 'Cadastrando...' : 'Avançar'}
-                        </button>
+                            Avançar
+                        </Button>
                     </div>
 
                     <p className="pb-6 text-xs text-black-100">

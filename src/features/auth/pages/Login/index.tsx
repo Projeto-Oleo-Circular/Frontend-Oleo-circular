@@ -5,6 +5,7 @@ import Input from '../../../../components/ui/Input'
 import ToastContainer from '../../../../components/ui/ToastContainer'
 import useToast from '../../../../hooks/useToast'
 import { useAuth } from '../../../../hooks/useAuth'
+import Button from '../../../../components/ui/Button'
 
 function Login() {
   const navigate = useNavigate()
@@ -128,19 +129,19 @@ function Login() {
                 onClick={() => navigate('/forgot-password')}
                 disabled={loading}
               >
-                Esqueci minha senha?
+                Esqueci minha senha
               </button>
             </div>
 
-            <button
+            <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-green-primary text-white-primary font-bold py-3 rounded-xl mb-4 hover:bg-green-hover transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              variant="primary"
             >
-              {loading ? 'Entrando...' : 'Entrar'}
-            </button>
+              Entrar
+            </Button>
 
-            <p className="text-center text-sm text-black-100">
+            <p className="text-center text-sm text-black-100 mt-4">
               Não tem uma conta?{' '}
               <button
                 type="button"
