@@ -170,7 +170,12 @@ function Register() {
       if (err.response?.data?.message) {
         addToast(err.response.data.message, 'error')
       } else if (err.response?.status === 409) {
-        addToast('Este e-mail já está cadastrado.', 'error')
+        const message = err.response?.data?.message || ''
+        if (message.includes('documento') || message.includes('CNPJ') || message.includes('CPF')) {
+          addToast('Este CPF/CNPJ já está cadastrado. Verifique os dados.', 'error')
+        } else {
+          addToast('Este e-mail já está cadastrado.', 'error')
+        }
       } else {
         addToast('Erro ao realizar cadastro. Tente novamente.', 'error')
       }
@@ -254,11 +259,12 @@ function Register() {
         return null
 
       case 3:
-        if (profile === 'institucional') return <ComunicacaoIns onNext={onNext} onBack={onBack} step={step} totalSteps={currentTotalSteps} userName={userName} onDataChange={handleStepDataChange} initialData={additionalData} />
-        if (profile === 'comunitario' || profile === 'solidario') {
-          setStep(4)
-          return null
+        // COMUNITÁRIO E SOLIDÁRIO NÃO TÊM COMUNICAÇÃO
+        if (profile === 'institucional') {
+          return <ComunicacaoIns onNext={onNext} onBack={onBack} step={step} totalSteps={currentTotalSteps} userName={userName} onDataChange={handleStepDataChange} initialData={additionalData} />
         }
+        // Pula para o step 4 (Volume)
+        setStep(4)
         return null
 
       case 4:
@@ -268,15 +274,24 @@ function Register() {
         return null
 
       case 5:
-        if (profile === 'institucional') return <AboutProjectIns onNext={onNext} onBack={onBack} step={step} totalSteps={currentTotalSteps} userName={userName} onDataChange={handleStepDataChange} initialData={additionalData} />
-        if (profile === 'comunitario') return <AboutProjectCt onNext={onNext} onBack={onBack} step={step} totalSteps={currentTotalSteps} userName={userName} onDataChange={handleStepDataChange} initialData={additionalData} />
-        if (profile === 'solidario') return <AboutProjectSo onNext={onNext} onBack={onBack} step={step} totalSteps={currentTotalSteps} userName={userName} onDataChange={handleStepDataChange} initialData={additionalData} />
+        // INSTITUCIONAL: step 5 = AboutProject, step 6 = Feedback
+        // COMUNITÁRIO/SOLIDÁRIO: step 5 = Feedback (último passo)
+        if (profile === 'institucional') {
+          return <AboutProjectIns onNext={onNext} onBack={onBack} step={step} totalSteps={currentTotalSteps} userName={userName} onDataChange={handleStepDataChange} initialData={additionalData} />
+        }
+        if (profile === 'comunitario') {
+          return <FeedbackCt onSubmit={handleFinalSubmit} step={step} totalSteps={currentTotalSteps} userName={userName} loading={loading} />
+        }
+        if (profile === 'solidario') {
+          return <FeedbackSo onSubmit={handleFinalSubmit} step={step} totalSteps={currentTotalSteps} userName={userName} loading={loading} />
+        }
         return null
 
       case 6:
-        if (profile === 'institucional') return <FeedbackIns onSubmit={handleFinalSubmit} step={step} totalSteps={currentTotalSteps} userName={userName} loading={loading}/>
-        if (profile === 'comunitario') return <FeedbackCt onSubmit={handleFinalSubmit} step={step} totalSteps={currentTotalSteps} userName={userName} loading={loading}/>
-        if (profile === 'solidario') return <FeedbackSo onSubmit={handleFinalSubmit} step={step} totalSteps={currentTotalSteps} userName={userName} loading={loading}/>
+        // SÓ INSTITUCIONAL TEM STEP 6 (FEEDBACK)
+        if (profile === 'institucional') {
+          return <FeedbackIns onSubmit={handleFinalSubmit} step={step} totalSteps={currentTotalSteps} userName={userName} loading={loading} />
+        }
         return null
 
       default:
