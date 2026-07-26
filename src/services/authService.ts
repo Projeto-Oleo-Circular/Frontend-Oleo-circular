@@ -1,4 +1,3 @@
-import ForgotPassword from '../features/auth/pages/ForgotPassword';
 import api from './api';
 
 export interface User {
@@ -33,6 +32,32 @@ interface ResetPasswordCredentials {
   confirmarSenha?: string;
 }
 
+interface RegisterCredentials {
+  tipoPessoa: string;
+  nomeRazaoSocial: string;
+  email: string;
+  senha: string;
+  documento: string;
+  porte: string;
+  aceiteMarketing: boolean;
+  cep: string;
+  logradouro: string;
+  numero: string;
+  bairro: string;
+  capacidadeBombona: number;
+}
+
+interface RegisterResponse {
+  message: string;
+  user: {
+    id: string;
+    email: string;
+    nome: string;
+    tipo: string;
+  };
+}
+
+
 export const authService = {
   async login(credentials: LoginCredentials): Promise<LoginResponse> {
     const response = await api.post('/parceiros/login', credentials);
@@ -64,6 +89,11 @@ export const authService = {
 
   async verifyResetToken(token: string): Promise<{ valid: boolean}> {
     const response = await api.post(`/parceiros/verify-reset-token?token=${token}`);
+    return response.data;
+  },
+
+  async register(data: RegisterCredentials): Promise<RegisterResponse> {
+    const response = await api.post('/parceiros/register', data);
     return response.data;
   },
 
