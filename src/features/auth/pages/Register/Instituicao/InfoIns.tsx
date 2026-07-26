@@ -48,8 +48,6 @@ function InfoIns({
 
     const [loadingCep, setLoadingCep] = useState(false);
 
-    // ==================== FUNÇÕES DE FORMATAÇÃO ====================
-
     const formatCep = (value: string): string => {
         const cleaned = value.replace(/\D/g, '').slice(0, 8);
         if (cleaned.length > 5) {

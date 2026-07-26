@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom"
-import { useState } from "react"
 import HeaderCadastro from "../../../../../components/layout/HeaderCadastro"
 import ProgressBar from "../../../../../components/ui/ProgressBar"
 import Button from '../../../../../components/ui/Button'
+import { useState } from "react"
 
 interface Props {
     step: number
@@ -108,4 +108,4 @@ function FeedbackSo({
     )
 }
 
-export default FeedbackSo
+export default FeedbackSo;

@@ -53,7 +53,7 @@ function VolumeCt({
 
             <div className="flex flex-1 overflow-hidden">
                 <aside className="hidden md:flex md:w-1/2">
-                    <img src="src/assets/Parque-ecologico.jpeg" alt="Projeto Óleo Circular" className="w-full h-full object-cover" />
+                    <img src="src/assets/Imagem 2.jpg" alt="Projeto Óleo Circular" className="w-full h-full object-cover" />
                 </aside>
 
                 <main className="flex flex-col w-full md:w-1/2 px-6 sm:px-8 md:px-16 bg-background overflow-y-auto">
@@ -62,7 +62,7 @@ function VolumeCt({
                             Bem-vindo(a), {userName}!
                         </h1>
                         <p className="text-sm md:text-base font-medium text-white-500">
-                            Informe a quantidade estimada de óleo que produzirá por semana
+                            Informe a quantidade estimada de óleo que produzirá por semana em litros(L)
                         </p>
                     </div>
                     
