@@ -111,7 +111,7 @@ function StepProfile({
               <button
                 key={profile.id}
                 onClick={() => handleSelectProfile(profile.id)}
-                className={`w-full text-left rounded-md border-2 p-4 transition-all duration-200 bg-white shadow-card hover:shadow-md ${
+                className={`w-full text-left rounded-md border-2 p-4 transition-all duration-200 bg-green-100 shadow-card hover:shadow-md ${
                   selected === profile.id
                     ? 'border-2 border-green-primary ring-2 ring-green-200'
                     : 'border-2 border-transparent hover:border-green-200'
@@ -135,7 +135,7 @@ function StepProfile({
                   {profile.tags.map((tag) => (
                     <span
                       key={tag.label}
-                      className="flex items-center gap-1 text-xs bg-white-100 text-black-200 px-2 py-1 rounded-md border border-white-200"
+                      className="flex items-center gap-1 text-xs bg-[rgba(156,163,175,0.3)] text-black-200 px-2 py-1 rounded-md border border-white-200"
                     >
                       <img 
                         src={`src/assets/icons/${tag.icon}`} 
