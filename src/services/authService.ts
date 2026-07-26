@@ -95,6 +95,16 @@ export const authService = {
     return response.data;
   },
 
+  async buscarCep(cep: string): Promise<{
+    logradouro: string
+    bairro: string
+    cidade: string
+  }> {
+    const cleaned = cep.replace(/\D/g, '')
+    const reponse = await api.get(`/parceiros/buscar-cep/${cleaned}`)
+    return reponse.data
+  },
+
    getCurrentUser(): User | null {
     const userStr = localStorage.getItem('user');
     if (!userStr) return null;

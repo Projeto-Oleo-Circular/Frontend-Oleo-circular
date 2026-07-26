@@ -3,6 +3,7 @@ import HeaderCadastro from "../../../../../components/layout/HeaderCadastro";
 import ProgressBar from "../../../../../components/ui/ProgressBar";
 import Input from '../../../../../components/ui/Input';
 import Button from '../../../../../components/ui/Button';
+import { authService } from '../../../../../services/authService'
 
 interface Props {
     onNext: () => void;
@@ -14,14 +15,14 @@ interface Props {
     initialData?: any;
 }
 
-function InfoIns({ 
-    onNext, 
-    onBack, 
-    step, 
-    totalSteps, 
+function InfoIns({
+    onNext,
+    onBack,
+    step,
+    totalSteps,
     userName = 'Usuário',
-    onDataChange, 
-    initialData = {} 
+    onDataChange,
+    initialData = {}
 }: Props) {
     const [formData, setFormData] = useState({
         responsavel: initialData.responsavel || '',
@@ -45,21 +46,41 @@ function InfoIns({
         numero: ''
     });
 
-    const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const target = e.target as HTMLInputElement;
-        const { name, value } = target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-        if (fieldErrors[name as keyof typeof fieldErrors]) {
-            setFieldErrors(prev => ({ ...prev, [name]: '' }));
+    const [loadingCep, setLoadingCep] = useState(false);
+
+    // ==================== FUNÇÕES DE FORMATAÇÃO ====================
+
+    const formatCep = (value: string): string => {
+        const cleaned = value.replace(/\D/g, '').slice(0, 8);
+        if (cleaned.length > 5) {
+            return `${cleaned.slice(0, 5)}-${cleaned.slice(5)}`;
+        }
+        return cleaned;
+    };
+
+    const formatDocument = (value: string): string => {
+        const cleaned = value.replace(/\D/g, '');
+
+        if (cleaned.length <= 11) {
+            return cleaned
+                .replace(/(\d{3})(\d)/, '$1.$2')
+                .replace(/(\d{3})(\d)/, '$1.$2')
+                .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+        } else {
+            return cleaned
+                .slice(0, 14)
+                .replace(/(\d{2})(\d)/, '$1.$2')
+                .replace(/(\d{3})(\d)/, '$1.$2')
+                .replace(/(\d{3})(\d)/, '$1/$2')
+                .replace(/(\d{4})(\d{1,2})$/, '$1-$2');
         }
     };
 
     const validateCNPJ = (cnpj: string): boolean => {
         const cleaned = cnpj.replace(/\D/g, '');
         if (cleaned.length !== 14) return false;
-        
         if (/^(\d)\1+$/.test(cleaned)) return false;
-        
+
         let sum = 0;
         let weight = 5;
         for (let i = 0; i < 12; i++) {
@@ -68,7 +89,7 @@ function InfoIns({
         }
         let remainder = sum % 11;
         const digit1 = remainder < 2 ? 0 : 11 - remainder;
-        
+
         sum = 0;
         weight = 6;
         for (let i = 0; i < 13; i++) {
@@ -77,7 +98,7 @@ function InfoIns({
         }
         remainder = sum % 11;
         const digit2 = remainder < 2 ? 0 : 11 - remainder;
-        
+
         return parseInt(cleaned[12]) === digit1 && parseInt(cleaned[13]) === digit2;
     };
 
@@ -85,31 +106,31 @@ function InfoIns({
         const cleaned = cpf.replace(/\D/g, '');
         if (cleaned.length !== 11) return false;
         if (/^(\d)\1+$/.test(cleaned)) return false;
-        
+
         let sum = 0;
         for (let i = 0; i < 9; i++) {
             sum += parseInt(cleaned[i]) * (10 - i);
         }
         let remainder = sum % 11;
         const digit1 = remainder < 2 ? 0 : 11 - remainder;
-        
+
         sum = 0;
         for (let i = 0; i < 10; i++) {
             sum += parseInt(cleaned[i]) * (11 - i);
         }
         remainder = sum % 11;
         const digit2 = remainder < 2 ? 0 : 11 - remainder;
-        
+
         return parseInt(cleaned[9]) === digit1 && parseInt(cleaned[10]) === digit2;
     };
 
     const validateDocument = (doc: string): { valid: boolean; message: string } => {
         const cleaned = doc.replace(/\D/g, '');
-        
+
         if (!doc) {
             return { valid: false, message: 'CNPJ/CPF é obrigatório' };
         }
-        
+
         if (cleaned.length === 11) {
             if (validateCPF(doc)) {
                 return { valid: true, message: '' };
@@ -185,6 +206,53 @@ function InfoIns({
         return !hasError;
     };
 
+    const handleInputChange = async (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const target = e.target as HTMLInputElement;
+        const { name, value } = target;
+
+        if (fieldErrors[name as keyof typeof fieldErrors]) {
+            setFieldErrors(prev => ({ ...prev, [name]: '' }));
+        }
+
+        if (name === 'cnpj') {
+            const formatted = formatDocument(value);
+            setFormData(prev => ({ ...prev, [name]: formatted }));
+            return;
+        }
+
+        if (name === 'cep') {
+            const formatted = formatCep(value);
+            setFormData(prev => ({ ...prev, [name]: formatted }));
+
+            const cleaned = value.replace(/\D/g, '');
+            if (cleaned.length === 8) {
+                setLoadingCep(true);
+                try {
+                    const address = await authService.buscarCep(cleaned);
+                    setFormData(prev => ({
+                        ...prev,
+                        cidade: address.cidade || '',
+                        rua: address.logradouro || '',
+                        bairro: address.bairro || '',
+                    }));
+                    setFieldErrors(prev => ({
+                        ...prev,
+                        cidade: '',
+                        rua: '',
+                        bairro: '',
+                    }));
+                } catch {
+                    setFieldErrors(prev => ({ ...prev, cep: 'CEP não encontrado' }));
+                } finally {
+                    setLoadingCep(false);
+                }
+            }
+            return;
+        }
+
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
     const handleNext = () => {
         if (!validateForm()) {
             return;
@@ -211,7 +279,7 @@ function InfoIns({
 
             <div className="flex flex-1 overflow-hidden">
                 <aside className="hidden md:flex md:w-1/2">
-                    <img src="src/assets/Parque-ecologico.jpeg" alt="Projeto Óleo Circular" className="w-full h-full object-cover" />
+                    <img src="src/assets/Imagem 3.jpg" alt="Projeto Óleo Circular" className="w-full h-full object-cover" />
                 </aside>
 
                 <main className="flex flex-col w-full md:w-1/2 px-6 sm:px-8 md:px-16 bg-background overflow-y-auto">
@@ -223,19 +291,19 @@ function InfoIns({
                             Próximo passo é preencher seus dados de contato e localização.
                         </p>
                     </div>
-                    
+
                     <ProgressBar step={step} totalSteps={totalSteps} />
 
                     <div className="w-full pb-4">
                         <p className="text-xs font-extrabold text-white-500 tracking-widest py-4">
                             INFORMAÇÕES DA INSTITUIÇÃO
                         </p>
-                        
+
                         <div className="bg-white rounded-xl shadow-sm mb-6 overflow-hidden">
-                            <Input 
-                                type="text" 
-                                icon="icon-name" 
-                                placeholder="Nome do responsável legal" 
+                            <Input
+                                type="text"
+                                icon="icon-name"
+                                placeholder="Nome do responsável legal"
                                 name="responsavel"
                                 value={formData.responsavel}
                                 onChange={handleInputChange}
@@ -243,11 +311,11 @@ function InfoIns({
                                 error={fieldErrors.responsavel}
                             />
                             <hr className="border-white-100" />
-                            
-                            <Input 
-                                type="text" 
-                                icon="icon-CNPJ" 
-                                placeholder="CNPJ ou CPF" 
+
+                            <Input
+                                type="text"
+                                icon="icon-CNPJ"
+                                placeholder="CNPJ ou CPF"
                                 name="cnpj"
                                 value={formData.cnpj}
                                 onChange={handleInputChange}
@@ -256,10 +324,10 @@ function InfoIns({
                             />
                             <hr className="border-white-100" />
 
-                            <Input 
-                                type="text" 
-                                icon="icon-razaoSocial" 
-                                placeholder="Razão social" 
+                            <Input
+                                type="text"
+                                icon="icon-razaoSocial"
+                                placeholder="Razão social"
                                 name="razaoSocial"
                                 value={formData.razaoSocial}
                                 onChange={handleInputChange}
@@ -268,22 +336,23 @@ function InfoIns({
                             />
                             <hr className="border-white-100" />
 
-                            <Input 
-                                type="text" 
-                                icon="icon-CEP" 
-                                placeholder="CEP" 
+                            <Input
+                                type="text"
+                                icon="icon-CEP"
+                                placeholder={loadingCep ? 'Buscando CEP...' : 'CEP'}
                                 name="cep"
                                 value={formData.cep}
                                 onChange={handleInputChange}
                                 noBorder
                                 error={fieldErrors.cep}
+                                disabled={loadingCep}
                             />
                             <hr className="border-white-100" />
 
-                            <Input 
-                                type="text" 
-                                icon="icon-city" 
-                                placeholder="Cidade" 
+                            <Input
+                                type="text"
+                                icon="icon-city"
+                                placeholder="Cidade"
                                 name="cidade"
                                 value={formData.cidade}
                                 onChange={handleInputChange}
@@ -292,10 +361,10 @@ function InfoIns({
                             />
                             <hr className="border-white-100" />
 
-                            <Input 
-                                type="text" 
-                                icon="icon-rua" 
-                                placeholder="Rua" 
+                            <Input
+                                type="text"
+                                icon="icon-rua"
+                                placeholder="Rua"
                                 name="rua"
                                 value={formData.rua}
                                 onChange={handleInputChange}
@@ -304,10 +373,10 @@ function InfoIns({
                             />
                             <hr className="border-white-100" />
 
-                            <Input 
-                                type="text" 
-                                icon="icon-bairro" 
-                                placeholder="Bairro" 
+                            <Input
+                                type="text"
+                                icon="icon-bairro"
+                                placeholder="Bairro"
                                 name="bairro"
                                 value={formData.bairro}
                                 onChange={handleInputChange}
@@ -316,10 +385,10 @@ function InfoIns({
                             />
                             <hr className="border-white-100" />
 
-                            <Input 
-                                type="text" 
-                                icon="icon-number" 
-                                placeholder="Número do estabelecimento" 
+                            <Input
+                                type="text"
+                                icon="icon-number"
+                                placeholder="Número do estabelecimento"
                                 name="numero"
                                 value={formData.numero}
                                 onChange={handleInputChange}
@@ -348,14 +417,14 @@ function InfoIns({
                             </Button>
                         </div>
                     </div>
-                    
+
                     <p className="text-center text-xs text-black-100 py-6">
                         © 2026 HS Tecnologia. Todos os direitos reservados.
                     </p>
                 </main>
             </div>
         </div>
-    )
+    );
 }
 
 export default InfoIns;
