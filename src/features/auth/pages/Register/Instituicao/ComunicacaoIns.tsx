@@ -59,16 +59,20 @@ function ComunicacaoIns({
             <HeaderCadastro title="Criar Conta" onBack={onBack} />
 
             <div className="flex flex-1 overflow-hidden">
-                <aside className="hidden md:flex md:w-1/2">
-                    <img src="src/assets/Imagem 1.jpg" alt="Projeto Óleo Circular" className="w-full h-full object-cover" />
+                <aside className="hidden md:flex md:w-1/2 relative">
+                    <img 
+                        src="src/assets/Imagem 1.jpg" 
+                        alt="Projeto Óleo Circular" 
+                        className="w-full h-full object-cover object-center" 
+                    />
                 </aside>
 
-                <main className="flex flex-col w-full md:w-1/2 px-6 sm:px-8 md:px-16 bg-background overflow-y-auto">
-                    <div className="pt-6 pb-3">
-                        <h1 className="text-xl md:text-2xl font-bold text-green-primary">
+                <main className="flex flex-col w-full md:w-1/2 px-5 sm:px-8 md:px-12 bg-background overflow-y-auto">
+                    <div className="pt-4 sm:pt-6 pb-2 sm:pb-3">
+                        <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-green-primary">
                             Bem-vindo(a), {userName}!
                         </h1>
-                        <p className="text-sm md:text-base font-medium text-white-500">
+                        <p className="text-sm sm:text-base font-medium text-white-500">
                             Gostaria de ser divulgado nas nossas redes sociais?
                         </p>
                     </div>
@@ -109,11 +113,11 @@ function ComunicacaoIns({
                                 checked={formData.aceiteDivulgacao}
                                 onChange={handleCheckboxChange}
                             />
-                            <label htmlFor="aceiteDivulgacao" className="text-sm md:text-sm text-black-200 cursor-pointer">
+                            <label htmlFor="aceiteDivulgacao" className="text-xs sm:text-sm text-black-200 cursor-pointer">
                                 Aceito os{' '}
                                 <button 
                                     className="text-green-primary font-bold underline hover:text-green-hover transition-colors" 
-                                    /*onClick={() => navigate('/termos')}*/
+                                    onClick={() => navigate('/termos')}
                                     type="button"
                                 >
                                     Termos de Divulgação
@@ -122,7 +126,7 @@ function ComunicacaoIns({
                             </label>
                         </div>
 
-                        <div className="flex flex-col gap-4 mt-4">
+                        <div className="flex flex-col gap-3 sm:gap-4 mt-4">
                             <Button
                                 type="button"
                                 onClick={handleNext}
@@ -143,7 +147,7 @@ function ComunicacaoIns({
                         </div>
                     </div>
                     
-                    <p className="text-center text-xs text-black-100 py-6">
+                    <p className="text-center text-xs text-black-100 py-4 sm:py-6">
                         © 2026 HS Tecnologia. Todos os direitos reservados.
                     </p>
                 </main>
@@ -152,4 +156,4 @@ function ComunicacaoIns({
     )
 }
 
-export default ComunicacaoIns;
+export default ComunicacaoIns

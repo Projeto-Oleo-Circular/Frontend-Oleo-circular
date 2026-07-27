@@ -98,16 +98,20 @@ function AboutProjectCt({
             <HeaderCadastro title="Criar Conta" onBack={onBack} />
 
             <div className="flex flex-1 overflow-hidden">
-                <aside className="hidden md:flex md:w-1/2">
-                    <img src="src/assets/Imagem 3.jpg" alt="Projeto Óleo Circular" className="w-full h-full object-cover" />
+                <aside className="hidden md:flex md:w-1/2 relative">
+                    <img 
+                        src="src/assets/Imagem 3.jpg" 
+                        alt="Projeto Óleo Circular" 
+                        className="w-full h-full object-cover object-center" 
+                    />
                 </aside>
 
-                <main className="flex flex-col w-full md:w-1/2 px-6 sm:px-8 md:px-16 bg-background overflow-y-auto">
-                    <div className="pt-6 pb-3">
-                        <h1 className="text-xl md:text-2xl font-bold text-green-primary">
+                <main className="flex flex-col w-full md:w-1/2 px-5 sm:px-8 md:px-12 bg-background overflow-y-auto">
+                    <div className="pt-4 sm:pt-6 pb-2 sm:pb-3">
+                        <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-green-primary">
                             Bem-vindo(a), {userName}!
                         </h1>
-                        <p className="text-sm md:text-base font-medium text-white-500">
+                        <p className="text-sm sm:text-base font-medium text-white-500">
                             Nos conte como conheceu o projeto.
                         </p>
                     </div>
@@ -119,7 +123,7 @@ function AboutProjectCt({
                             COMO CONHECEU O ÓLEO CIRCULAR
                         </p>
                         
-                        <div className="flex flex-col gap-3 mb-6">
+                        <div className="flex flex-col gap-3 sm:gap-4 mb-6">
                             <div>
                                 <Dropdown
                                     placeholder="Selecione um parceiro"
@@ -149,30 +153,30 @@ function AboutProjectCt({
                                 placeholder="Quer deixar alguma observação? (opcional)"
                                 className="w-full bg-white rounded-xl border border-white-200 px-4 py-3 text-sm text-black-primary outline-none resize-none h-28 placeholder:text-black-100 focus:border-green-primary transition-colors duration-200"
                             />
-                            </div>
-
-                            <div className="flex flex-col gap-4 mt-4">
-                                <Button
-                                    type="button"
-                                    onClick={handleNext}
-                                    variant="primary"
-                                    fullWidth
-                                >
-                                    Avançar
-                                </Button>
-
-                                <Button
-                                    type="button"
-                                    onClick={onBack}
-                                    variant="secondary"
-                                    fullWidth
-                                >
-                                    Voltar
-                                </Button>
-                            </div>
                         </div>
+
+                        <div className="flex flex-col gap-3 sm:gap-4 mt-4">
+                            <Button
+                                type="button"
+                                onClick={handleNext}
+                                variant="primary"
+                                fullWidth
+                            >
+                                Avançar
+                            </Button>
+
+                            <Button
+                                type="button"
+                                onClick={onBack}
+                                variant="secondary"
+                                fullWidth
+                            >
+                                Voltar
+                            </Button>
+                        </div>
+                    </div>
                     
-                    <p className="text-center text-xs text-black-100 py-6">
+                    <p className="text-center text-xs text-black-100 py-4 sm:py-6">
                         © 2026 HS Tecnologia. Todos os direitos reservados.
                     </p>
                 </main>

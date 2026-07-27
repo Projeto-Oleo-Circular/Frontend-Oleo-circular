@@ -86,32 +86,32 @@ function StepProfile({
       <HeaderCadastro title="Criar Conta" onBack={onBack} />
 
       <div className="flex flex-1 overflow-hidden">
-        <aside className="hidden md:flex md:w-1/2">
+        <aside className="hidden md:flex md:w-1/2 relative">
           <img 
             src="src/assets/Imagem 2.jpg" 
             alt="Projeto Óleo Circular" 
-            className="w-full h-full object-cover" 
+            className="w-full h-full object-cover object-center" 
           />
         </aside>
 
-        <main className="flex flex-col w-full md:w-1/2 px-6 sm:px-8 md:px-16 bg-background overflow-y-auto">
-          <div className="pt-6 pb-3">
-            <h1 className="text-xl md:text-2xl font-bold text-green-primary">
+        <main className="flex flex-col w-full md:w-1/2 px-5 sm:px-8 md:px-12 bg-background overflow-y-auto">
+          <div className="pt-4 sm:pt-6 pb-2 sm:pb-3">
+            <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-green-primary">
               Bem-vindo(a), {userName}!
             </h1>
-            <p className="text-sm md:text-base font-medium text-white-500">
+            <p className="text-sm sm:text-base font-medium text-white-500">
               Para começar, selecione o seu perfil de doador
             </p>
           </div>
 
           <ProgressBar step={step} totalSteps={totalSteps} />
 
-          <div className="flex flex-col gap-4 mt-4 mb-6">
+          <div className="flex flex-col gap-3 sm:gap-4 mt-4 mb-6">
             {profiles.map((profile) => (
               <button
                 key={profile.id}
                 onClick={() => handleSelectProfile(profile.id)}
-                className={`w-full text-left rounded-md border-2 p-4 transition-all duration-200 bg-green-100 shadow-card hover:shadow-md ${
+                className={`w-full text-left rounded-md border-2 p-3 sm:p-4 transition-all duration-200 bg-green-100 shadow-card hover:shadow-md ${
                   selected === profile.id
                     ? 'border-2 border-green-primary ring-2 ring-green-200'
                     : 'border-2 border-transparent hover:border-green-200'
@@ -121,26 +121,26 @@ function StepProfile({
                   <img 
                     src={`src/assets/icons/${profile.icon}`} 
                     alt={profile.title} 
-                    className="w-5 h-5" 
+                    className="w-4 sm:w-5 h-4 sm:h-5" 
                   />
-                  <p className="font-bold text-base">
+                  <p className="font-bold text-sm sm:text-base">
                     <span className="text-black-primary">{profile.label} </span>
                     <span className="text-green-primary">{profile.title}</span>
                   </p>
                 </div>
 
-                <p className="text-xs text-black-100 mb-3">{profile.description}</p>
+                <p className="text-xs text-black-100 mb-2 sm:mb-3">{profile.description}</p>
 
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-1.5 sm:gap-2">
                   {profile.tags.map((tag) => (
                     <span
                       key={tag.label}
-                      className="flex items-center gap-1 text-xs bg-[rgba(156,163,175,0.3)] text-black-200 px-2 py-1 rounded-md border border-white-200"
+                      className="flex items-center gap-1 text-[10px] sm:text-xs bg-[rgba(156,163,175,0.3)] text-black-200 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md border border-white-200"
                     >
                       <img 
                         src={`src/assets/icons/${tag.icon}`} 
                         alt={tag.label} 
-                        className="w-3 h-3" 
+                        className="w-2 sm:w-3 h-2 sm:h-3" 
                       />
                       {tag.label}
                     </span>
@@ -151,7 +151,7 @@ function StepProfile({
           </div>
 
           {error && (
-            <p className="text-red-500 text-sm font-medium mb-2">
+            <p className="text-red-500 text-xs sm:text-sm font-medium mb-2">
               {error}
             </p>
           )}

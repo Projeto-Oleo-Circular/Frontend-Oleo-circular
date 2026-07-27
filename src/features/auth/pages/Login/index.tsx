@@ -83,18 +83,30 @@ function Login() {
       <ToastContainer toasts={toasts} onClose={removeToast} />
 
       <div className="flex flex-1 overflow-hidden">
-        <aside className="hidden md:flex md:w-1/2">
-          <img src="src/assets/Imagem 1.jpg" alt="Projeto Óleo Circular" className="w-full h-full object-cover" />
+        <aside className="hidden md:flex md:w-1/2 relative">
+          <img 
+            src="src/assets/Imagem 1.jpg" 
+            alt="Projeto Óleo Circular" 
+            className="w-full h-full object-cover object-center" 
+          />
         </aside>
 
-        <main className="flex flex-col items-center w-full md:w-1/2 px-8 bg-background overflow-y-auto relative">
-          <div className="flex flex-col items-center w-full max-w-sm mt-8 mb-8">
-            <img src="src/assets/logo-horizontal.svg" alt="Logo Óleo Circular" className="h-32 md:h-36 w-auto" />
-            <p className="text-sm text-black-100 font-medium mt-2 text-center">Plataforma de Coleta Solidária</p>
+        <main className="flex flex-col items-center w-full md:w-1/2 px-5 sm:px-8 md:px-12 bg-background overflow-y-auto">
+          <div className="flex flex-col items-center w-full max-w-sm mt-8 sm:mt-10 md:mt-12 mb-4 sm:mb-6 md:mb-8">
+            <img 
+              src="src/assets/logo-horizontal.svg" 
+              alt="Logo Óleo Circular" 
+              className="h-24 sm:h-28 md:h-32 w-auto" 
+            />
+            <p className="text-xs sm:text-sm text-black-100 font-medium mt-2 text-center px-2">
+              Plataforma de Coleta Solidária
+            </p>
           </div>
 
           <form onSubmit={handleLogin} className="w-full max-w-sm">
-            <p className="text-xs font-extrabold text-black-100 tracking-widest mb-3">DADOS DE ACESSO</p>
+            <p className="text-xs font-extrabold text-black-100 tracking-widest mb-3">
+              DADOS DE ACESSO
+            </p>
 
             <div className="bg-white rounded-xl shadow-sm mb-4 overflow-hidden">
               <Input
@@ -122,10 +134,10 @@ function Login() {
               />
             </div>
 
-            <div className="flex justify-end mb-6">
+            <div className="flex justify-end mb-4 sm:mb-6">
               <button
                 type="button"
-                className="text-green-primary text-sm font-medium hover:text-green-hover transition-colors"
+                className="text-green-primary text-xs sm:text-sm font-medium hover:text-green-hover transition-colors"
                 onClick={() => navigate('/forgot-password')}
                 disabled={loading}
               >
@@ -141,7 +153,7 @@ function Login() {
               Entrar
             </Button>
 
-            <p className="text-center text-sm text-black-100 mt-4">
+            <p className="text-center text-xs sm:text-sm text-black-100 mt-4">
               Não tem uma conta?{' '}
               <button
                 type="button"
@@ -154,7 +166,7 @@ function Login() {
             </p>
           </form>
 
-          <p className="absolute bottom-6 text-xs text-black-100">
+          <p className="mt-auto py-4 text-xs text-black-100">
             © 2026 HS Tecnologia. Todos os direitos reservados.
           </p>
         </main>

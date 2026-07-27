@@ -264,17 +264,27 @@ function Register() {
         <ToastContainer toasts={toasts} onClose={removeToast} />
 
         <div className="flex flex-1 overflow-hidden">
-          <aside className="hidden md:flex md:w-1/2">
-            <img src="src/assets/Imagem 1.jpg" alt="Projeto Óleo Circular" className="w-full h-full object-cover" />
+          <aside className="hidden md:flex md:w-1/2 relative">
+            <img 
+              src="src/assets/Imagem 1.jpg" 
+              alt="Projeto Óleo Circular" 
+              className="w-full h-full object-cover object-center" 
+            />
           </aside>
 
-          <main className="flex flex-col items-center w-full md:w-1/2 px-8 bg-background overflow-y-auto">
-            <div className="flex flex-col items-center w-full max-w-sm mt-8 mb-8">
-              <img src="src/assets/logo-horizontal.svg" alt="Logo Óleo Circular" className="h-32 md:h-36 w-auto" />
-              <p className="text-sm text-black-100 font-medium mt-2 text-center">Plataforma de Coleta Solidária</p>
+          <main className="flex flex-col items-center w-full md:w-1/2 px-5 sm:px-8 md:px-12 bg-background overflow-y-auto">
+            <div className="flex flex-col items-center w-full max-w-sm mt-6 sm:mt-8 md:mt-10 mb-4 sm:mb-6">
+              <img 
+                src="src/assets/logo-horizontal.svg" 
+                alt="Logo Óleo Circular" 
+                className="h-20 sm:h-24 md:h-32 w-auto" 
+              />
+              <p className="text-xs sm:text-sm text-black-100 font-medium mt-2 text-center px-2">
+                Plataforma de Coleta Solidária
+              </p>
             </div>
 
-            <div className="w-full max-w-sm py-4">
+            <div className="w-full max-w-sm">
               <p className="text-xs font-extrabold text-white-500 tracking-widest mb-3">DADOS DE ACESSO</p>
               <div className="bg-white rounded-xl shadow-sm mb-4 overflow-hidden">
                 <Input type="text" icon="icon-name" placeholder="Seu nome completo" name="nome" value={formData.nome} onChange={handleInputChange} noBorder error={fieldErrors.nome} />
@@ -286,15 +296,15 @@ function Register() {
                 <Input type="password" icon="cadeado" placeholder="Confirme sua senha" name="confirmarSenha" value={formData.confirmarSenha} onChange={handleInputChange} noBorder error={fieldErrors.confirmarSenha} />
               </div>
 
-              <p className="text-xs font-extrabold text-white-500 tracking-widest mb-3 mt-8">CONTATO</p>
+              <p className="text-xs font-extrabold text-white-500 tracking-widest mb-3 mt-6 sm:mt-8">CONTATO</p>
               <div className="bg-white rounded-xl shadow-sm mb-4 overflow-hidden">
                 <Input type="tel" icon="phone" placeholder="Telefone / WhatsApp" name="telefone" value={formData.telefone} onChange={handleInputChange} noBorder error={fieldErrors.telefone} />
               </div>
 
-              <div className="flex flex-col gap-1 mb-6">
+              <div className="flex flex-col gap-1 mb-4 sm:mb-6">
                 <div className="flex items-center gap-2">
                   <Checkbox id="aceiteMarketing" checked={additionalData.aceiteMarketing} onChange={handleCheckboxChange} />
-                  <label htmlFor="aceiteMarketing" className="text-xs md:text-sm text-black-200 cursor-pointer">
+                  <label htmlFor="aceiteMarketing" className="text-xs sm:text-sm text-black-200 cursor-pointer">
                     Aceito os{' '}
                     <button className="text-green-primary font-bold underline" onClick={() => navigate('/termos')}>Termos de Uso</button>
                     {' '}e a{' '}
@@ -311,7 +321,7 @@ function Register() {
               </Button>
             </div>
 
-            <p className="pb-6 text-xs text-black-100">
+            <p className="mt-auto py-4 text-xs text-black-100">
               © 2026 HS Tecnologia. Todos os direitos reservados.
             </p>
           </main>
