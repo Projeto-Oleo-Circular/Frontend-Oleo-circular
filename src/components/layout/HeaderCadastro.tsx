@@ -5,7 +5,13 @@ function HeaderCadastro({ title, onBack } : {
 }) {
     return (
         <header className="flex items-center justify-between px-4 md:px-8 py-3 bg-white border-b border-white-100 shadow-xs h-20 z-10">
-            <button onClick={onBack} className="text-green-primary font-regular text-base md:text-lg cursor-pointer flex items-center gap-1">
+            <button 
+                onClick={() => {
+                    console.log('🔙 HeaderCadastro: onBack chamado');
+                    onBack();
+                }} 
+                className="text-green-primary font-regular text-base md:text-lg cursor-pointer flex items-center gap-1"
+            >
                 <img src="/src/assets/icons/arrow.svg" alt="Seta de voltar" className="h-4 w-4" />
                 Voltar
             </button>

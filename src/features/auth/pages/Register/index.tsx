@@ -31,11 +31,19 @@ const validatePhone = (phone: string): boolean => {
   return cleaned.length >= 10 && cleaned.length <= 11
 }
 
+const STEPS: Record<string, string[]> = {
+  institucional: ['profile', 'info', 'comunicacao', 'volume', 'about', 'feedback'],
+  comunitario:   ['profile', 'info', 'volume', 'about', 'feedback'],
+  solidario:     ['profile', 'info', 'volume', 'about', 'feedback'],
+}
+
 function Register() {
   const navigate = useNavigate()
   const { toasts, addToast, removeToast } = useToast()
   const [loading, setLoading] = useState(false)
+
   const [step, setStep] = useState(0)
+  const [stepIndex, setStepIndex] = useState(0)
   const [profile, setProfile] = useState<string | null>(null)
 
   const [fieldErrors, setFieldErrors] = useState({
@@ -93,72 +101,39 @@ function Register() {
       aceiteMarketing: ''
     }
 
-    if (!formData.nome) {
-      errors.nome = 'Nome é obrigatório'
-      hasError = true
-    }
-
-    if (!formData.email) {
-      errors.email = 'E-mail é obrigatório'
-      hasError = true
-    } else if (!formData.email.includes('@') || !formData.email.includes('.')) {
-      errors.email = 'E-mail inválido'
-      hasError = true
-    }
-
-    if (!formData.senha) {
-      errors.senha = 'Senha é obrigatória'
-      hasError = true
-    } else if (formData.senha.length < 6) {
-      errors.senha = 'Senha deve ter no mínimo 6 caracteres'
-      hasError = true
-    }
-
-    if (!formData.confirmarSenha) {
-      errors.confirmarSenha = 'Confirme sua senha'
-      hasError = true
-    } else if (formData.senha !== formData.confirmarSenha) {
-      errors.confirmarSenha = 'As senhas não coincidem'
-      hasError = true
-    }
-
-    if (!formData.telefone) {
-      errors.telefone = 'Telefone é obrigatório'
-      hasError = true
-    } else if (!validatePhone(formData.telefone)) {
-      errors.telefone = 'Telefone inválido'
-      hasError = true
-    }
-
-    if (!additionalData.aceiteMarketing) {
-      errors.aceiteMarketing = 'Você precisa aceitar os Termos de Uso e Política de Privacidade'
-      hasError = true
-    }
+    if (!formData.nome) { errors.nome = 'Nome é obrigatório'; hasError = true }
+    if (!formData.email) { errors.email = 'E-mail é obrigatório'; hasError = true }
+    else if (!formData.email.includes('@') || !formData.email.includes('.')) { errors.email = 'E-mail inválido'; hasError = true }
+    if (!formData.senha) { errors.senha = 'Senha é obrigatória'; hasError = true }
+    else if (formData.senha.length < 6) { errors.senha = 'Senha deve ter no mínimo 6 caracteres'; hasError = true }
+    if (!formData.confirmarSenha) { errors.confirmarSenha = 'Confirme sua senha'; hasError = true }
+    else if (formData.senha !== formData.confirmarSenha) { errors.confirmarSenha = 'As senhas não coincidem'; hasError = true }
+    if (!formData.telefone) { errors.telefone = 'Telefone é obrigatório'; hasError = true }
+    else if (!validatePhone(formData.telefone)) { errors.telefone = 'Telefone inválido'; hasError = true }
+    if (!additionalData.aceiteMarketing) { errors.aceiteMarketing = 'Você precisa aceitar os Termos de Uso e Política de Privacidade'; hasError = true }
 
     setFieldErrors(errors)
     return !hasError
   }
 
-  const getCompleteRegisterData = () => {
-    return {
-      tipoPessoa: additionalData.tipoPessoa,
-      nomeRazaoSocial: formData.nome,
-      email: formData.email,
-      senha: formData.senha,
-      documento: additionalData.documento || '',
-      porte: additionalData.porte,
-      aceiteMarketing: additionalData.aceiteMarketing,
-      cep: additionalData.cep || '',
-      logradouro: additionalData.logradouro || '',
-      numero: additionalData.numero || '',
-      bairro: additionalData.bairro || '',
-      capacidadeBombona: additionalData.capacidadeBombona || 0,
-    }
-  }
+  const getCompleteRegisterData = () => ({
+    tipoPessoa: additionalData.tipoPessoa,
+    nomeRazaoSocial: formData.nome,
+    email: formData.email,
+    senha: formData.senha,
+    documento: additionalData.documento || '',
+    porte: additionalData.porte,
+    aceiteMarketing: additionalData.aceiteMarketing,
+    cep: additionalData.cep || '',
+    logradouro: additionalData.logradouro || '',
+    numero: additionalData.numero || '',
+    bairro: additionalData.bairro || '',
+    capacidadeBombona: additionalData.capacidadeBombona || 0,
+  })
 
   const handleRegister = () => {
     if (!validateForm()) return
-    setStep(prev => prev + 1)
+    setStep(1)
   }
 
   const handleFinalSubmit = async () => {
@@ -167,51 +142,54 @@ function Register() {
       const registerData = getCompleteRegisterData()
       await authService.register(registerData)
     } catch (err: any) {
-      if (err.response?.data?.message) {
-        addToast(err.response.data.message, 'error')
-      } else if (err.response?.status === 409) {
-        const message = err.response?.data?.message || ''
-        if (message.includes('documento') || message.includes('CNPJ') || message.includes('CPF')) {
-          addToast('Este CPF/CNPJ já está cadastrado. Verifique os dados.', 'error')
-        } else {
-          addToast('Este e-mail já está cadastrado.', 'error')
-        }
-      } else {
-        addToast('Erro ao realizar cadastro. Tente novamente.', 'error')
-      }
+      setLoading(false)
+      throw err
     } finally {
       setLoading(false)
     }
   }
 
+  const getSteps = (): string[] => {
+    if (!profile) return ['profile']
+    return STEPS[profile] || ['profile']
+  }
+
+  const currentStep = step === 0 ? null : getSteps()[stepIndex]
+  const totalSteps = getSteps().length
+
   const onNext = () => {
     if (step === 0) {
       handleRegister()
     } else {
-      setStep(prev => prev + 1)
+      setStepIndex(prev => prev + 1)
     }
   }
 
   const onBack = () => {
-    if (step === 0) navigate('/login')
-    else setStep(prev => prev - 1)
+    if (step === 0) {
+      navigate('/login')
+    } else if (stepIndex === 0) {
+      setStep(0)
+      setStepIndex(0)
+      setProfile(null)
+    } else {
+      setStepIndex(prev => prev - 1)
+    }
   }
 
   const onSelectProfile = (selectedProfile: string) => {
     setProfile(selectedProfile)
-    setStep(2)
+    setStepIndex(1)
   }
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const target = e.target as HTMLInputElement
     const { name, value } = target
-
     if (name === 'telefone') {
       setFormData(prev => ({ ...prev, [name]: formatPhone(value) }))
     } else {
       setFormData(prev => ({ ...prev, [name]: value }))
     }
-
     if (fieldErrors[name as keyof typeof fieldErrors]) {
       setFieldErrors(prev => ({ ...prev, [name]: '' }))
     }
@@ -233,65 +211,45 @@ function Register() {
     return fullName.trim().split(' ')[0]
   }
 
-  const getTotalSteps = () => {
-    if (profile === 'institucional') return 6
-    if (profile === 'comunitario' || profile === 'solidario') return 5
-    return 5
-  }
-
   const renderStep = () => {
     const userName = getFirstName(formData.nome)
-    const currentTotalSteps = getTotalSteps()
 
-    switch (step) {
-      case 1:
+    const displayStep = stepIndex + 1
+
+    switch (currentStep) {
+      case 'profile':
         return <StepProfile
           onSelectProfile={onSelectProfile}
           onBack={onBack}
-          step={step}
+          step={displayStep}
           userName={userName}
         />
 
-      case 2:
-        if (profile === 'institucional') return <InfoIns onNext={onNext} onBack={onBack} step={step} totalSteps={currentTotalSteps} userName={userName} onDataChange={handleStepDataChange} initialData={additionalData} />
-        if (profile === 'comunitario') return <InfoCt onNext={onNext} onBack={onBack} step={step} totalSteps={currentTotalSteps} userName={userName} onDataChange={handleStepDataChange} initialData={additionalData} />
-        if (profile === 'solidario') return <InfoSo onNext={onNext} onBack={onBack} step={step} totalSteps={currentTotalSteps} userName={userName} onDataChange={handleStepDataChange} initialData={additionalData} />
+      case 'info':
+        if (profile === 'institucional') return <InfoIns onNext={onNext} onBack={onBack} step={displayStep} totalSteps={totalSteps} userName={userName} onDataChange={handleStepDataChange} initialData={additionalData} />
+        if (profile === 'comunitario') return <InfoCt onNext={onNext} onBack={onBack} step={displayStep} totalSteps={totalSteps} userName={userName} onDataChange={handleStepDataChange} initialData={additionalData} />
+        if (profile === 'solidario') return <InfoSo onNext={onNext} onBack={onBack} step={displayStep} totalSteps={totalSteps} userName={userName} onDataChange={handleStepDataChange} initialData={additionalData} />
         return null
 
-      case 3:
-        // COMUNITÁRIO E SOLIDÁRIO NÃO TÊM COMUNICAÇÃO
-        if (profile === 'institucional') {
-          return <ComunicacaoIns onNext={onNext} onBack={onBack} step={step} totalSteps={currentTotalSteps} userName={userName} onDataChange={handleStepDataChange} initialData={additionalData} />
-        }
-        // Pula para o step 4 (Volume)
-        setStep(4)
+      case 'comunicacao':
+        return <ComunicacaoIns onNext={onNext} onBack={onBack} step={displayStep} totalSteps={totalSteps} userName={userName} onDataChange={handleStepDataChange} initialData={additionalData} />
+
+      case 'volume':
+        if (profile === 'institucional') return <VolumeIns onNext={onNext} onBack={onBack} step={displayStep} totalSteps={totalSteps} userName={userName} onDataChange={handleStepDataChange} initialData={additionalData} />
+        if (profile === 'comunitario') return <VolumeCt onNext={onNext} onBack={onBack} step={displayStep} totalSteps={totalSteps} userName={userName} onDataChange={handleStepDataChange} initialData={additionalData} />
+        if (profile === 'solidario') return <VolumeSo onNext={onNext} onBack={onBack} step={displayStep} totalSteps={totalSteps} userName={userName} onDataChange={handleStepDataChange} initialData={additionalData} />
         return null
 
-      case 4:
-        if (profile === 'institucional') return <VolumeIns onNext={onNext} onBack={onBack} step={step} totalSteps={currentTotalSteps} userName={userName} onDataChange={handleStepDataChange} initialData={additionalData} />
-        if (profile === 'comunitario') return <VolumeCt onNext={onNext} onBack={onBack} step={step} totalSteps={currentTotalSteps} userName={userName} onDataChange={handleStepDataChange} initialData={additionalData} />
-        if (profile === 'solidario') return <VolumeSo onNext={onNext} onBack={onBack} step={step} totalSteps={currentTotalSteps} userName={userName} onDataChange={handleStepDataChange} initialData={additionalData} />
+      case 'about':
+        if (profile === 'institucional') return <AboutProjectIns onNext={onNext} onBack={onBack} step={displayStep} totalSteps={totalSteps} userName={userName} onDataChange={handleStepDataChange} initialData={additionalData} />
+        if (profile === 'comunitario') return <AboutProjectCt onNext={onNext} onBack={onBack} step={displayStep} totalSteps={totalSteps} userName={userName} onDataChange={handleStepDataChange} initialData={additionalData} />
+        if (profile === 'solidario') return <AboutProjectSo onNext={onNext} onBack={onBack} step={displayStep} totalSteps={totalSteps} userName={userName} onDataChange={handleStepDataChange} initialData={additionalData} />
         return null
 
-      case 5:
-        // INSTITUCIONAL: step 5 = AboutProject, step 6 = Feedback
-        // COMUNITÁRIO/SOLIDÁRIO: step 5 = Feedback (último passo)
-        if (profile === 'institucional') {
-          return <AboutProjectIns onNext={onNext} onBack={onBack} step={step} totalSteps={currentTotalSteps} userName={userName} onDataChange={handleStepDataChange} initialData={additionalData} />
-        }
-        if (profile === 'comunitario') {
-          return <FeedbackCt onSubmit={handleFinalSubmit} step={step} totalSteps={currentTotalSteps} userName={userName} loading={loading} />
-        }
-        if (profile === 'solidario') {
-          return <FeedbackSo onSubmit={handleFinalSubmit} step={step} totalSteps={currentTotalSteps} userName={userName} loading={loading} />
-        }
-        return null
-
-      case 6:
-        // SÓ INSTITUCIONAL TEM STEP 6 (FEEDBACK)
-        if (profile === 'institucional') {
-          return <FeedbackIns onSubmit={handleFinalSubmit} step={step} totalSteps={currentTotalSteps} userName={userName} loading={loading} />
-        }
+      case 'feedback':
+        if (profile === 'institucional') return <FeedbackIns onSubmit={handleFinalSubmit} step={displayStep} totalSteps={totalSteps} userName={userName} loading={loading} onBack={onBack} />
+        if (profile === 'comunitario') return <FeedbackCt onSubmit={handleFinalSubmit} step={displayStep} totalSteps={totalSteps} userName={userName} loading={loading} onBack={onBack} />
+        if (profile === 'solidario') return <FeedbackSo onSubmit={handleFinalSubmit} step={displayStep} totalSteps={totalSteps} userName={userName} loading={loading} onBack={onBack} />
         return null
 
       default:

@@ -14,7 +14,7 @@ interface Props {
     initialData?: any;
 }
 
-function VolumeCt({ 
+function VolumeIns({ 
     onNext, 
     onBack, 
     step, 
@@ -91,7 +91,10 @@ function VolumeCt({
 
                             <Button
                                 type="button"
-                                onClick={onBack}
+                                onClick={() => {
+                                    console.log('🔙 Botão Voltar clicado no VolumeCt');
+                                    onBack();
+                                }}
                                 variant="secondary"
                                 fullWidth
                             >
@@ -109,4 +112,4 @@ function VolumeCt({
     )
 }
 
-export default VolumeCt;
+export default VolumeIns;

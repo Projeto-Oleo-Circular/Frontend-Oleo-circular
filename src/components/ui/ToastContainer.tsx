@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom'
 import Toast from './Toast'
 
 interface ToastItem {
@@ -16,7 +17,7 @@ function ToastContainer({ toasts, onClose }: Props) {
 
   const toast = toasts[0]
 
-  return (
+  return createPortal (
     <div className="fixed top-4 left-0 right-0 z-[9999] flex flex-col items-center pointer-events-none px-4 sm:px-6">
       <div className="pointer-events-auto w-full max-w-sm sm:max-w-md">
         <Toast
@@ -26,7 +27,8 @@ function ToastContainer({ toasts, onClose }: Props) {
           onClose={() => onClose(toast.id)}
         />
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 
