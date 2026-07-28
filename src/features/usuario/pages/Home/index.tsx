@@ -47,9 +47,6 @@ function Home() {
                     <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-green-primary mt-2 sm:mt-3 md:mt-4">
                         Em breve
                     </h2>
-                    <p className="text-sm sm:text-base md:text-lg text-gray-500 mt-1 sm:mt-2">
-                        Estamos preparando algo especial para você!
-                    </p>
                 </div>
             </main>
         </div>
