@@ -38,6 +38,7 @@ interface RegisterCredentials {
   email: string;
   senha: string;
   documento: string;
+  telefone?: string;
   porte: string;
   aceiteMarketing: boolean;
   cep: string;
@@ -45,6 +46,14 @@ interface RegisterCredentials {
   numero: string;
   bairro: string;
   capacidadeBombona: number;
+  // Comunicação (etapa "comunicacao" - só institucional)
+  redesSociais?: string;
+  site?: string;
+  aceiteDivulgacao?: boolean;
+  // Vínculo com parceiro indicador (etapa "about")
+  parceiroIndicadorId?: number | null;
+  comoConheceu?: string;
+  observacao?: string;
 }
 
 interface RegisterResponse {
@@ -57,6 +66,22 @@ interface RegisterResponse {
   };
 }
 
+export interface ParceiroIndicador {
+  id: number;
+  nome: string;
+  tipo: 'ASSOCIACAO' | 'COOPERATIVA' | 'ONG';
+  cnpj: string;
+  email: string | null;
+  telefone: string | null;
+  site: string | null;
+  ativo: boolean;
+  criadoEm: string;
+}
+
+export interface DisponibilidadeResponse {
+  emailDisponivel: boolean | null;
+  documentoDisponivel: boolean | null;
+}
 
 export const authService = {
   async login(credentials: LoginCredentials): Promise<LoginResponse> {
@@ -68,7 +93,23 @@ export const authService = {
     return response.data;
   },
 
+  // Lista de parceiros ativos para vínculo/indicação (etapa "about" do cadastro)
+  async listarParceirosIndicadores(): Promise<ParceiroIndicador[]> {
+    const response = await api.get('/parceiros-indicadores');
+    return response.data;
+  },
 
+async verificarDisponibilidade(params: {
+    email?: string;
+    documento?: string;
+  }): Promise<DisponibilidadeResponse> {
+    const query = new URLSearchParams();
+    if (params.email) query.append('email', params.email);
+    if (params.documento) query.append('documento', params.documento);
+
+    const response = await api.get(`/parceiros/verificar-disponibilidade?${query.toString()}`);
+    return response.data;
+  },
   logout(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('user');

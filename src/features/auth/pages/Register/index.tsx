@@ -37,6 +37,7 @@ const STEPS: Record<string, string[]> = {
   solidario:     ['profile', 'info', 'volume', 'about', 'feedback'],
 }
 
+
 function Register() {
   const navigate = useNavigate()
   const { toasts, addToast, removeToast } = useToast()
@@ -131,18 +132,39 @@ function Register() {
     capacidadeBombona: additionalData.capacidadeBombona || 0,
   })
 
-  const handleRegister = () => {
+const handleRegister = async () => {
     if (!validateForm()) return
-    setStep(1)
-  }
 
+    try {
+      setLoading(true)
+
+      // Verifica apenas o e-mail nesta etapa inicial
+      const disponibilidade = await authService.verificarDisponibilidade({
+        email: formData.email
+      })
+
+      if (!disponibilidade.emailDisponivel) {
+        setFieldErrors(prev => ({
+          ...prev,
+          email: 'Este e-mail já está cadastrado'
+        }))
+        return
+      }
+
+      setStep(1)
+
+    } catch (error: any) {
+      addToast(error.response?.data?.message || 'Erro ao verificar disponibilidade', 'error')
+    } finally {
+      setLoading(false)
+    }
+  }
   const handleFinalSubmit = async () => {
     setLoading(true)
     try {
       const registerData = getCompleteRegisterData()
       await authService.register(registerData)
     } catch (err: any) {
-      setLoading(false)
       throw err
     } finally {
       setLoading(false)
@@ -213,7 +235,6 @@ function Register() {
 
   const renderStep = () => {
     const userName = getFirstName(formData.nome)
-
     const displayStep = stepIndex + 1
 
     switch (currentStep) {
@@ -306,9 +327,9 @@ function Register() {
                   <Checkbox id="aceiteMarketing" checked={additionalData.aceiteMarketing} onChange={handleCheckboxChange} />
                   <label htmlFor="aceiteMarketing" className="text-xs sm:text-sm text-black-200 cursor-pointer">
                     Aceito os{' '}
-                    <button className="text-green-primary font-bold underline" onClick={() => navigate('/termos')}>Termos de Uso</button>
+                    <button type="button" className="text-green-primary font-bold underline" onClick={(e) => { e.preventDefault(); navigate('/termos'); }}>Termos de Uso</button>
                     {' '}e a{' '}
-                    <button className="text-green-primary font-bold underline" onClick={() => navigate('/privacidade')}>Política de Privacidade</button>
+                    <button type="button" className="text-green-primary font-bold underline" onClick={(e) => { e.preventDefault(); navigate('/privacidade'); }}>Política de Privacidade</button>
                   </label>
                 </div>
                 {fieldErrors.aceiteMarketing && (
@@ -316,8 +337,13 @@ function Register() {
                 )}
               </div>
 
-              <Button type="button" onClick={onNext} disabled={loading} variant="primary">
-                Avançar
+              <Button 
+                type="button" 
+                onClick={handleRegister} 
+                disabled={loading} 
+                variant="primary"
+              >
+                {loading ? 'Verificando...' : 'Avançar'}
               </Button>
             </div>
 

@@ -4,6 +4,8 @@ import ProgressBar from "../../../../../components/ui/ProgressBar";
 import Input from '../../../../../components/ui/Input';
 import Button from '../../../../../components/ui/Button';
 import { authService } from '../../../../../services/authService'
+import useToast from '../../../../../hooks/useToast'; 
+import ToastContainer from '../../../../../components/ui/ToastContainer'; 
 
 interface Props {
     onNext: () => void;
@@ -46,8 +48,10 @@ function InfoCt({
         numero: ''
     });
 
-    const [loadingCep, setLoadingCep] = useState(false);
 
+    const { toasts, addToast, removeToast } = useToast();
+  const [loading, setLoading] = useState(false);
+  const [loadingCep, setLoadingCep] = useState(false); 
     const formatCep = (value: string): string => {
         const cleaned = value.replace(/\D/g, '').slice(0, 8);
         if (cleaned.length > 5) {
@@ -251,24 +255,45 @@ function InfoCt({
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleNext = () => {
+  // Função handleNext declarada corretamente
+    const handleNext = async () => {
         if (!validateForm()) {
             return;
         }
 
-        if (onDataChange) {
-            onDataChange({
-                documento: formData.cnpj,
-                nomeRazaoSocial: formData.razaoSocial,
-                cep: formData.cep,
-                cidade: formData.cidade,
-                logradouro: formData.rua,
-                bairro: formData.bairro,
-                numero: formData.numero,
-                responsavel: formData.responsavel
+        try {
+            setLoading(true);
+
+            const disponibilidade = await authService.verificarDisponibilidade({
+                documento: formData.cnpj
             });
+
+            if (disponibilidade.documentoDisponivel === false) {
+                addToast('Este documento já está cadastrado', 'error');
+                setFieldErrors(prev => ({ ...prev, cnpj: 'Este documento já está cadastrado' }));
+                return;
+            }
+
+            if (onDataChange) {
+                onDataChange({
+                    documento: formData.cnpj,
+                    nomeRazaoSocial: formData.razaoSocial,
+                    cep: formData.cep,
+                    cidade: formData.cidade,
+                    logradouro: formData.rua,
+                    bairro: formData.bairro,
+                    numero: formData.numero,
+                    responsavel: formData.responsavel
+                });
+            }
+            
+            onNext();
+
+        } catch (error: any) {
+            addToast(error.response?.data?.message || 'Erro ao verificar documento', 'error');
+        } finally {
+            setLoading(false);
         }
-        onNext();
     };
 
     return (

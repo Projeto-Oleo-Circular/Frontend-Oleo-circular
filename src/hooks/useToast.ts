@@ -1,5 +1,10 @@
 import { useState, useCallback } from 'react'
 
+interface ToastOptions {
+  message: string
+  type?: 'error' | 'success' | 'info'
+}
+
 interface ToastItem {
   id: string
   message: string
@@ -9,8 +14,13 @@ interface ToastItem {
 function useToast() {
   const [toasts, setToasts] = useState<ToastItem[]>([])
 
-  const addToast = useCallback((message: string, type: 'error' | 'success' | 'info' = 'error') => {
+  // Agora aceita tanto um objeto quanto os parâmetros separados (para compatibilidade)
+  const addToast = useCallback((optionsOrMessage: ToastOptions | string, typeParam: 'error' | 'success' | 'info' = 'error') => {
     const id = Math.random().toString(36).substring(2)
+    
+    const message = typeof optionsOrMessage === 'string' ? optionsOrMessage : optionsOrMessage.message
+    const type = typeof optionsOrMessage === 'string' ? typeParam : (optionsOrMessage.type || 'error')
+
     setToasts(prev => [...prev, { id, message, type }])
   }, [])
 
