@@ -117,7 +117,7 @@ function ComunicacaoIns({
                                 Aceito os{' '}
                                 <button 
                                     className="text-green-primary font-bold underline hover:text-green-hover transition-colors" 
-                                    onClick={() => navigate('/termos')}
+                                    /*onClick={() => navigate('/termos')}*/
                                     type="button"
                                 >
                                     Termos de Divulgação
