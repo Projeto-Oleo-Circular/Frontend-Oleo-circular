@@ -268,9 +268,9 @@ const handleRegister = async () => {
         return null
 
       case 'feedback':
-        if (profile === 'institucional') return <FeedbackIns onSubmit={handleFinalSubmit} step={displayStep} totalSteps={totalSteps} userName={userName} loading={loading} onBack={onBack} />
-        if (profile === 'comunitario') return <FeedbackCt onSubmit={handleFinalSubmit} step={displayStep} totalSteps={totalSteps} userName={userName} loading={loading} onBack={onBack} />
-        if (profile === 'solidario') return <FeedbackSo onSubmit={handleFinalSubmit} step={displayStep} totalSteps={totalSteps} userName={userName} loading={loading} onBack={onBack} />
+        if (profile === 'institucional') return <FeedbackIns onSubmit={handleFinalSubmit} step={displayStep} totalSteps={totalSteps} userName={userName} loading={loading} />
+        if (profile === 'comunitario') return <FeedbackCt onSubmit={handleFinalSubmit} step={displayStep} totalSteps={totalSteps} userName={userName} loading={loading} />
+        if (profile === 'solidario') return <FeedbackSo onSubmit={handleFinalSubmit} step={displayStep} totalSteps={totalSteps} userName={userName} loading={loading} />
         return null
 
       default:
