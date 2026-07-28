@@ -138,7 +138,6 @@ const handleRegister = async () => {
     try {
       setLoading(true)
 
-      // Verifica apenas o e-mail nesta etapa inicial
       const disponibilidade = await authService.verificarDisponibilidade({
         email: formData.email
       })
@@ -268,9 +267,9 @@ const handleRegister = async () => {
         return null
 
       case 'feedback':
-        if (profile === 'institucional') return <FeedbackIns onSubmit={handleFinalSubmit} step={displayStep} totalSteps={totalSteps} userName={userName} loading={loading} onBack={onBack} />
-        if (profile === 'comunitario') return <FeedbackCt onSubmit={handleFinalSubmit} step={displayStep} totalSteps={totalSteps} userName={userName} loading={loading} onBack={onBack} />
-        if (profile === 'solidario') return <FeedbackSo onSubmit={handleFinalSubmit} step={displayStep} totalSteps={totalSteps} userName={userName} loading={loading} onBack={onBack} />
+        if (profile === 'institucional') return <FeedbackIns step={displayStep} totalSteps={totalSteps} userName={userName} />
+        if (profile === 'comunitario') return <FeedbackCt step={displayStep} totalSteps={totalSteps} userName={userName} />
+        if (profile === 'solidario') return <FeedbackSo step={displayStep} totalSteps={totalSteps} userName={userName} />
         return null
 
       default:

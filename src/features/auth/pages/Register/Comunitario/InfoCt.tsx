@@ -5,7 +5,6 @@ import Input from '../../../../../components/ui/Input';
 import Button from '../../../../../components/ui/Button';
 import { authService } from '../../../../../services/authService'
 import useToast from '../../../../../hooks/useToast'; 
-import ToastContainer from '../../../../../components/ui/ToastContainer'; 
 
 interface Props {
     onNext: () => void;
@@ -50,8 +49,8 @@ function InfoCt({
 
 
     const { toasts, addToast, removeToast } = useToast();
-  const [loading, setLoading] = useState(false);
-  const [loadingCep, setLoadingCep] = useState(false); 
+    const [loading, setLoading] = useState(false);
+    const [loadingCep, setLoadingCep] = useState(false); 
     const formatCep = (value: string): string => {
         const cleaned = value.replace(/\D/g, '').slice(0, 8);
         if (cleaned.length > 5) {
