@@ -138,7 +138,6 @@ const handleRegister = async () => {
     try {
       setLoading(true)
 
-      // Verifica apenas o e-mail nesta etapa inicial
       const disponibilidade = await authService.verificarDisponibilidade({
         email: formData.email
       })
@@ -287,7 +286,7 @@ const handleRegister = async () => {
         <div className="flex flex-1 overflow-hidden">
           <aside className="hidden md:flex md:w-1/2 relative">
             <img 
-              src="src/assets/Imagem 1.jpg" 
+              src="/assets/Imagem 1.jpg" 
               alt="Projeto Óleo Circular" 
               className="w-full h-full object-cover object-center" 
             />
@@ -296,7 +295,7 @@ const handleRegister = async () => {
           <main className="flex flex-col items-center w-full md:w-1/2 px-5 sm:px-8 md:px-12 bg-background overflow-y-auto">
             <div className="flex flex-col items-center w-full max-w-sm mt-6 sm:mt-8 md:mt-10 mb-4 sm:mb-6">
               <img 
-                src="src/assets/logo-horizontal.svg" 
+                src="/assets/logo-horizontal.svg" 
                 alt="Logo Óleo Circular" 
                 className="h-20 sm:h-24 md:h-32 w-auto" 
               />

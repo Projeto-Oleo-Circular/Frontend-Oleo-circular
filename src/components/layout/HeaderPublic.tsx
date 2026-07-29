@@ -11,7 +11,7 @@ function HeaderPublic({ loading = false }: HeaderPublicProps) {
 
     return (
         <header className="flex items-center justify-between px-4 md:px-8 py-3 bg-white border-b border-white-100 shadow-xs h-20 z-10">
-            <img src="/src/assets/logo-horizontal.svg" alt="Logotipo do Óleo Circular" className="h-10 md:h-12 w-auto cursor-pointer" onClick={() => navigate('/')} />
+            <img src="/assets/logo-horizontal.svg" alt="Logotipo do Óleo Circular" className="h-10 md:h-12 w-auto cursor-pointer" onClick={() => navigate('/')} />
             <div className="flex gap-3 md:gap-4">
                 <Button 
                     type="button"

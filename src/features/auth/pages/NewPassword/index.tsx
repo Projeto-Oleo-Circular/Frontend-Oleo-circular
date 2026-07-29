@@ -11,11 +11,11 @@ function NewPassword() {
 
             <div className="flex flex-1">
                 <aside className="hidden md:flex md:w-1/2">
-                    <img src="src/assets/Parque-ecologico.jpeg" alt="Projeto Óleo Circular" className="w-full h-158 object-cover" />
+                    <img src="/assets/Parque-ecologico.jpeg" alt="Projeto Óleo Circular" className="w-full h-158 object-cover" />
                 </aside>
 
                 <main className="flex flex-col items-center w-full md:w-1/2 px-8 bg-background">
-                    <img src="src/assets/LogoVertical.png" alt="Logo do Óleo Circular" className="h-30 md:h-36 w-auto m-12" />
+                    <img src="/assets/LogoVertical.png" alt="Logo do Óleo Circular" className="h-30 md:h-36 w-auto m-12" />
                     <div className="w-full max-w-sm">
                         <p className="text-xs font-extrabold text-white-500 tracking-widest mb-2">NOVA SENHA</p>
                         <label className="block text-sm font-medium text-white-400 mb-4">

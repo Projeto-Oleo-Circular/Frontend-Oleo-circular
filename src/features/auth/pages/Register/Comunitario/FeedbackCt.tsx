@@ -36,7 +36,7 @@ function FeedbackCt({
                 
             <header className="flex items-center px-4 sm:px-6 md:px-8 py-3 bg-white border-b border-white-100 h-16 sm:h-20">
                 <img 
-                    src="/src/assets/logo-horizontal.svg" 
+                    src="/assets/logo-horizontal.svg" 
                     alt="Óleo Circular" 
                     className="h-8 sm:h-10 w-auto" 
                 />
@@ -45,7 +45,7 @@ function FeedbackCt({
             <div className="flex flex-1 overflow-hidden">
                 <aside className="hidden md:flex md:w-1/2 relative">
                     <img 
-                        src="src/assets/Imagem 1.jpg" 
+                        src="/assets/Imagem 1.jpg" 
                         alt="Projeto Óleo Circular" 
                         className="w-full h-full object-cover object-center" 
                     />
@@ -66,7 +66,7 @@ function FeedbackCt({
 
                         <div className="flex-1 flex flex-col items-center justify-center pb-4">                            
                             <img 
-                                src="/src/assets/icons/icon-relogio.svg"
+                                src="/assets/icons/icon-relogio.svg"
                                 alt="Relógio"
                                 className="h-20 sm:h-24 md:h-32 lg:h-40 mt-4 mb-4" 
                             />
@@ -96,7 +96,7 @@ function FeedbackCt({
 
                     <div className="md:hidden w-full flex-shrink-0">
                         <img 
-                            src="/src/assets/Slogan.png" 
+                            src="/assets/Slogan.png" 
                             alt="Mulher segurando uma garrafa de óleo" 
                             className="w-full h-auto object-cover"
                         />

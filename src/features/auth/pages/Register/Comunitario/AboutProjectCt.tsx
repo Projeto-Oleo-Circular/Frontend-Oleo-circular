@@ -129,7 +129,7 @@ function AboutProjectCt({
       <div className="flex flex-1 overflow-hidden">
         <aside className="hidden md:flex md:w-1/2 relative">
           <img
-            src="src/assets/Imagem 3.jpg"
+            src="/assets/Imagem 3.jpg"
             alt="Projeto Óleo Circular"
             className="w-full h-full object-cover object-center"
           />

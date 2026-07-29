@@ -85,7 +85,7 @@ function Login() {
       <div className="flex flex-1 overflow-hidden">
         <aside className="hidden md:flex md:w-1/2 relative">
           <img 
-            src="src/assets/Imagem 1.jpg" 
+            src="/assets/Imagem 1.jpg" 
             alt="Projeto Óleo Circular" 
             className="w-full h-full object-cover object-center" 
           />
@@ -94,7 +94,7 @@ function Login() {
         <main className="flex flex-col items-center w-full md:w-1/2 px-5 sm:px-8 md:px-12 bg-background overflow-y-auto">
           <div className="flex flex-col items-center w-full max-w-sm mt-8 sm:mt-10 md:mt-12 mb-4 sm:mb-6 md:mb-8">
             <img 
-              src="src/assets/logo-horizontal.svg" 
+              src="/assets/logo-horizontal.svg" 
               alt="Logo Óleo Circular" 
               className="h-24 sm:h-28 md:h-32 w-auto" 
             />

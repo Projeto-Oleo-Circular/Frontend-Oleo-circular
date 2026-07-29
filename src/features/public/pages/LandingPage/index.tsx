@@ -7,7 +7,7 @@ function LandingPage() {
         <div className="flex flex-col h-screen overflow-hidden">
             <header className="flex items-center justify-between px-4 md:px-8 py-3 bg-white shadow-sm h-16 sm:h-20 flex-shrink-0">
                 <img 
-                    src="/src/assets/logo-horizontal.svg" 
+                    src="/assets/logo-horizontal.svg" 
                     alt="Logotipo do Óleo Circular" 
                     className="h-8 sm:h-10 md:h-12 w-auto cursor-pointer" 
                     onClick={() => navigate("/")}
@@ -31,7 +31,7 @@ function LandingPage() {
             <main className="flex-1 flex items-center justify-center p-4 sm:p-6 md:p-8 overflow-hidden">
                 <div className="text-center w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl">
                     <img 
-                        src="/src/assets/icons/ICON-DESENVOLVIMENTO.svg" 
+                        src="/assets/icons/ICON-DESENVOLVIMENTO.svg" 
                         alt="Tela em desenvolvimento" 
                         className="w-full h-auto max-h-[50vh] sm:max-h-[55vh] md:max-h-[60vh] object-contain mx-auto"
                     />

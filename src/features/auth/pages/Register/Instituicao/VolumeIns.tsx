@@ -54,7 +54,7 @@ function VolumeIns({
             <div className="flex flex-1 overflow-hidden">
                 <aside className="hidden md:flex md:w-1/2 relative">
                     <img 
-                        src="src/assets/Imagem 2.jpg" 
+                        src="/assets/Imagem 2.jpg" 
                         alt="Projeto Óleo Circular" 
                         className="w-full h-full object-cover object-center" 
                     />

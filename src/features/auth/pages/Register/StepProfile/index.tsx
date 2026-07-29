@@ -88,7 +88,7 @@ function StepProfile({
       <div className="flex flex-1 overflow-hidden">
         <aside className="hidden md:flex md:w-1/2 relative">
           <img 
-            src="src/assets/Imagem 2.jpg" 
+            src="/assets/Imagem 2.jpg" 
             alt="Projeto Óleo Circular" 
             className="w-full h-full object-cover object-center" 
           />
@@ -119,7 +119,7 @@ function StepProfile({
               >
                 <div className="flex items-center gap-2 mb-1">
                   <img 
-                    src={`src/assets/icons/${profile.icon}`} 
+                    src={`/assets/icons/${profile.icon}`} 
                     alt={profile.title} 
                     className="w-4 sm:w-5 h-4 sm:h-5" 
                   />
@@ -138,7 +138,7 @@ function StepProfile({
                       className="flex items-center gap-1 text-[10px] sm:text-xs bg-[rgba(156,163,175,0.3)] text-black-200 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md border border-white-200"
                     >
                       <img 
-                        src={`src/assets/icons/${tag.icon}`} 
+                        src={`/assets/icons/${tag.icon}`} 
                         alt={tag.label} 
                         className="w-2 sm:w-3 h-2 sm:h-3" 
                       />

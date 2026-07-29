@@ -60,7 +60,7 @@ function Input({
       <div className="flex items-center gap-3">
         {icon && (
           <img
-            src={`src/assets/icons/${icon}.svg`}
+            src={`/assets/icons/${icon}.svg`}
             alt={icon}
             className="h-5 w-5 flex-shrink-0"
             onError={(e) => {
@@ -85,7 +85,7 @@ function Input({
             className="disabled:opacity-50 flex-shrink-0"
           >
             <img
-              src={showPassword ? 'src/assets/icons/eye-active.svg' : 'src/assets/icons/eye-default.svg'}
+              src={showPassword ? '/assets/icons/eye-active.svg' : '/assets/icons/eye-default.svg'}
               alt="Mostrar senha"
               className="h-5 w-5"
               onError={(e) => {
