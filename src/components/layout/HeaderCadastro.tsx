@@ -12,7 +12,7 @@ function HeaderCadastro({ title, onBack } : {
                 }} 
                 className="text-green-primary font-regular text-base md:text-lg cursor-pointer flex items-center gap-1"
             >
-                <img src="/assets/icons/arrow.svg" alt="Seta de voltar" className="h-4 w-4" />
+                <img src="/assets/icons/arrow.svg" alt="Seta de voltar" className="h-4 w-4 text-green-primary"/>
                 Voltar
             </button>
             <h1 className="text-black-primary font-bold text-lg md:text-xl flex-1 text-center" >

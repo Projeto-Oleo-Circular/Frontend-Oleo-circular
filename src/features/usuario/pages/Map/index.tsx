@@ -1,5 +1,11 @@
+import EmDesenvolvimento from "../../../../components/ui/EmDesenvolvimento"
+
 function Map() {
-    return <h1>Map</h1>;
+    return (
+        <EmDesenvolvimento 
+            title="Mapa"
+        />
+    )
 }
 
-export default Map;
+export default Map

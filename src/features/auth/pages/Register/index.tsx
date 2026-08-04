@@ -65,7 +65,7 @@ function Register() {
   })
 
   const [additionalData, setAdditionalData] = useState({
-    tipoPessoa: 'FISICA',
+    tipoPessoa: 'FISICA', 
     documento: '',
     porte: 'PEQUENO',
     cep: '',
@@ -123,13 +123,15 @@ function Register() {
     email: formData.email,
     senha: formData.senha,
     documento: additionalData.documento || '',
+    telefone: formData.telefone ? formData.telefone.replace(/\D/g, '') : '',
     porte: additionalData.porte,
     aceiteMarketing: additionalData.aceiteMarketing,
     cep: additionalData.cep || '',
     logradouro: additionalData.logradouro || '',
     numero: additionalData.numero || '',
+    cidade: additionalData.cidade || '',
     bairro: additionalData.bairro || '',
-    capacidadeBombona: additionalData.capacidadeBombona || 0,
+    expectativaGeracao: additionalData.capacidadeBombona || 0,
   })
 
 const handleRegister = async () => {
@@ -246,9 +248,9 @@ const handleRegister = async () => {
         />
 
       case 'info':
-        if (profile === 'institucional') return <InfoIns onNext={onNext} onBack={onBack} step={displayStep} totalSteps={totalSteps} userName={userName} onDataChange={handleStepDataChange} initialData={additionalData} />
-        if (profile === 'comunitario') return <InfoCt onNext={onNext} onBack={onBack} step={displayStep} totalSteps={totalSteps} userName={userName} onDataChange={handleStepDataChange} initialData={additionalData} />
-        if (profile === 'solidario') return <InfoSo onNext={onNext} onBack={onBack} step={displayStep} totalSteps={totalSteps} userName={userName} onDataChange={handleStepDataChange} initialData={additionalData} />
+        if (profile === 'institucional') return <InfoIns onNext={onNext} onBack={onBack} step={displayStep} totalSteps={totalSteps} userName={userName} onDataChange={handleStepDataChange} initialData={additionalData} profile={profile} />
+        if (profile === 'comunitario') return <InfoCt onNext={onNext} onBack={onBack} step={displayStep} totalSteps={totalSteps} userName={userName} onDataChange={handleStepDataChange} initialData={additionalData} profile={profile} />
+        if (profile === 'solidario') return <InfoSo onNext={onNext} onBack={onBack} step={displayStep} totalSteps={totalSteps} userName={userName} onDataChange={handleStepDataChange} initialData={additionalData} profile={profile}/>
         return null
 
       case 'comunicacao':

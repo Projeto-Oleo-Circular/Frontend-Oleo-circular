@@ -14,6 +14,7 @@ import ForgotPassword from './features/auth/pages/ForgotPassword'
 import NewPassword from './features/auth/pages/NewPassword'
 
 //Rotas do usuário logado
+import HomeLayout from "./components/layout/HomeLayout"
 import Home from './features/usuario/pages/Home'
 import Map from './features/usuario/pages/Map'
 import ReportBarrel from './features/usuario/pages/ReportBarrel'
@@ -22,8 +23,9 @@ import ConfirmRequest from './features/usuario/pages/ConfirmRequest'
 import MyRequests from './features/usuario/pages/MyRequests'
 import MyPoints from './features/usuario/pages/MyPoints'
 import RegisterPoint from './features/usuario/pages/RegisterPoint'
+import Profile from './features/usuario/pages/Profile'
+import InformarNivelBombona from './features/usuario/pages/InformarNivelBombona'
 
-//Rotas do administrador (será usada quando finalizar as telas do usuário)
 import Dashboard from './features/admin/pages/Dashboard'
 import Requests from './features/admin/pages/Requests'
 import AdminMap from './features/admin/pages/Map'
@@ -46,14 +48,18 @@ function App() {
       <Route path="/register" element={<Register />} />
 
       {/*Rotas do usuário logado*/}
-      <Route path="/home" element={<Home />} />
-      <Route path="/map" element={<Map />} />
-      <Route path="/report-barrel" element={<ReportBarrel />} />
-      <Route path="/observations" element={<Observations />} />
-      <Route path="/confirm-request" element={<ConfirmRequest />} />
-      <Route path="/my-requests" element={<MyRequests />} />
-      <Route path="/my-points" element={<MyPoints />} />
-      <Route path="/register-point" element={<RegisterPoint />} />
+      <Route element={<HomeLayout />}>
+        <Route path="/home" element={<Home />} />
+        <Route path="/map" element={<Map />} />
+        <Route path="/report-barrel" element={<ReportBarrel />} />
+        <Route path="/observations" element={<Observations />} />
+        <Route path="/confirm-request" element={<ConfirmRequest />} />
+        <Route path="/my-requests" element={<MyRequests />} />
+        <Route path="/my-points" element={<MyPoints />} />
+        <Route path="/register-point" element={<RegisterPoint />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/informar-nivel" element={<InformarNivelBombona />} />
+      </Route>
       
       {/*Rotas do administrador*/}
       <Route path="/admin/dashboard" element={<Dashboard />} />

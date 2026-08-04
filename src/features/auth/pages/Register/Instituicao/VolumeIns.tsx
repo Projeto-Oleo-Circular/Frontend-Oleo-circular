@@ -23,7 +23,7 @@ function VolumeIns({
     onDataChange,
     initialData = {}
 }: Props) {
-    const [volume, setVolume] = useState<number>(initialData.capacidadeBombona || 0);
+    const [volume, setVolume] = useState<number>(initialData.expectativaGeracao || 0);
     
     const volumeMarks = [
         { value: 0, label: '0'},
@@ -41,7 +41,7 @@ function VolumeIns({
     const handleNext = () => {
         if (onDataChange) {
             onDataChange({
-                capacidadeBombona: volume
+                expectativaGeracao: volume
             });
         }
         onNext();

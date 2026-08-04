@@ -1,11 +1,11 @@
 import EmDesenvolvimento from "../../../../components/ui/EmDesenvolvimento"
 
-function MyRequests() {
+function Profile() {
     return (
         <EmDesenvolvimento 
-            title="Minhas Coletas"
+            title="Perfil"
         />
-    )
+    );
 }
 
-export default MyRequests
+export default Profile

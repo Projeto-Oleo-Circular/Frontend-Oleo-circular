@@ -5,6 +5,7 @@ export interface User {
   email: string;
   tipo: 'parceiro' | 'admin';
   nome: string;
+  tipoEstabelecimento?: string;
 }
 
 interface LoginCredentials {
@@ -43,9 +44,10 @@ interface RegisterCredentials {
   aceiteMarketing: boolean;
   cep: string;
   logradouro: string;
+  cidade: string;
   numero: string;
   bairro: string;
-  capacidadeBombona: number;
+  expectativaGeracao: number;
   // Comunicação (etapa "comunicacao" - só institucional)
   redesSociais?: string;
   site?: string;
@@ -76,6 +78,11 @@ export interface ParceiroIndicador {
   site: string | null;
   ativo: boolean;
   criadoEm: string;
+}
+
+export interface CategoriaOption {
+  value: number;
+  label: string;
 }
 
 export interface DisponibilidadeResponse {
@@ -132,6 +139,7 @@ async verificarDisponibilidade(params: {
   },
 
   async register(data: RegisterCredentials): Promise<RegisterResponse> {
+    console.log('Dados enviados para API:', data); 
     const response = await api.post('/parceiros/register', data);
     return response.data;
   },
@@ -145,6 +153,41 @@ async verificarDisponibilidade(params: {
     const reponse = await api.get(`/parceiros/buscar-cep/${cleaned}`)
     return reponse.data
   },
+
+  async listarCategorias(): Promise<CategoriaOption[]> {
+    try {
+      const response = await api.get<{ data: CategoriaOption[] }> ('/parceiros/categorias') /*Fazer req com número, pode tirar esssa rota*/
+      return response.data.data || []
+    } catch (error) {
+      console.error('Erro ao bucar categorias, usando fallback:', error)
+      return [
+        { value: 1, label: 'Restaurante industrial' },
+        { value: 2, label: 'Restaurante e lanchonete' },
+        { value: 3, label: 'Escola / Universidade' },
+        { value: 4, label: 'Hospital / Unidade de saúde' },
+        { value: 5, label: 'Hotel / Pousada' },
+        { value: 6, label: 'Empresa / Refeitório corporativo' },
+        { value: 7, label: 'Condomínio / Casa residencial' },
+      ]
+    }
+  },
+
+  async getUserData() {
+    try {
+        // Tenta buscar do localStorage primeiro
+        const userData = localStorage.getItem('userData')
+        if (userData) {
+            return JSON.parse(userData)
+        }
+
+        // Se não tiver no localStorage, busca da API
+        const response = await api.get('/parceiros/me')
+        return response.data
+    } catch (error) {
+        console.error('Erro ao buscar dados do usuário:', error)
+        throw error
+    }
+},
 
    getCurrentUser(): User | null {
     const userStr = localStorage.getItem('user');

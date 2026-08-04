@@ -1,5 +1,11 @@
+import EmDesenvolvimento from "../../../../components/ui/EmDesenvolvimento"
+
 function MyPoints() {
-    return <h1>My Points</h1>;
+    return (
+        <EmDesenvolvimento 
+            title="Meus Pontos"
+        />
+    )
 }
 
-export default MyPoints;
+export default MyPoints

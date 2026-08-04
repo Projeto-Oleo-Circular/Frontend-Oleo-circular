@@ -1,20 +1,20 @@
-import { useState, ChangeEvent } from 'react';
+import { useState, ChangeEvent, useEffect } from 'react';
 import HeaderCadastro from "../../../../../components/layout/HeaderCadastro";
 import ProgressBar from "../../../../../components/ui/ProgressBar";
 import Input from '../../../../../components/ui/Input';
 import Button from '../../../../../components/ui/Button';
 import { authService } from '../../../../../services/authService'
-import useToast from '../../../../../hooks/useToast'; // Ajuste o caminho relativo conforme sua pasta
-import ToastContainer from '../../../../../components/ui/ToastContainer'; // Ajuste o caminho
-
+import useToast from '../../../../../hooks/useToast'; 
+import Dropdown from '../../../../../components/ui/Dropdown';
 interface Props {
-    onNext: () => void;
-    onBack: () => void;
-    step: number;
-    totalSteps: number;
-    userName?: string;
-    onDataChange?: (data: any) => void;
-    initialData?: any;
+    onNext: () => void
+    onBack: () => void
+    step: number
+    totalSteps: number
+    userName?: string
+    onDataChange?: (data: any) => void
+    initialData?: any
+    profile?: string
 }
 
 function InfoSo({
@@ -24,8 +24,12 @@ function InfoSo({
     totalSteps,
     userName = 'Usuário',
     onDataChange,
-    initialData = {}
+    initialData = {},
+    profile = 'institucional'
 }: Props) {
+    const [estabelecimentoOptions, setEstabelecimentoOptions] = useState<{ value: string; label: string }[]>([])
+    const [loadingCategorias, setLoadingCategorias] = useState(false)
+
     const [formData, setFormData] = useState({
         responsavel: initialData.responsavel || '',
         cnpj: initialData.documento || '',
@@ -34,8 +38,9 @@ function InfoSo({
         cidade: initialData.cidade || '',
         rua: initialData.logradouro || '',
         bairro: initialData.bairro || '',
-        numero: initialData.numero || ''
-    });
+        numero: initialData.numero || '',
+        categoria: initialData.categoria?.toString() || '',
+    })
 
     const [fieldErrors, setFieldErrors] = useState({
         responsavel: '',
@@ -45,108 +50,142 @@ function InfoSo({
         cidade: '',
         rua: '',
         bairro: '',
-        numero: ''
-    });
+        numero: '',
+        categoria: ''
+    })
 
-const { toasts, addToast, removeToast } = useToast();
-  const [loading, setLoading] = useState(false);
-  const [loadingCep, setLoadingCep] = useState(false); 
 
     const formatCep = (value: string): string => {
-        const cleaned = value.replace(/\D/g, '').slice(0, 8);
+        const cleaned = value.replace(/\D/g, '').slice(0, 8)
         if (cleaned.length > 5) {
-            return `${cleaned.slice(0, 5)}-${cleaned.slice(5)}`;
+            return `${cleaned.slice(0, 5)}-${cleaned.slice(5)}`
         }
-        return cleaned;
-    };
+        return cleaned
+    }
+
+    const { addToast } = useToast()
+    const [loading, setLoading] = useState(false)
+    const [loadingCep, setLoadingCep] = useState(false)
+
+    useEffect(() => {
+        const carregarCategorias = async () => {
+            try {
+                setLoadingCategorias(true)
+                const categorias = await authService.listarCategorias()
+                
+                let filtradas = categorias
+                if (profile === 'institucional') {
+                    filtradas = categorias.filter(c => c.value <= 6)
+                } else if (profile === 'comunitario') {
+                    filtradas = categorias.filter(c => c.value === 7)
+                } else if (profile === 'solidario') {
+                    filtradas = []
+                }
+                
+                setEstabelecimentoOptions(
+                    filtradas.map(c => ({
+                        value: c.value.toString(),
+                        label: c.label
+                    }))
+                )
+            } catch (error) {
+                console.error('Erro ao carregar categorias:', error)
+                addToast('Erro ao carregar categorias', 'error')
+            } finally {
+                setLoadingCategorias(false)
+            }
+        }
+
+        carregarCategorias()
+    }, [profile])
 
     const formatDocument = (value: string): string => {
-        const cleaned = value.replace(/\D/g, '');
+        const cleaned = value.replace(/\D/g, '')
 
         if (cleaned.length <= 11) {
             return cleaned
                 .replace(/(\d{3})(\d)/, '$1.$2')
                 .replace(/(\d{3})(\d)/, '$1.$2')
-                .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+                .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
         } else {
             return cleaned
                 .slice(0, 14)
                 .replace(/(\d{2})(\d)/, '$1.$2')
                 .replace(/(\d{3})(\d)/, '$1.$2')
                 .replace(/(\d{3})(\d)/, '$1/$2')
-                .replace(/(\d{4})(\d{1,2})$/, '$1-$2');
+                .replace(/(\d{4})(\d{1,2})$/, '$1-$2')
         }
-    };
+    }
 
     const validateCNPJ = (cnpj: string): boolean => {
-        const cleaned = cnpj.replace(/\D/g, '');
-        if (cleaned.length !== 14) return false;
-        if (/^(\d)\1+$/.test(cleaned)) return false;
+        const cleaned = cnpj.replace(/\D/g, '')
+        if (cleaned.length !== 14) return false
+        if (/^(\d)\1+$/.test(cleaned)) return false
 
-        let sum = 0;
-        let weight = 5;
+        let sum = 0
+        let weight = 5
         for (let i = 0; i < 12; i++) {
-            sum += parseInt(cleaned[i]) * weight;
-            weight = weight === 2 ? 9 : weight - 1;
+            sum += parseInt(cleaned[i]) * weight
+            weight = weight === 2 ? 9 : weight - 1
         }
-        let remainder = sum % 11;
-        const digit1 = remainder < 2 ? 0 : 11 - remainder;
+        let remainder = sum % 11
+        const digit1 = remainder < 2 ? 0 : 11 - remainder
 
-        sum = 0;
-        weight = 6;
+        sum = 0
+        weight = 6
         for (let i = 0; i < 13; i++) {
-            sum += parseInt(cleaned[i]) * weight;
-            weight = weight === 2 ? 9 : weight - 1;
+            sum += parseInt(cleaned[i]) * weight
+            weight = weight === 2 ? 9 : weight - 1
         }
-        remainder = sum % 11;
-        const digit2 = remainder < 2 ? 0 : 11 - remainder;
+        remainder = sum % 11
+        const digit2 = remainder < 2 ? 0 : 11 - remainder
 
-        return parseInt(cleaned[12]) === digit1 && parseInt(cleaned[13]) === digit2;
+        return parseInt(cleaned[12]) === digit1 && parseInt(cleaned[13]) === digit2
     };
 
     const validateCPF = (cpf: string): boolean => {
-        const cleaned = cpf.replace(/\D/g, '');
-        if (cleaned.length !== 11) return false;
-        if (/^(\d)\1+$/.test(cleaned)) return false;
+        const cleaned = cpf.replace(/\D/g, '')
+        if (cleaned.length !== 11) return false
+        if (/^(\d)\1+$/.test(cleaned)) return false
 
-        let sum = 0;
+        let sum = 0
         for (let i = 0; i < 9; i++) {
             sum += parseInt(cleaned[i]) * (10 - i);
         }
-        let remainder = sum % 11;
-        const digit1 = remainder < 2 ? 0 : 11 - remainder;
+        let remainder = sum % 11
+        const digit1 = remainder < 2 ? 0 : 11 - remainder
 
         sum = 0;
         for (let i = 0; i < 10; i++) {
-            sum += parseInt(cleaned[i]) * (11 - i);
+            sum += parseInt(cleaned[i]) * (11 - i)
         }
-        remainder = sum % 11;
-        const digit2 = remainder < 2 ? 0 : 11 - remainder;
+        remainder = sum % 11
+        const digit2 = remainder < 2 ? 0 : 11 - remainder
 
-        return parseInt(cleaned[9]) === digit1 && parseInt(cleaned[10]) === digit2;
+        return parseInt(cleaned[9]) === digit1 && parseInt(cleaned[10]) === digit2
     };
 
     const validateDocument = (doc: string): { valid: boolean; message: string } => {
-        const cleaned = doc.replace(/\D/g, '');
+        const cleaned = doc.replace(/\D/g, '')
 
         if (!doc) {
-            return { valid: false, message: 'CNPJ/CPF é obrigatório' };
+            return { valid: false, message: 'CNPJ/CPF é obrigatório' }
         }
 
         if (cleaned.length === 11) {
             if (validateCPF(doc)) {
-                return { valid: true, message: '' };
+                return { valid: true, message: '' }
             } else {
-                return { valid: false, message: 'CPF inválido' };
+                return { valid: false, message: 'CPF inválido' }
             }
         } else if (cleaned.length === 14) {
             if (validateCNPJ(doc)) {
-                return { valid: true, message: '' };
+                return { valid: true, message: '' }
             } else {
-                return { valid: false, message: 'CNPJ inválido' };
+                return { valid: false, message: 'CNPJ inválido' }
             }
         } else {
-            return { valid: false, message: 'CNPJ/CPF deve ter 11 (CPF) ou 14 (CNPJ) dígitos' };
+            return { valid: false, message: 'CNPJ/CPF deve ter 11 (CPF) ou 14 (CNPJ) dígitos' }
         }
     };
 
@@ -160,119 +199,150 @@ const { toasts, addToast, removeToast } = useToast();
             cidade: '',
             rua: '',
             bairro: '',
-            numero: ''
+            numero: '',
+            categoria: ''
         };
 
         if (!formData.responsavel) {
-            errors.responsavel = 'Nome do responsável é obrigatório';
-            hasError = true;
+            errors.responsavel = 'Nome do responsável é obrigatório'
+            hasError = true
         }
 
-        const docValidation = validateDocument(formData.cnpj);
+        const docValidation = validateDocument(formData.cnpj)
         if (!docValidation.valid) {
-            errors.cnpj = docValidation.message;
-            hasError = true;
+            errors.cnpj = docValidation.message
+            hasError = true
         }
 
         if (!formData.razaoSocial) {
-            errors.razaoSocial = 'Razão social é obrigatória';
-            hasError = true;
+            errors.razaoSocial = 'Razão social é obrigatória'
+            hasError = true
         }
 
         if (!formData.cep) {
-            errors.cep = 'CEP é obrigatório';
-            hasError = true;
+            errors.cep = 'CEP é obrigatório'
+            hasError = true
         }
 
         if (!formData.cidade) {
-            errors.cidade = 'Cidade é obrigatória';
-            hasError = true;
+            errors.cidade = 'Cidade é obrigatória'
+            hasError = true
         }
 
         if (!formData.rua) {
-            errors.rua = 'Rua é obrigatória';
-            hasError = true;
+            errors.rua = 'Rua é obrigatória'
+            hasError = true
         }
 
         if (!formData.bairro) {
-            errors.bairro = 'Bairro é obrigatório';
-            hasError = true;
+            errors.bairro = 'Bairro é obrigatório'
+            hasError = true
         }
 
         if (!formData.numero) {
-            errors.numero = 'Número é obrigatório';
-            hasError = true;
+            errors.numero = 'Número é obrigatório'
+            hasError = true
         }
 
-        setFieldErrors(errors);
-        return !hasError;
-    };
+        if (!formData.categoria) {
+            errors.categoria = 'Tipo de estabelecimento é obrigatório'
+            hasError = true
+        }
+
+        setFieldErrors(errors)
+        return !hasError
+    }
 
     const handleInputChange = async (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const target = e.target as HTMLInputElement;
         const { name, value } = target;
 
         if (fieldErrors[name as keyof typeof fieldErrors]) {
-            setFieldErrors(prev => ({ ...prev, [name]: '' }));
+            setFieldErrors(prev => ({ ...prev, [name]: '' }))
         }
 
         if (name === 'cnpj') {
             const formatted = formatDocument(value);
-            setFormData(prev => ({ ...prev, [name]: formatted }));
-            return;
+            setFormData(prev => ({ ...prev, [name]: formatted }))
+
+            const cleaned = value.replace(/\D/g, '')
+            const tipoPessoa = cleaned.length <= 11 ? 'FISICA' : 'JURIDICA'
+
+            if (onDataChange) {
+                onDataChange({ tipoPessoa })
+            }
         }
 
         if (name === 'cep') {
-            const formatted = formatCep(value);
-            setFormData(prev => ({ ...prev, [name]: formatted }));
+            const formatted = formatCep(value)
+            setFormData(prev => ({ ...prev, [name]: formatted }))
 
-            const cleaned = value.replace(/\D/g, '');
+            const cleaned = value.replace(/\D/g, '')
             if (cleaned.length === 8) {
-                setLoadingCep(true);
+                setLoadingCep(true)
                 try {
-                    const address = await authService.buscarCep(cleaned);
+                    const address = await authService.buscarCep(cleaned)
                     setFormData(prev => ({
                         ...prev,
                         cidade: address.cidade || '',
                         rua: address.logradouro || '',
                         bairro: address.bairro || '',
-                    }));
+                    }))
                     setFieldErrors(prev => ({
                         ...prev,
                         cidade: '',
                         rua: '',
                         bairro: '',
-                    }));
+                    }))
                 } catch {
-                    setFieldErrors(prev => ({ ...prev, cep: 'CEP não encontrado' }));
+                    setFieldErrors(prev => ({ ...prev, cep: 'CEP não encontrado' }))
                 } finally {
-                    setLoadingCep(false);
+                    setLoadingCep(false)
                 }
             }
-            return;
+            return
         }
 
-        setFormData(prev => ({ ...prev, [name]: value }));
-    };
+        setFormData(prev => ({ ...prev, [name]: value }))
+    }
 
-// Função handleNext declarada corretamente
+    const handleDropdownChange = (value: string) => {
+        setFormData(prev => ({ ...prev, categoria: value }))
+        if (fieldErrors.categoria) {
+            setFieldErrors(prev => ({ ...prev, categoria: '' }))
+        }
+    }
+
     const handleNext = async () => {
         if (!validateForm()) {
-            return;
+            return
         }
 
         try {
-            setLoading(true);
+            setLoading(true)
 
             const disponibilidade = await authService.verificarDisponibilidade({
                 documento: formData.cnpj
-            });
+            })
 
             if (disponibilidade.documentoDisponivel === false) {
-                addToast('Este documento já está cadastrado', 'error');
-                setFieldErrors(prev => ({ ...prev, cnpj: 'Este documento já está cadastrado' }));
-                return;
+                addToast('Este documento já está cadastrado', 'error')
+                setFieldErrors(prev => ({ ...prev, cnpj: 'Este documento já está cadastrado' }))
+                return
             }
+
+                console.log('Dados sendo enviados:', {
+                    documento: formData.cnpj,
+                    nomeRazaoSocial: formData.razaoSocial,
+                    cep: formData.cep,
+                    cidade: formData.cidade,
+                    logradouro: formData.rua,
+                    bairro: formData.bairro,
+                    numero: formData.numero,
+                    responsavel: formData.responsavel,
+                    categoria: Number(formData.categoria)
+                })
+
 
             if (onDataChange) {
                 onDataChange({
@@ -283,18 +353,19 @@ const { toasts, addToast, removeToast } = useToast();
                     logradouro: formData.rua,
                     bairro: formData.bairro,
                     numero: formData.numero,
-                    responsavel: formData.responsavel
-                });
+                    responsavel: formData.responsavel,
+                    categoria: Number(formData.categoria)
+                })
             }
             
-            onNext();
+            onNext()
 
         } catch (error: any) {
-            addToast(error.response?.data?.message || 'Erro ao verificar documento', 'error');
+            addToast(error.response?.data?.message || 'Erro ao verificar documento', 'error')
         } finally {
-            setLoading(false);
+            setLoading(false)
         }
-    };
+    }
     return (
         <div className="flex flex-col h-screen">
             <HeaderCadastro title="Criar Conta" onBack={onBack} />
@@ -325,6 +396,24 @@ const { toasts, addToast, removeToast } = useToast();
                             INFORMAÇÕES DA INSTITUIÇÃO
                         </p>
 
+                        <div className="mb-3">
+                            {loadingCategorias ? (
+                              <div className="text-center py-2 text-white-500">Carregando categorias...</div>  
+                            ) : (
+                                <Dropdown
+                                    placeholder="Tipo de estabelecimento"
+                                    options={estabelecimentoOptions}
+                                    value={formData.categoria}
+                                    onChange={handleDropdownChange}
+                                />
+                            )}
+                            {fieldErrors.categoria && (
+                                <p className="text-red-500 text-xs mt-1 font-medium pl-2">
+                                    {fieldErrors.categoria}
+                                </p>
+                            )}
+                        </div>
+                        
                         <div className="bg-white rounded-xl shadow-sm mb-6 overflow-hidden">
                             <Input
                                 type="text"
@@ -360,6 +449,8 @@ const { toasts, addToast, removeToast } = useToast();
                                 noBorder
                                 error={fieldErrors.razaoSocial}
                             />
+                            <hr className="border-white-100" />
+
                             <hr className="border-white-100" />
 
                             <Input
@@ -450,6 +541,7 @@ const { toasts, addToast, removeToast } = useToast();
                 </main>
             </div>
         </div>
-    );
+    )
 }
+
 export default InfoSo

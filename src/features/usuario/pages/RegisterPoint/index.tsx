@@ -1,5 +1,12 @@
+
+import EmDesenvolvimento from "../../../../components/ui/EmDesenvolvimento"
+
 function RegisterPoint() {
-    return <h1>Register Point</h1>;
+    return (
+        <EmDesenvolvimento 
+            title="Cadastrar Ponto"
+        />
+    )
 }
 
-export default RegisterPoint;
+export default RegisterPoint
