@@ -1,4 +1,4 @@
-import { useState, ChangeEvent, useEffect } from 'react';
+import { useState, ChangeEvent } from 'react';
 import HeaderCadastro from "../../../../../components/layout/HeaderCadastro";
 import ProgressBar from "../../../../../components/ui/ProgressBar";
 import Input from '../../../../../components/ui/Input';
@@ -6,6 +6,18 @@ import Button from '../../../../../components/ui/Button';
 import { authService } from '../../../../../services/authService'
 import useToast from '../../../../../hooks/useToast'; 
 import Dropdown from '../../../../../components/ui/Dropdown';
+
+// Definição das categorias fixas (igual ao domínio)
+const CATEGORIAS = [
+  { value: 1, label: 'Restaurante industrial' },
+  { value: 2, label: 'Restaurante e lanchonete' },
+  { value: 3, label: 'Escola / Universidade' },
+  { value: 4, label: 'Hospital / Unidade de saúde' },
+  { value: 5, label: 'Hotel / Pousada' },
+  { value: 6, label: 'Empresa / Refeitório corporativo' },
+  { value: 7, label: 'Condomínio / Casa residencial' },
+];
+
 interface Props {
     onNext: () => void
     onBack: () => void
@@ -27,9 +39,6 @@ function InfoCt({
     initialData = {},
     profile = 'institucional'
 }: Props) {
-    const [estabelecimentoOptions, setEstabelecimentoOptions] = useState<{ value: string; label: string }[]>([])
-    const [loadingCategorias, setLoadingCategorias] = useState(false)
-
     const [formData, setFormData] = useState({
         responsavel: initialData.responsavel || '',
         cnpj: initialData.documento || '',
@@ -54,6 +63,28 @@ function InfoCt({
         categoria: ''
     })
 
+    const { addToast } = useToast()
+    const [loading, setLoading] = useState(false)
+    const [loadingCep, setLoadingCep] = useState(false)
+
+    // Filtrar categorias conforme o perfil (já em formato de opções para o Dropdown)
+    const getCategoriasFiltradas = () => {
+        let filtradas = CATEGORIAS;
+        if (profile === 'institucional') {
+            filtradas = CATEGORIAS.filter(c => c.value <= 6);
+        } else if (profile === 'comunitario') {
+            filtradas = CATEGORIAS.filter(c => c.value === 7);
+        } else if (profile === 'solidario') {
+            filtradas = []; // ou deixar todas, dependendo do comportamento desejado
+        }
+        // Converter para o formato que o Dropdown espera (value como string)
+        return filtradas.map(c => ({
+            value: c.value.toString(),
+            label: c.label
+        }));
+    };
+
+    const estabelecimentoOptions = getCategoriasFiltradas();
 
     const formatCep = (value: string): string => {
         const cleaned = value.replace(/\D/g, '').slice(0, 8)
@@ -62,42 +93,6 @@ function InfoCt({
         }
         return cleaned
     }
-
-    const { addToast } = useToast()
-    const [loading, setLoading] = useState(false)
-    const [loadingCep, setLoadingCep] = useState(false)
-
-    useEffect(() => {
-        const carregarCategorias = async () => {
-            try {
-                setLoadingCategorias(true)
-                const categorias = await authService.listarCategorias()
-                
-                let filtradas = categorias
-                if (profile === 'institucional') {
-                    filtradas = categorias.filter(c => c.value <= 6)
-                } else if (profile === 'comunitario') {
-                    filtradas = categorias.filter(c => c.value === 7)
-                } else if (profile === 'solidario') {
-                    filtradas = []
-                }
-                
-                setEstabelecimentoOptions(
-                    filtradas.map(c => ({
-                        value: c.value.toString(),
-                        label: c.label
-                    }))
-                )
-            } catch (error) {
-                console.error('Erro ao carregar categorias:', error)
-                addToast('Erro ao carregar categorias', 'error')
-            } finally {
-                setLoadingCategorias(false)
-            }
-        }
-
-        carregarCategorias()
-    }, [profile])
 
     const formatDocument = (value: string): string => {
         const cleaned = value.replace(/\D/g, '')
@@ -271,6 +266,7 @@ function InfoCt({
             if (onDataChange) {
                 onDataChange({ tipoPessoa })
             }
+            return; // importante para não prosseguir
         }
 
         if (name === 'cep') {
@@ -331,18 +327,17 @@ function InfoCt({
                 return
             }
 
-                console.log('Dados sendo enviados:', {
-                    documento: formData.cnpj,
-                    nomeRazaoSocial: formData.razaoSocial,
-                    cep: formData.cep,
-                    cidade: formData.cidade,
-                    logradouro: formData.rua,
-                    bairro: formData.bairro,
-                    numero: formData.numero,
-                    responsavel: formData.responsavel,
-                    categoria: Number(formData.categoria)
-                })
-
+            console.log('Dados sendo enviados:', {
+                documento: formData.cnpj,
+                nomeRazaoSocial: formData.razaoSocial,
+                cep: formData.cep,
+                cidade: formData.cidade,
+                logradouro: formData.rua,
+                bairro: formData.bairro,
+                numero: formData.numero,
+                responsavel: formData.responsavel,
+                categoria: Number(formData.categoria)
+            })
 
             if (onDataChange) {
                 onDataChange({
@@ -366,6 +361,7 @@ function InfoCt({
             setLoading(false)
         }
     }
+
     return (
         <div className="flex flex-col h-screen">
             <HeaderCadastro title="Criar Conta" onBack={onBack} />
@@ -397,16 +393,12 @@ function InfoCt({
                         </p>
 
                         <div className="mb-3">
-                            {loadingCategorias ? (
-                              <div className="text-center py-2 text-white-500">Carregando categorias...</div>  
-                            ) : (
-                                <Dropdown
-                                    placeholder="Tipo de estabelecimento"
-                                    options={estabelecimentoOptions}
-                                    value={formData.categoria}
-                                    onChange={handleDropdownChange}
-                                />
-                            )}
+                            <Dropdown
+                                placeholder="Tipo de estabelecimento"
+                                options={estabelecimentoOptions}
+                                value={formData.categoria}
+                                onChange={handleDropdownChange}
+                            />
                             {fieldErrors.categoria && (
                                 <p className="text-red-500 text-xs mt-1 font-medium pl-2">
                                     {fieldErrors.categoria}
@@ -449,8 +441,6 @@ function InfoCt({
                                 noBorder
                                 error={fieldErrors.razaoSocial}
                             />
-                            <hr className="border-white-100" />
-
                             <hr className="border-white-100" />
 
                             <Input
@@ -520,6 +510,7 @@ function InfoCt({
                                 onClick={handleNext}
                                 variant="primary"
                                 fullWidth
+                                disabled={loading}
                             >
                                 Avançar
                             </Button>

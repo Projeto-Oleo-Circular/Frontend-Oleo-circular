@@ -12,11 +12,14 @@ interface NivelBombona {
 }
 
 const NIVEL_OPCOES: NivelBombona[] = [
-    { value: 100, label: "100%" },
-    { value: 75, label: "75%" },
+  
+    
+    { value: 0, label: "0%" },  
+      { value: 25, label: "25%" },  
     { value: 50, label: "50%" },
-    { value: 25, label: "25%" },
-    { value: 0, label: "0%" },
+    { value: 75, label: "75%" },
+    { value: 100, label: "100%" },
+
 ]
 
 function InformarNivelBombona() {
@@ -70,42 +73,34 @@ function InformarNivelBombona() {
     }
 
     // --- FUNÇÃO MODIFICADA (MODO PROVISÓRIO) ---
-    const handleSalvar = async () => {
-        if (nivelSelecionado === null || !pontoSelecionado) return
+    const calcularStatusBombona = (nivel: number): string => {
+    if (nivel === 0) return "VAZIA";
+    if (nivel === 100) return "CHEIA";
+    return "PARCIAL";
+};
 
-        setLoading(true)
-        try {
-            // 1. Fazemos a atualização "Otimista" (no Front-end) primeiro.
-            // Nós criamos uma cópia do ponto selecionado com o novo nível.
-            const pontoAtualizado = {
-                ...pontoSelecionado,
-                nivelAtualPct: nivelSelecionado
-            };
+const handleSalvar = async () => {
+    if (nivelSelecionado === null || !pontoSelecionado) return;
 
-            // 2. Atualizamos o estado local do componente.
-            setPontoSelecionado(pontoAtualizado);
+    setLoading(true);
+    try {
+        const statusBombona = calcularStatusBombona(nivelSelecionado);
 
-            // 3. (OPCIONAL, MAS RECOMENDADO) Se você tiver um contexto global ou 
-            // estado na Home, você pode salvar ele aqui para não perder ao navegar.
-            // Exemplo: localStorage.setItem('pontoAtual', JSON.stringify(pontoAtualizado));
+        // 🟢 Chamada REAL para a API (PUT /pontos-coleta/:id)
+        await pontosColetaService.atualizarPontoColeta(pontoSelecionado.id, {
+            nivelAtualPct: nivelSelecionado,
+            statusBombona,
+        });
 
-            // 4. Exibimos o sucesso e aguardamos.
-            addToast("Nível da bombona atualizado com sucesso! (Aguardando API)", "success")
-            
-            console.log("Nível atualizado localmente:", nivelSelecionado);
-
-            // 5. Navega para a Home
-            // IMPORTANTE: Se a Home recarregar os dados (useEffect), o nível vai voltar ao antigo.
-            // Por isso, ao chegar na Home, você deve usar o dado do localStorage ou 
-            // do contexto ao invés de chamar a API novamente.
-            navigate("/home")                
-        } catch (error) {
-            console.error("Erro ao salvar nível:", error)
-            addToast("Erro ao atualizar o nível da bombona", "error")
-        } finally {
-            setLoading(false)
-        }
+        addToast("Nível da bombona atualizado com sucesso!", "success");
+        navigate("/home");
+    } catch (error) {
+        console.error("Erro ao salvar nível:", error);
+        addToast("Erro ao atualizar o nível da bombona", "error");
+    } finally {
+        setLoading(false);
     }
+};
     // ----------------------------------------------------------------
 
     const getStatusLabel = (value: number): string => {

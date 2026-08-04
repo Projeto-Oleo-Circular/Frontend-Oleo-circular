@@ -1,4 +1,4 @@
-import api from "./api"; // ajuste para o caminho real da sua instância do axios
+import api from "./api";
 
 export interface PontoColeta {
     id: number;
@@ -17,11 +17,12 @@ export interface PontoColeta {
     statusBombona: string;
     statusAprovacaoPontoColeta: string;
     nomePontoColeta: string;
+    atualizadoEm: string | null;
 }
 
 export interface AtualizarNivelBombonaRequest {
-    pontoColetaId: number
-    nivel: number
+    pontoColetaId: number;
+    nivel: number;
 }
 
 export const pontosColetaService = {
@@ -31,6 +32,18 @@ export const pontosColetaService = {
      */
     async listarMeusPontos(): Promise<PontoColeta[]> {
         const { data } = await api.get<PontoColeta[]>("/pontos-coleta/meus");
+        return data;
+    },
+
+    /**
+     * PUT /pontos-coleta/:id
+     * Atualiza os dados do ponto de coleta (ex: nível da bombona e status).
+     */
+    async atualizarPontoColeta(
+        id: number,
+        dados: Partial<PontoColeta>
+    ): Promise<PontoColeta> {
+        const { data } = await api.put<PontoColeta>(`/pontos-coleta/${id}`, dados);
         return data;
     },
 };
