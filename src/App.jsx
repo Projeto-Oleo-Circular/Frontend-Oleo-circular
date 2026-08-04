@@ -26,6 +26,8 @@ import RegisterPoint from './features/usuario/pages/RegisterPoint'
 import Profile from './features/usuario/pages/Profile'
 import InformarNivelBombona from './features/usuario/pages/InformarNivelBombona'
 
+import { AdminProtectedRoute } from './components/AdminProtectedRoute'
+import AdminLogin from './features/admin/pages/AdminLogin'
 import Dashboard from './features/admin/pages/Dashboard'
 import Requests from './features/admin/pages/Requests'
 import AdminMap from './features/admin/pages/Map'
@@ -61,12 +63,14 @@ function App() {
         <Route path="/informar-nivel" element={<InformarNivelBombona />} />
       </Route>
       
+      <Route path="/admin/login" element={<AdminLogin />} />
+
       {/*Rotas do administrador*/}
-      <Route path="/admin/dashboard" element={<Dashboard />} />
-      <Route path="/admin/requests" element={<Requests />} />
-      <Route path="/admin/map" element={<AdminMap />} />
-      <Route path="/admin/list" element={<List />} />
-      <Route path="/admin/my-points" element={<AdminMyPoints />} />
+      <Route path="/admin/dashboard" element={<AdminProtectedRoute><Dashboard /></AdminProtectedRoute>} />
+      <Route path="/admin/requests" element={<AdminProtectedRoute><Requests /></AdminProtectedRoute>} />
+      <Route path="/admin/map" element={<AdminProtectedRoute><AdminMap /></AdminProtectedRoute>} />
+      <Route path="/admin/list" element={<AdminProtectedRoute><List /></AdminProtectedRoute>} />
+      <Route path="/admin/my-points" element={<AdminProtectedRoute><AdminMyPoints /></AdminProtectedRoute>} />
     </Routes>
   )
 }
