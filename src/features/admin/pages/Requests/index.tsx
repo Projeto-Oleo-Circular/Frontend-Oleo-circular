@@ -1,12 +1,12 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react"
 import {
   adminSolicitacoesService,
   type SolicitacaoColeta,
   type StatusSolicitacao,
-} from "../../../../services/AdminSolicitacaoService";
-import StatusBadge from "../../../../components/ui/StatusBadge";
-import AdminTopNav from "../../../../components/layout/AdminTopNav";
-import AdminFilterDropdown, { FilterOption } from "../../../../components/ui/AdminFilterDropdown";
+} from "../../../../services/AdminSolicitacaoService"
+import StatusBadge from "../../../../components/ui/StatusBadge"
+import AdminTopNav from "../../../../components/layout/AdminTopNav"
+import AdminFilterDropdown, { FilterOption } from "../../../../components/ui/AdminFilterDropdown"
 import { 
   Clock, 
   CalendarCheck, 
@@ -23,14 +23,15 @@ import {
   Phone, 
   Mail, 
   Download 
-} from "lucide-react";
+} from "lucide-react"
+import SummaryCard from "../../../../components/ui/SummaryCard"
 
 interface Contagens {
-  aguardando: number;
-  agendada: number;
-  emRota: number;
-  concluid: number;
-  total: number;
+  aguardando: number
+  agendada: number
+  emRota: number
+  concluid: number
+  total: number
 }
 
 type ModalTipo = "agendar" | "concluir" | "detalhes" | null;
@@ -52,6 +53,7 @@ function Requests() {
   const [page, setPage] = useState(1);
   const [statusFiltro, setStatusFiltro] = useState<StatusSolicitacao | "">("");
   const [loading, setLoading] = useState(true);
+  const historicoSemanalTotal = [10, 15, 8, 22, 18, 30, 25];
 
   const statusOptions: FilterOption[] = [
     { value: "", label: "Todos os Status" },
@@ -240,32 +242,50 @@ function Requests() {
         </div>
 
         {/* Cards Resumo */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
-          <CardResumo 
-            label="Aguardando" 
-            valor={contagens?.aguardando} 
-            icon={<Clock className="w-5 h-5 text-amber-500" />} 
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-6">
+          <SummaryCard
+            label="Aguardando"
+            value={contagens?.aguardando}
+            subtext="Solicitações"
+            labelColor="text-orange-primary"
+            iconBgColor="bg-orange-200"
+            icon={<Clock className="w-5 h-5 sm:w-6 sm:h-6 text-orange-primary" />}
           />
-          <CardResumo 
-            label="Agendadas" 
-            valor={contagens?.agendada} 
-            icon={<CalendarCheck className="w-5 h-5 text-blue-500" />} 
+
+          <SummaryCard
+            label="Agendadas"
+            value={contagens?.agendada}
+            subtext="Solicitações"
+            labelColor="text-blue-primary"
+            iconBgColor="bg-blue-bg-card"
+            icon={<CalendarCheck className="w-5 h-5 sm:w-6 sm:h-6 text-blue-primary" />}
           />
-          <CardResumo 
-            label="Em Rota" 
-            valor={contagens?.emRota} 
-            icon={<Truck className="w-5 h-5 text-purple-500" />} 
+
+          <SummaryCard
+            label="Em Rota"
+            value={contagens?.emRota}
+            subtext="Solicitações"
+            labelColor="text-violet-primary"
+            iconBgColor="bg-violet-bg-card"
+            icon={<Truck className="w-5 h-5 sm:w-6 sm:h-6 text-violet-primary" />}
           />
-          <CardResumo 
-            label="Concluídas" 
-            valor={contagens?.concluid} 
-            icon={<CheckCircle2 className="w-5 h-5 text-green-primary" />} 
+
+          <SummaryCard
+            label="Concluídas"
+            value={contagens?.concluid}
+            subtext="Esta semana"
+            labelColor="text-green-primary"
+            iconBgColor="bg-green-bg-card"
+            icon={<CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6 text-green-primary" />}
           />
-          <CardResumo 
-            label="Total" 
-            valor={contagens?.total} 
-            destaque 
-            icon={<Layers className="w-5 h-5 text-green-primary" />} 
+
+          <SummaryCard
+            label="Total de Solicitações"
+            value={contagens?.total}
+            subtext="Esta semana"
+            labelColor="text-green-primary"
+            sparklineData={historicoSemanalTotal}
+            sparklineColor="#1A6E3C"
           />
         </div>
 
