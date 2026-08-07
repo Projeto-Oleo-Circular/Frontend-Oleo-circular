@@ -1,5 +1,7 @@
+import EmDesenvolvimentoAdmin from "../../../../components/ui/EmDesenvolvimentoAdmin";
+
 function Map() {
-    return <h1>Map</h1>;
+  return <EmDesenvolvimentoAdmin title="Em breve" />;
 }
 
 export default Map;

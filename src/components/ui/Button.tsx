@@ -60,7 +60,7 @@ function Button({
     )
 }
 
-function Spinner({ color = 'white', size = 'md' }: { color?: 'white' | 'green' | 'gray'; size?: 'sm' | 'md' | 'lg' }) {
+function Spinner({ color = 'white', size = 'md' }: { color?: 'white' | 'green' | 'black'; size?: 'sm' | 'md' | 'lg' }) {
     const sizes = {
         sm: 'w-4 h-4 border-2',
         md: 'w-5 h-5 border-2',
@@ -70,7 +70,7 @@ function Spinner({ color = 'white', size = 'md' }: { color?: 'white' | 'green' |
     const colors = {
         white: 'border-white/30 border-t-white',
         green: 'border-green-primary/30 border-t-green-primary',
-        gray: 'border-gray-300 border-t-gray-600'
+        black: 'border-black-300 border-t-gray-600'
     }
 
     return (

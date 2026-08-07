@@ -21,7 +21,7 @@ function Checkbox({ checked, onChange, id, className = '' }: CheckboxProps) {
             />
             <label
                 htmlFor={id}
-                className="w-5 h-5 rounded-md border-2 border-gray-300 flex items-center justify-center cursor-pointer 
+                className="w-5 h-5 rounded-md border-2 border-white-300 flex items-center justify-center cursor-pointer 
                     peer-checked:bg-green-primary peer-checked:border-green-primary 
                     peer-checked:after:content-['✓'] peer-checked:after:text-white 
                     peer-checked:after:text-sm peer-checked:after:font-bold 

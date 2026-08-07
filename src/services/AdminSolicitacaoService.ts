@@ -98,6 +98,15 @@ export const adminSolicitacoesService = {
         return response.data;
     },
 
+    /**
+     * PATCH /admin/solicitacoes-coleta/{id}/status
+     *
+     * Regras de validação do back-end (via Zod), pra UI saber quando pedir cada campo:
+     * - dataAgendamento é OBRIGATÓRIA quando status === 'AGENDADA'
+     * - volumeColetado é OBRIGATÓRIO quando status === 'CONCLUIDA'
+     * - dataConclusao é setada automaticamente pelo back-end quando status === 'CONCLUIDA' (não envie)
+     */
+    
     async atualizarStatus(
         id: number,
         dados: {

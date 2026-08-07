@@ -1,5 +1,7 @@
+import EmDesenvolvimentoAdmin from "../../../../components/ui/EmDesenvolvimentoAdmin";
+
 function List() {
-    return <h1>List</h1>;
+  return <EmDesenvolvimentoAdmin title="Em breve" />;
 }
 
 export default List;

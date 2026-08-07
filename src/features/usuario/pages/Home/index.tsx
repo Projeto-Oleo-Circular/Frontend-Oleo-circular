@@ -67,40 +67,36 @@ function Home() {
         <div className="flex flex-col h-full overflow-hidden bg-background">
             <HeaderApp userName={userName} />
 
-            <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 relative">
-                <div className="absolute inset-0 w-full h-50 sm:h-60 pointer-events-none">
-                    <img
-                        src="/assets/fundo-home.svg"
-                        alt="Fundo decorativo"
-                        className="w-full h-full object-cover object-bottom"
-                    />
-                </div>
-
-                <div className="w-full max-w-4xl mx-auto relative z-10 space-y-4 pb-8">
-                    <div className="flex items-start justify-between mb-4">
+            <main className="flex-1 overflow-y-auto">
+                {/* Banner Verde com Curva Responsiva */}
+                <div className="bg-green-primary text-white-primary pt-6 pb-20 px-6 sm:px-8 rounded-b-[2rem] sm:rounded-b-[3rem] w-full">
+                    <div className="flex justify-between items-center max-w-5xl mx-auto">
                         <div>
                             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white-primary">
                                 Olá, {userName}!
                             </h1>
-                            <p className="text-sm sm:text-base text-white-primary mt-1">
+                            <p className="text-sm sm:text-base text-white-primary opacity-90 mt-1">
                                 Seja bem-vindo(a)!
                             </p>
                         </div>
 
                         <button
-                            className="p-2 hover:bg-green-400 rounded-full transition-colors duration-200 relative"
+                            className="relative p-2.5 hover:bg-green-hover rounded-full transition-colors duration-200 cursor-pointer"
                             aria-label="Notificações"
-                            onClick={() => navigate("/home")}
+                            /*onClick={() => navigate("/notifications")}*/
                         >
                             <img
                                 src="/assets/icons/icon-notificacao.svg"
                                 alt="Notificações"
                                 className="w-6 h-6 sm:w-7 sm:h-7"
                             />
-                            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
+                            <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-primary rounded-full border-2 border-green-primary" />
                         </button>
                     </div>
+                </div>
 
+                {/* Conteúdo dos Cards Sobrepostos ao Banner */}
+                <div className="px-4 sm:px-6 md:px-8 max-w-5xl mx-auto relative z-10 -mt-12 sm:-mt-16 flex flex-col gap-4 pb-8">
                     <PontosColetaCard
                         pontos={pontos}
                         currentIndex={currentIndex}
@@ -119,7 +115,7 @@ function Home() {
 
                     <Button
                         onClick={() => navigate("/report-barrel")}
-                        className="w-full"
+                        className="w-full mt-2"
                     >
                         Solicitar coleta
                     </Button>

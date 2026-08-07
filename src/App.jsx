@@ -27,12 +27,14 @@ import Profile from './features/usuario/pages/Profile'
 import InformarNivelBombona from './features/usuario/pages/InformarNivelBombona'
 
 import { AdminProtectedRoute } from './components/AdminProtectedRoute'
+import AdminLayout from './components/layout/AdminLayout'
 import AdminLogin from './features/admin/pages/AdminLogin'
 import Dashboard from './features/admin/pages/Dashboard'
 import Requests from './features/admin/pages/Requests'
 import AdminMap from './features/admin/pages/Map'
 import List from './features/admin/pages/List'
 import AdminMyPoints from './features/admin/pages/MyPoints'
+import ProfileAdmin from './features/admin/pages/ProfileAdmin'
 
 function App() {
   return (
@@ -53,11 +55,11 @@ function App() {
       <Route element={<HomeLayout />}>
         <Route path="/home" element={<Home />} />
         <Route path="/map" element={<Map />} />
+        <Route path="/my-requests" element={<MyRequests />} />
+        <Route path="/my-points" element={<MyPoints />} />
         <Route path="/report-barrel" element={<ReportBarrel />} />
         <Route path="/observations" element={<Observations />} />
         <Route path="/confirm-request" element={<ConfirmRequest />} />
-        <Route path="/my-requests" element={<MyRequests />} />
-        <Route path="/my-points" element={<MyPoints />} />
         <Route path="/register-point" element={<RegisterPoint />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/informar-nivel" element={<InformarNivelBombona />} />
@@ -71,6 +73,7 @@ function App() {
       <Route path="/admin/map" element={<AdminProtectedRoute><AdminMap /></AdminProtectedRoute>} />
       <Route path="/admin/list" element={<AdminProtectedRoute><List /></AdminProtectedRoute>} />
       <Route path="/admin/my-points" element={<AdminProtectedRoute><AdminMyPoints /></AdminProtectedRoute>} />
+      <Route path="/admin/profile-admin" element={<AdminProtectedRoute><ProfileAdmin /></AdminProtectedRoute>} />
     </Routes>
   )
 }

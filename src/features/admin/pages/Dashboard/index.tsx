@@ -1,5 +1,7 @@
+import EmDesenvolvimentoAdmin from "../../../../components/ui/EmDesenvolvimentoAdmin";
+
 function Dashboard() {
-    return <h1>Dashboard</h1>;
+  return <EmDesenvolvimentoAdmin title="Em breve" />;
 }
 
 export default Dashboard;

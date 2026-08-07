@@ -1,7 +1,7 @@
 import EmDesenvolvimentoAdmin from "../../../../components/ui/EmDesenvolvimentoAdmin";
 
-function MyPoints() {
+function ProfileAdmin() {
   return <EmDesenvolvimentoAdmin title="Em breve" />;
 }
 
-export default MyPoints;
+export default ProfileAdmin;

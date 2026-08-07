@@ -59,7 +59,7 @@ function BombonaCard({ ponto, loading }: BombonaCardProps) {
                     {temNivelInformado ? (
                         <>
                             <div className="flex items-center justify-end gap-2">
-                                <span className="text-[10px] text-white-400">Informado em {dataUltimaAtualizacao}</span>
+                                <span className="text-[10px] text-white-500">Informado em {dataUltimaAtualizacao}</span>
                             </div>
                             <p className="text-sm text-black-primary mt-1">Status atual</p>
                             <div className="flex items-center justify-end gap-2">
