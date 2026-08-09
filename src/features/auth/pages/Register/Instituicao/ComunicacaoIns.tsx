@@ -5,6 +5,7 @@ import ProgressBar from "../../../../../components/ui/ProgressBar";
 import Input from '../../../../../components/ui/Input';
 import Button from '../../../../../components/ui/Button';
 import Checkbox from '../../../../../components/ui/Checkbox';
+import Dropdown from '../../../../../components/ui/Dropdown'; // Certifique-se de ajustar o caminho de importação
 
 interface Props {
     onNext: () => void;
@@ -16,6 +17,14 @@ interface Props {
     initialData?: any;
 }
 
+const REDES_OPCOES = [
+    { value: 'instagram', label: 'Instagram' },
+    { value: 'linkedin', label: 'LinkedIn' },
+    { value: 'facebook', label: 'Facebook' },
+    { value: 'twitter', label: 'X (Twitter)' },
+    { value: 'outra', label: 'Outra Rede Social' },
+];
+
 function ComunicacaoIns({ 
     onNext, 
     onBack, 
@@ -26,32 +35,31 @@ function ComunicacaoIns({
     initialData = {}
 }: Props) {
     const navigate = useNavigate();
-    
-    const [formData, setFormData] = useState({
-        redesSociais: initialData.redesSociais || '',
-        site: initialData.site || '',
-        aceiteDivulgacao: initialData.aceiteDivulgacao || false
-    });
 
-    const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const target = e.target as HTMLInputElement;
-        const { name, value } = target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-    };
+    const [selectedRede, setSelectedRede] = useState<string | null>(initialData.redeSelecionada || null);
+    const [redesSociaisValue, setRedesSociaisValue] = useState<string>(initialData.redesSociais || '');
+    const [site, setSite] = useState<string>(initialData.site || '');
+    const [aceiteDivulgacao, setAceiteDivulgacao] = useState<boolean>(initialData.aceiteDivulgacao || false);
 
-    const handleCheckboxChange = (checked: boolean) => {
-        setFormData(prev => ({ ...prev, aceiteDivulgacao: checked }));
+    const handleSelectRede = (value: string) => {
+        setSelectedRede(value);
     };
 
     const handleNext = () => {
         if (onDataChange) {
             onDataChange({
-                redesSociais: formData.redesSociais,
-                site: formData.site,
-                aceiteDivulgacao: formData.aceiteDivulgacao
+                redeSelecionada: selectedRede,
+                redesSociais: redesSociaisValue,
+                site: site,
+                aceiteDivulgacao: aceiteDivulgacao
             });
         }
         onNext();
+    };
+
+    const getPlaceholderInput = () => {
+        const item = REDES_OPCOES.find(r => r.value === selectedRede);
+        return item ? `Digite o link ou @ do seu ${item.label}` : 'Digite a sua rede social';
     };
 
     return (
@@ -73,7 +81,7 @@ function ComunicacaoIns({
                             Bem-vindo(a), {userName}!
                         </h1>
                         <p className="text-sm sm:text-base font-medium text-white-500">
-                            Gostaria de ser divulgado nas nossas redes sociais?
+                            Informe suas redes sociais e site para divulgarmos sua empresa como parceira
                         </p>
                     </div>
                     
@@ -81,43 +89,57 @@ function ComunicacaoIns({
 
                     <div className="w-full pb-4">
                         <p className="text-xs font-extrabold text-white-500 tracking-widest py-4">
-                            COMUNICAÇÃO
+                            REDES SOCIAIS
                         </p>
                         
-                        <div className="bg-white rounded-xl shadow-sm mb-6 overflow-hidden">
-                            <Input 
-                                type="text" 
-                                icon="icon-redesSociais" 
-                                placeholder="Redes sociais (opcional)" 
-                                name="redesSociais"
-                                value={formData.redesSociais}
-                                onChange={handleInputChange}
-                                noBorder 
-                            />
-                            <hr className="border-white-100" />
-                            
-                            <Input 
-                                type="text" 
-                                icon="icon-site" 
-                                placeholder="Site (opcional)" 
-                                name="site"
-                                value={formData.site}
-                                onChange={handleInputChange}
-                                noBorder 
-                            />
+                        <div className="flex flex-col gap-4 mb-6">
+                            <div className="flex flex-col">
+                                <Dropdown 
+                                    placeholder="Selecione a rede social"
+                                    options={REDES_OPCOES}
+                                    value={selectedRede}
+                                    onChange={handleSelectRede}
+                                />
+                            </div>
+
+                            {selectedRede && (
+                                <div className="bg-white rounded-xl shadow-sm overflow-hidden animate-fadeIn">
+                                    <Input 
+                                        type="text" 
+                                        icon="icon-redesSociais" 
+                                        placeholder={getPlaceholderInput()}
+                                        name="redesSociais"
+                                        value={redesSociaisValue}
+                                        onChange={(e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement> ) => setRedesSociaisValue(e.target.value)}
+                                        noBorder 
+                                    />
+                                </div>
+                            )}
+
+                            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+                                <Input 
+                                    type="text" 
+                                    icon="icon-site" 
+                                    placeholder="Site (opcional)" 
+                                    name="site"
+                                    value={site}
+                                    onChange={(e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setSite(e.target.value)}
+                                    noBorder 
+                                />
+                            </div>
                         </div>
                         
                         <div className="flex items-center gap-2 pt-2 pb-4">
                             <Checkbox 
                                 id="aceiteDivulgacao"
-                                checked={formData.aceiteDivulgacao}
-                                onChange={handleCheckboxChange}
+                                checked={aceiteDivulgacao}
+                                onChange={(checked: boolean) => setAceiteDivulgacao(checked)}
                             />
                             <label htmlFor="aceiteDivulgacao" className="text-xs sm:text-sm text-black-200 cursor-pointer">
                                 Aceito os{' '}
                                 <button 
                                     className="text-green-primary font-bold underline hover:text-green-hover transition-colors" 
-                                    onClick={() => navigate('/termos')}
+                                    onClick={() => navigate('')}
                                     type="button"
                                 >
                                     Termos de Divulgação
@@ -146,14 +168,11 @@ function ComunicacaoIns({
                             </Button>
                         </div>
                     </div>
-                    
-                    <p className="text-center text-xs text-black-100 py-4 sm:py-6">
-                        © 2026 HS Tecnologia. Todos os direitos reservados.
-                    </p>
                 </main>
+                
             </div>
         </div>
-    )
+    );
 }
 
 export default ComunicacaoIns

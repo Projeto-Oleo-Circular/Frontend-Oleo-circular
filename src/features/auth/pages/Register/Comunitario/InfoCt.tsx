@@ -1,4 +1,4 @@
-import { useState, ChangeEvent } from 'react';
+import { useState, ChangeEvent, useEffect } from 'react';
 import HeaderCadastro from "../../../../../components/layout/HeaderCadastro";
 import ProgressBar from "../../../../../components/ui/ProgressBar";
 import Input from '../../../../../components/ui/Input';
@@ -6,18 +6,6 @@ import Button from '../../../../../components/ui/Button';
 import { authService } from '../../../../../services/authService'
 import useToast from '../../../../../hooks/useToast'; 
 import Dropdown from '../../../../../components/ui/Dropdown';
-
-// Definição das categorias fixas (igual ao domínio)
-const CATEGORIAS = [
-  { value: 1, label: 'Restaurante industrial' },
-  { value: 2, label: 'Restaurante e lanchonete' },
-  { value: 3, label: 'Escola / Universidade' },
-  { value: 4, label: 'Hospital / Unidade de saúde' },
-  { value: 5, label: 'Hotel / Pousada' },
-  { value: 6, label: 'Empresa / Refeitório corporativo' },
-  { value: 7, label: 'Condomínio / Casa residencial' },
-];
-
 interface Props {
     onNext: () => void
     onBack: () => void
@@ -39,15 +27,20 @@ function InfoCt({
     initialData = {},
     profile = 'institucional'
 }: Props) {
+    const [estabelecimentoOptions, setEstabelecimentoOptions] = useState<{ value: string; label: string }[]>([])
+    const [loadingCategorias, setLoadingCategorias] = useState(false)
+
     const [formData, setFormData] = useState({
-        responsavel: initialData.responsavel || '',
-        cnpj: initialData.documento || '',
-        razaoSocial: initialData.nomeRazaoSocial || '',
+        responsavel: initialData.responsavel || initialData.responsavelLegalNome || '',
+        cnpj: initialData.cnpj || initialData.documento || '',
+        razaoSocial: initialData.razaoSocial || initialData.nomeRazaoSocial || '',
         cep: initialData.cep || '',
         cidade: initialData.cidade || '',
-        rua: initialData.logradouro || '',
+        estado: initialData.estado || initialData.estado || '',
+        rua: initialData.rua || initialData.logradouro || '',
         bairro: initialData.bairro || '',
         numero: initialData.numero || '',
+        complemento: initialData.complemento || '',
         categoria: initialData.categoria?.toString() || '',
     })
 
@@ -57,6 +50,7 @@ function InfoCt({
         razaoSocial: '',
         cep: '',
         cidade: '',
+        estado: '',
         rua: '',
         bairro: '',
         numero: '',
@@ -66,25 +60,7 @@ function InfoCt({
     const { addToast } = useToast()
     const [loading, setLoading] = useState(false)
     const [loadingCep, setLoadingCep] = useState(false)
-
-    // Filtrar categorias conforme o perfil (já em formato de opções para o Dropdown)
-    const getCategoriasFiltradas = () => {
-        let filtradas = CATEGORIAS;
-        if (profile === 'institucional') {
-            filtradas = CATEGORIAS.filter(c => c.value <= 6);
-        } else if (profile === 'comunitario') {
-            filtradas = CATEGORIAS.filter(c => c.value === 7);
-        } else if (profile === 'solidario') {
-            filtradas = []; // ou deixar todas, dependendo do comportamento desejado
-        }
-        // Converter para o formato que o Dropdown espera (value como string)
-        return filtradas.map(c => ({
-            value: c.value.toString(),
-            label: c.label
-        }));
-    };
-
-    const estabelecimentoOptions = getCategoriasFiltradas();
+    const [loadingEstado, setLoadingEstado] = useState(false)
 
     const formatCep = (value: string): string => {
         const cleaned = value.replace(/\D/g, '').slice(0, 8)
@@ -93,6 +69,38 @@ function InfoCt({
         }
         return cleaned
     }
+
+    useEffect(() => {
+        const carregarCategorias = async () => {
+            try {
+                setLoadingCategorias(true)
+                const categorias = await authService.listarCategorias()
+                
+                let filtradas = categorias
+                if (profile === 'institucional') {
+                    filtradas = categorias.filter(c => c.value <= 6)
+                } else if (profile === 'comunitario') {
+                    filtradas = categorias.filter(c => c.value === 7)
+                } else if (profile === 'solidario') {
+                    filtradas = []
+                }
+                
+                setEstabelecimentoOptions(
+                    filtradas.map(c => ({
+                        value: c.value.toString(),
+                        label: c.label
+                    }))
+                )
+            } catch (error) {
+                console.error('Erro ao carregar categorias:', error)
+                addToast('Erro ao carregar categorias', 'error')
+            } finally {
+                setLoadingCategorias(false)
+            }
+        }
+
+        carregarCategorias()
+    }, [profile])
 
     const formatDocument = (value: string): string => {
         const cleaned = value.replace(/\D/g, '')
@@ -192,13 +200,14 @@ function InfoCt({
             razaoSocial: '',
             cep: '',
             cidade: '',
+            estado: '',
             rua: '',
             bairro: '',
             numero: '',
             categoria: ''
         };
 
-        if (!formData.responsavel) {
+        if (!formData.responsavel.trim()) {
             errors.responsavel = 'Nome do responsável é obrigatório'
             hasError = true
         }
@@ -209,32 +218,37 @@ function InfoCt({
             hasError = true
         }
 
-        if (!formData.razaoSocial) {
+        if (!formData.razaoSocial.trim()) {
             errors.razaoSocial = 'Razão social é obrigatória'
             hasError = true
         }
 
-        if (!formData.cep) {
+        if (!formData.cep.trim()) {
             errors.cep = 'CEP é obrigatório'
             hasError = true
         }
 
-        if (!formData.cidade) {
+        if (!formData.estado.trim()) {
+            errors.estado = 'Estado é obrigatório'
+            hasError = true
+        }
+
+        if (!formData.cidade.trim()) {
             errors.cidade = 'Cidade é obrigatória'
             hasError = true
         }
 
-        if (!formData.rua) {
+        if (!formData.rua.trim()) {
             errors.rua = 'Rua é obrigatória'
             hasError = true
         }
 
-        if (!formData.bairro) {
+        if (!formData.bairro.trim()) {
             errors.bairro = 'Bairro é obrigatório'
             hasError = true
         }
 
-        if (!formData.numero) {
+        if (!formData.numero.trim()) {
             errors.numero = 'Número é obrigatório'
             hasError = true
         }
@@ -266,7 +280,7 @@ function InfoCt({
             if (onDataChange) {
                 onDataChange({ tipoPessoa })
             }
-            return; // importante para não prosseguir
+            return
         }
 
         if (name === 'cep') {
@@ -281,14 +295,17 @@ function InfoCt({
                     setFormData(prev => ({
                         ...prev,
                         cidade: address.cidade || '',
+                        estado: address.estado || '',
                         rua: address.logradouro || '',
                         bairro: address.bairro || '',
                     }))
                     setFieldErrors(prev => ({
                         ...prev,
                         cidade: '',
+                        estado: '',
                         rua: '',
                         bairro: '',
+                        cep: ''
                     }))
                 } catch {
                     setFieldErrors(prev => ({ ...prev, cep: 'CEP não encontrado' }))
@@ -327,33 +344,23 @@ function InfoCt({
                 return
             }
 
-            console.log('Dados sendo enviados:', {
+            const dataToSave = {
                 documento: formData.cnpj,
                 nomeRazaoSocial: formData.razaoSocial,
                 responsavelLegalNome: formData.responsavel,
                 cep: formData.cep,
                 cidade: formData.cidade,
+                estado: formData.estado,
                 logradouro: formData.rua,
                 bairro: formData.bairro,
                 numero: formData.numero,
-                responsavel: formData.responsavel,
+                complemento: formData.complemento,
                 categoria: Number(formData.categoria)
-            })
+            }
 
             if (onDataChange) {
-                onDataChange({
-                    documento: formData.cnpj,
-                    nomeRazaoSocial: formData.razaoSocial,
-                    responsavelLegalNome: formData.responsavel,
-                    cep: formData.cep,
-                    cidade: formData.cidade,
-                    logradouro: formData.rua,
-                    bairro: formData.bairro,
-                    numero: formData.numero,
-                    categoria: Number(formData.categoria)
-                })
+                onDataChange(dataToSave)  
             }
-            
             onNext()
 
         } catch (error: any) {
@@ -362,7 +369,6 @@ function InfoCt({
             setLoading(false)
         }
     }
-
     return (
         <div className="flex flex-col h-screen">
             <HeaderCadastro title="Criar Conta" onBack={onBack} />
@@ -394,12 +400,16 @@ function InfoCt({
                         </p>
 
                         <div className="mb-3">
-                            <Dropdown
-                                placeholder="Tipo de estabelecimento"
-                                options={estabelecimentoOptions}
-                                value={formData.categoria}
-                                onChange={handleDropdownChange}
-                            />
+                            {loadingCategorias ? (
+                              <div className="text-center py-2 text-white-500">Carregando categorias...</div>  
+                            ) : (
+                                <Dropdown
+                                    placeholder="Tipo de estabelecimento"
+                                    options={estabelecimentoOptions}
+                                    value={formData.categoria}
+                                    onChange={handleDropdownChange}
+                                />
+                            )}
                             {fieldErrors.categoria && (
                                 <p className="text-red-500 text-xs mt-1 font-medium pl-2">
                                     {fieldErrors.categoria}
@@ -457,6 +467,19 @@ function InfoCt({
                             />
                             <hr className="border-white-100" />
 
+                             <Input
+                                type="text"
+                                icon="icon-estado"
+                                placeholder={loadingEstado ? 'Buscando estado...' : 'Estado'}
+                                name="estado"
+                                value={formData.estado}
+                                onChange={handleInputChange}
+                                noBorder
+                                error={fieldErrors.estado}
+                                disabled={loadingEstado}
+                            />
+                            <hr className="border-white-100" />
+
                             <Input
                                 type="text"
                                 icon="icon-city"
@@ -503,6 +526,17 @@ function InfoCt({
                                 noBorder
                                 error={fieldErrors.numero}
                             />
+                            <hr className="border-white-100" />
+
+                            <Input
+                                type="text"
+                                icon="icon-complemento"
+                                placeholder="Complemento (opcional)"
+                                name="complemento"
+                                value={formData.complemento}
+                                onChange={handleInputChange}
+                                noBorder
+                            />
                         </div>
 
                         <div className="flex flex-col gap-3 sm:gap-4">
@@ -513,7 +547,7 @@ function InfoCt({
                                 fullWidth
                                 disabled={loading}
                             >
-                                Avançar
+                                {loading ? 'Verificando...' : 'Avançar'}
                             </Button>
 
                             <Button
@@ -521,6 +555,7 @@ function InfoCt({
                                 onClick={onBack}
                                 variant="secondary"
                                 fullWidth
+                                disabled={loading}
                             >
                                 Voltar
                             </Button>

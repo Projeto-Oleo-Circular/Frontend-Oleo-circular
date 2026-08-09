@@ -3,6 +3,7 @@ import HeaderCadastro from "../../../../../components/layout/HeaderCadastro";
 import ProgressBar from "../../../../../components/ui/ProgressBar";
 import Dropdown from "../../../../../components/ui/Dropdown";
 import Button from "../../../../../components/ui/Button";
+import Input from "../../../../../components/ui/Input";
 import { authService } from "../../../../../services/authService";
 
 interface Props {
@@ -29,13 +30,17 @@ function AboutProjectIns({
   >([]);
 
   const [formData, setFormData] = useState({
-    partner: initialData.partner || null,
+    partner: initialData.parceiroIndicadorId
+      ? String(initialData.parceiroIndicadorId)
+      : initialData.partner || null,
+    otherPartnerName: initialData.outroParceiro || "",
     howFound: initialData.comoConheceu || "",
     observation: initialData.observacao || "",
   });
 
   const [fieldErrors, setFieldErrors] = useState({
     partner: "",
+    otherPartnerName: "",
     howFound: "",
     observation: "",
   });
@@ -45,14 +50,17 @@ function AboutProjectIns({
       try {
         const parceiros = await authService.listarParceirosIndicadores();
 
-        setPartnerOptions(
-          parceiros.map((parceiro) => ({
-            value: parceiro.id.toString(),
-            label: parceiro.nome,
-          }))
-        );
+        const options = parceiros.map((parceiro) => ({
+          value: parceiro.id.toString(),
+          label: parceiro.nome,
+        }));
+
+        options.push({ value: "outros", label: "Outros" });
+
+        setPartnerOptions(options);
       } catch (error) {
         console.error("Erro ao carregar parceiros:", error);
+        setPartnerOptions([{ value: "outros", label: "Outros" }]);
       }
     };
 
@@ -77,18 +85,34 @@ function AboutProjectIns({
     }
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    if (fieldErrors[name as keyof typeof fieldErrors]) {
+      setFieldErrors((prev) => ({
+        ...prev,
+        [name]: "",
+      }));
+    }
+  };
+
   const handleDropdownChange = (value: string) => {
     setFormData((prev) => ({
       ...prev,
       partner: value,
+      otherPartnerName: value !== "outros" ? "" : prev.otherPartnerName,
     }));
 
-    if (fieldErrors.partner) {
-      setFieldErrors((prev) => ({
-        ...prev,
-        partner: "",
-      }));
-    }
+    setFieldErrors((prev) => ({
+      ...prev,
+      partner: "",
+      otherPartnerName: "",
+    }));
   };
 
   const validateForm = (): boolean => {
@@ -96,12 +120,18 @@ function AboutProjectIns({
 
     const errors = {
       partner: "",
+      otherPartnerName: "",
       howFound: "",
       observation: "",
     };
 
     if (!formData.partner) {
       errors.partner = "Selecione um parceiro para continuar";
+      hasError = true;
+    }
+
+    if (formData.partner === "outros" && !formData.otherPartnerName.trim()) {
+      errors.otherPartnerName = "Informe o nome do parceiro";
       hasError = true;
     }
 
@@ -115,10 +145,22 @@ function AboutProjectIns({
       return;
     }
 
+    const isOther = formData.partner === "outros";
+    const parceiroId =
+      formData.partner && !isOther ? Number(formData.partner) : null;
+
+    let comoConheceuFinal = formData.howFound;
+    if (isOther && formData.otherPartnerName) {
+      comoConheceuFinal = `Parceiro indicado: ${formData.otherPartnerName.trim()}.${
+        formData.howFound ? ` | ${formData.howFound.trim()}` : ""
+      }`;
+    }
+
     onDataChange?.({
-      comoConheceu: formData.howFound,
+      comoConheceu: comoConheceuFinal,
       observacao: formData.observation,
-      parceiroIndicadorId: formData.partner ? Number(formData.partner) : null,
+      parceiroIndicadorId: parceiroId,
+      outroParceiro: formData.otherPartnerName,
     });
 
     onNext();
@@ -144,7 +186,7 @@ function AboutProjectIns({
             </h1>
 
             <p className="text-sm sm:text-base font-medium text-white-500">
-              Nos conte como conheceu o projeto.
+              Escolha um parceiro indicador e nos conte como conheceu o projeto.
             </p>
           </div>
 
@@ -170,6 +212,19 @@ function AboutProjectIns({
                   </p>
                 )}
               </div>
+
+              {formData.partner === "outros" && (
+                <div>
+                  <Input
+                    name="otherPartnerName"
+                    value={formData.otherPartnerName}
+                    onChange={handleInputChange}
+                    placeholder="Qual é o parceiro?"
+                    className="w-full bg-white rounded-xl border border-white-200 px-4 py-3 text-sm text-black-primary outline-none resize-none h-28 placeholder:text-black-100 focus:border-green-primary transition-colors duration-200"
+                    error={fieldErrors.otherPartnerName}
+                  />
+                </div>
+              )}
 
               <textarea
                 name="howFound"

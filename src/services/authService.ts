@@ -33,7 +33,8 @@ interface ResetPasswordCredentials {
   confirmarSenha?: string;
 }
 
-interface RegisterCredentials {
+// ADICIONADO 'export' E AJUSTADOS OS TIPOS SEGUNDO O SWAGGER
+export interface RegisterCredentials {
   tipoPessoa: 'FISICA' | 'JURIDICA' | string;
   tipoParceiro?: 'GERADOR' | 'INSTITUCIONAL' | string;
   nomeRazaoSocial: string;
@@ -42,7 +43,7 @@ interface RegisterCredentials {
   senha: string;
   documento: string;
   telefone?: string;
-  porte: string;
+  porte?: string;
   aceiteMarketing: boolean;
   responsavelLegalNome?: string | null;
   responsavelLegalCpf?: string | null;
@@ -58,10 +59,10 @@ interface RegisterCredentials {
   capacidadeBombona?: number;
   nivelAtualPct?: number;
   statusBombona?: string;
-  redesSociais?: string | null;
+  redesSociais?: string[]; // Array de strings no Swagger
   site?: string | null;
   aceiteDivulgacao?: boolean;
-  parceiroIndicadorId?: number | null;
+  parceiroIndicadorId?: string | null; // String no Swagger
   comoConheceu?: string;
   observacao?: string;
 }
@@ -113,7 +114,7 @@ export const authService = {
     return response.data;
   },
 
-async verificarDisponibilidade(params: {
+  async verificarDisponibilidade(params: {
     email?: string;
     documento?: string;
   }): Promise<DisponibilidadeResponse> {
@@ -124,6 +125,7 @@ async verificarDisponibilidade(params: {
     const response = await api.get(`/parceiros/verificar-disponibilidade?${query.toString()}`);
     return response.data;
   },
+
   logout(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -132,7 +134,7 @@ async verificarDisponibilidade(params: {
   },
 
   async ForgotPassword(email: string): Promise<ForgotPasswordResponse> {
-    const response = await api.post('/parceiros/forgot-password', { email })
+    const response = await api.post('/parceiros/forgot-password', { email });
     return response.data;
   },
 
@@ -141,64 +143,56 @@ async verificarDisponibilidade(params: {
     return response.data;
   },
 
-  async verifyResetToken(token: string): Promise<{ valid: boolean}> {
+  async verifyResetToken(token: string): Promise<{ valid: boolean }> {
     const response = await api.post(`/parceiros/verify-reset-token?token=${token}`);
     return response.data;
   },
 
   async register(data: RegisterCredentials): Promise<RegisterResponse> {
-    console.log('Dados enviados para API:', data); 
+    console.log('Dados enviados para API:', data);
     const response = await api.post('/parceiros/register', data);
     return response.data;
   },
 
   async buscarCep(cep: string): Promise<{
-    logradouro: string
-    bairro: string
-    cidade: string
-    estado?: string
+    logradouro: string;
+    bairro: string;
+    cidade: string;
+    estado?: string;
   }> {
-    const cleaned = cep.replace(/\D/g, '')
-    const reponse = await api.get(`/parceiros/buscar-cep/${cleaned}`)
+    const cleaned = cep.replace(/\D/g, '');
+    const reponse = await api.get(`/parceiros/buscar-cep/${cleaned}`);
     return reponse.data;
   },
 
   async listarCategorias(): Promise<CategoriaOption[]> {
-    try {
-      const response = await api.get<CategoriaOption[]> ('/parceiros/categorias') /*Fazer req com número, pode tirar esssa rota*/
-      return response.data || []
-    } catch (error) {
-      console.error('Erro ao bucar categorias, usando fallback:', error)
-      return [
-        { value: 1, label: 'Restaurante industrial' },
-        { value: 2, label: 'Restaurante e lanchonete' },
-        { value: 3, label: 'Escola / Universidade' },
-        { value: 4, label: 'Hospital / Unidade de saúde' },
-        { value: 5, label: 'Hotel / Pousada' },
-        { value: 6, label: 'Empresa / Refeitório corporativo' },
-        { value: 7, label: 'Condomínio / Casa residencial' },
-      ]
-    }
+    return [
+      { value: 1, label: 'Restaurante industrial' },
+      { value: 2, label: 'Restaurante e lanchonete' },
+      { value: 3, label: 'Escola / Universidade' },
+      { value: 4, label: 'Hospital / Unidade de saúde' },
+      { value: 5, label: 'Hotel / Pousada' },
+      { value: 6, label: 'Empresa / Refeitório corporativo' },
+      { value: 7, label: 'Condomínio / Casa residencial' },
+    ];
   },
 
   async getUserData() {
     try {
-        // Tenta buscar do localStorage primeiro
-        const userData = localStorage.getItem('userData')
-        if (userData) {
-            return JSON.parse(userData)
-        }
-
-        // Se não tiver no localStorage, busca da API
-        const response = await api.get('/parceiros/me')
-        return response.data
-      } catch (error) {
-          console.error('Erro ao buscar dados do usuário:', error)
-          throw error
+      const userData = localStorage.getItem('userData');
+      if (userData) {
+        return JSON.parse(userData);
       }
-},
 
-   getCurrentUser(): User | null {
+      const response = await api.get('/parceiros/me');
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao buscar dados do usuário:', error);
+      throw error;
+    }
+  },
+
+  getCurrentUser(): User | null {
     const userStr = localStorage.getItem('user');
     if (!userStr) return null;
     try {
@@ -207,8 +201,8 @@ async verificarDisponibilidade(params: {
       return null;
     }
   },
-  
+
   isAuthenticated(): boolean {
     return !!localStorage.getItem('token');
-  }
+  },
 };

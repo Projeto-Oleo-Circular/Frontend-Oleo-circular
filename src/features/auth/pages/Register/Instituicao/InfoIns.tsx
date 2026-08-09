@@ -469,7 +469,7 @@ function InfoIns({
 
                              <Input
                                 type="text"
-                                icon="icon-CEP"
+                                icon="icon-estado"
                                 placeholder={loadingEstado ? 'Buscando estado...' : 'Estado'}
                                 name="estado"
                                 value={formData.estado}
@@ -530,7 +530,7 @@ function InfoIns({
 
                             <Input
                                 type="text"
-                                icon="icon-info"
+                                icon="icon-complemento"
                                 placeholder="Complemento (opcional)"
                                 name="complemento"
                                 value={formData.complemento}

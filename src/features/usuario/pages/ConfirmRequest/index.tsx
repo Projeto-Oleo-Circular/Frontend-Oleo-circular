@@ -71,7 +71,7 @@ function ConfirmRequest() {
 
     const getStatusColor = (value: number): string => {
         if (value >= 75) return "text-orange-500"
-        if (value >= 50) return "text-yellow-500"
+        if (value >= 50) return "text-orange-primary"
         return "text-green-500"
     }
 
@@ -109,7 +109,7 @@ function ConfirmRequest() {
                             </div>
                             <div className="text-right">
                                 <span className="block font-medium text-orange-primary">{data.nivel}%</span>
-                                <span className={`text-xs font-semibold text-orange-primary ${getStatusColor(data.nivel)}`}>
+                                <span className={`text-xs font-semibold ${getStatusColor(data.nivel)}`}>
                                     ({getStatusLabel(data.nivel)})
                                 </span>
                             </div>
@@ -130,7 +130,7 @@ function ConfirmRequest() {
                                 <img src="/assets/icons/icon-local.svg" alt="Localização" className="w-7 h-7 object-contain" />
                                 <span className="font-bold text-black-primary">Endereço</span>
                             </div>
-                            <p className="text-sm text-gray-600 pl-10">{data.endereco}</p>
+                            <p className="text-sm text-white-600 pl-10">{data.endereco}</p>
                         </div>
 
                         {/* Observações */}

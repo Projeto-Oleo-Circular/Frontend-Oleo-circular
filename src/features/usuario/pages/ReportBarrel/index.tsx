@@ -139,8 +139,6 @@ function ReportBarrel() {
                                 <div className="bg-green-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm whitespace-nowrap">
                                     {nivelAtual}%
                                 </div>
-                                {/* Pino indicador */}
-                                <div className="w-3 h-3 bg-white border-2 border-green-600 rounded-full absolute -left-5 top-1/2 -translate-y-1/2 shadow-sm"></div>
                             </div>
 
                             {/* 0% */}

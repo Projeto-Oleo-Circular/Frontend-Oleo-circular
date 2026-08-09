@@ -5,7 +5,7 @@ import { useState, ChangeEvent } from "react"
 import StepProfile from "./StepProfile"
 import useToast from '../../../../hooks/useToast'
 import ToastContainer from '../../../../components/ui/ToastContainer'
-import { authService } from '../../../../services/authService'
+import { authService, RegisterCredentials } from '../../../../services/authService'
 
 import InfoIns from "./Instituicao/InfoIns"
 import ComunicacaoIns from "./Instituicao/ComunicacaoIns"
@@ -25,6 +25,8 @@ import FeedbackSo from "./Solidario/FeedbackSo"
 
 import Checkbox from "../../../../components/ui/Checkbox"
 import Button from "../../../../components/ui/Button"
+
+
 
 const validatePhone = (phone: string): boolean => {
   const cleaned = phone.replace(/\D/g, '')
@@ -65,7 +67,7 @@ function Register() {
   })
 
   const [additionalData, setAdditionalData] = useState({
-    tipoPessoa: 'FISICA', 
+    tipoPessoa: 'FISICA',
     documento: '',
     porte: 'PEQUENO',
     cep: '',
@@ -79,7 +81,14 @@ function Register() {
     site: '',
     aceiteDivulgacao: false,
     comoConheceu: '',
-    observacao: ''
+    observacao: '',
+    nomeSocial: '',
+    parceiroIndicadorId: '',
+    responsavelLegalNome: '',
+    responsavelLegalCpf: '',
+    estado: 'BA',
+    complemento: '',
+    categoriaId: ''
   })
 
   const formatPhone = (value: string): string => {
@@ -117,22 +126,33 @@ function Register() {
     return !hasError
   }
 
-  const getCompleteRegisterData = () => ({
-    tipoPessoa: additionalData.tipoPessoa,
-    nomeRazaoSocial: formData.nome,
-    email: formData.email,
-    senha: formData.senha,
-    documento: additionalData.documento || '',
-    telefone: formData.telefone ? formData.telefone.replace(/\D/g, '') : '',
-    porte: additionalData.porte,
-    aceiteMarketing: additionalData.aceiteMarketing,
-    cep: additionalData.cep || '',
-    logradouro: additionalData.logradouro || '',
-    numero: additionalData.numero || '',
-    cidade: additionalData.cidade || '',
-    bairro: additionalData.bairro || '',
-    expectativaGeracao: additionalData.capacidadeBombona || 0,
-  })
+  const getCompleteRegisterData = (): RegisterCredentials => ({
+  tipoPessoa: additionalData.tipoPessoa || 'JURIDICA',
+  tipoParceiro: profile ? profile.toUpperCase() : 'INSTITUCIONAL',
+  nomeRazaoSocial: formData.nome,
+  nomeSocial: additionalData.nomeSocial || null,
+  email: formData.email,
+  senha: formData.senha,
+  documento: additionalData.documento || '',
+  telefone: formData.telefone ? formData.telefone.replace(/\D/g, '') : '',
+  redesSociais: additionalData.redesSociais ? [additionalData.redesSociais] : [], // Converte a string do formulário em Array de Strings
+  aceiteMarketing: additionalData.aceiteMarketing,
+  parceiroIndicadorId: additionalData.parceiroIndicadorId ? String(additionalData.parceiroIndicadorId) : null,
+  responsavelLegalNome: additionalData.responsavelLegalNome || null,
+  responsavelLegalCpf: additionalData.responsavelLegalCpf || null,
+  cep: additionalData.cep ? additionalData.cep.replace(/\D/g, '') : '',
+  logradouro: additionalData.logradouro || '',
+  numero: additionalData.numero || '',
+  bairro: additionalData.bairro || '',
+  cidade: additionalData.cidade || '',
+  estado: additionalData.estado || '',
+  complemento: additionalData.complemento || null,
+  expectativaGeracao: Number(additionalData.capacidadeBombona) || 0,
+  capacidadeBombona: Number(additionalData.capacidadeBombona) || 0,
+  nivelAtualPct: 0,
+  statusBombona: 'VAZIA',
+  categoria: additionalData.categoriaId ? Number(additionalData.categoriaId) : 1, // Envia o ID numérico da categoria
+})
 
 const handleRegister = async () => {
     if (!validateForm()) return
@@ -226,6 +246,10 @@ const handleRegister = async () => {
   }
 
   const handleStepDataChange = (data: any) => {
+
+    if(data.expectativaGeracao !== undefined){
+      data.capacidadeBombona = data.expectativaGeracao
+    }
     setAdditionalData(prev => ({ ...prev, ...data }))
   }
 
