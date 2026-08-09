@@ -1,4 +1,3 @@
-// src/constants/categorias.ts
 export const CATEGORIA_PONTO_COLETA = {
   1: 'Restaurante industrial',
   2: 'Restaurante e lanchonete',
@@ -11,8 +10,7 @@ export const CATEGORIA_PONTO_COLETA = {
 
 export type CategoriaId = keyof typeof CATEGORIA_PONTO_COLETA
 
-// Opções para dropdown (formato padrão)
 export const CATEGORIA_OPTIONS = Object.entries(CATEGORIA_PONTO_COLETA).map(([value, label]) => ({
-  value, // string para compatibilidade com o Dropdown
+  value,
   label,
 }))

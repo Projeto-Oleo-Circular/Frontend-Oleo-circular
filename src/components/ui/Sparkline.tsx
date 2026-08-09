@@ -13,14 +13,12 @@ export function Sparkline({ data, color = "#15803d" }: SparklineProps) {
   const width = 200
   const height = 40
 
-  // Mapeia os dados para pontos (X, Y) do SVG
   const points = data.map((val, idx) => {
     const x = (idx / (data.length - 1)) * width;
     const y = height - ((val - min) / range) * (height - 12) - 6
     return { x, y }
   });
 
-  // Cria uma curva suave de Bézier entre os pontos
   const d = points.reduce((acc, pt, i, arr) => {
     if (i === 0) return `M ${pt.x},${pt.y}`
     const prev = arr[i - 1]
@@ -28,7 +26,6 @@ export function Sparkline({ data, color = "#15803d" }: SparklineProps) {
     return `${acc} C ${cx},${prev.y} ${cx},${pt.y} ${pt.x},${pt.y}`
   }, "")
 
-  // Fecha o caminho na base para o efeito de gradiente/sombra por baixo
   const areaD = `${d} L ${width},${height} L 0,${height} Z`
 
   const firstPoint = points[0]
@@ -42,13 +39,10 @@ export function Sparkline({ data, color = "#15803d" }: SparklineProps) {
         </linearGradient>
       </defs>
 
-      {/* Preenchimento sob a linha */}
       <path d={areaD} fill="url(#sparkline-gradient)" />
 
-      {/* Linha do gráfico */}
       <path d={d} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" />
 
-      {/* Ponto (indicador na ponta/início) */}
       <circle cx={firstPoint.x} cy={firstPoint.y} r="3" fill={color} />
     </svg>
   )

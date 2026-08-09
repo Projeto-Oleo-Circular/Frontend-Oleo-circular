@@ -159,7 +159,7 @@ const handleSalvar = async () => {
                     </div>
 
                     <div className="flex flex-col items-center gap-6">
-                        <div className="relative w-28 h-40 bg-gray-200 rounded-t-3xl rounded-b-xl overflow-hidden border-2 border-gray-300 shadow-lg">
+                        <div className="relative w-28 h-40 bg-white-200 rounded-t-3xl rounded-b-xl overflow-hidden border-2 border-white-300 shadow-lg">
                             <div 
                                 className="absolute bottom-0 w-full bg-green-primary transition-all duration-700"
                                 style={{ height: `${nivelSelecionado ?? 0}%` }}

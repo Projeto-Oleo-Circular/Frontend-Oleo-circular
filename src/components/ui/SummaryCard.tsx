@@ -26,7 +26,6 @@ export default function SummaryCard({
 
   return (
     <div className="relative overflow-hidden bg-white rounded-2xl p-3 sm:p-4 shadow-[1px_1px_0px_2px_rgba(0,0,0,0.25)] flex flex-col justify-between min-h-[90px] sm:min-h-[110px] w-full">
-      {/* Topo do Card */}
       {isSparkline ? (
         <div className="min-w-0">
           <span className={`text-xs sm:text-sm font-bold truncate block ${labelColor}`} title={label}>
@@ -56,7 +55,6 @@ export default function SummaryCard({
         </div>
       )}
 
-      {/* Sparkline no Rodapé */}
       {isSparkline && sparklineData && (
         <div className="absolute bottom-0 left-0 right-0 -mb-1 w-full pointer-events-none overflow-hidden rounded-b-2xl">
           <Sparkline data={sparklineData} color={sparklineColor} />

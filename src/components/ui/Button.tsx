@@ -70,7 +70,7 @@ function Spinner({ color = 'white', size = 'md' }: { color?: 'white' | 'green' |
     const colors = {
         white: 'border-white/30 border-t-white',
         green: 'border-green-primary/30 border-t-green-primary',
-        black: 'border-black-300 border-t-gray-600'
+        black: 'border-black-300 border-t-white-600'
     }
 
     return (

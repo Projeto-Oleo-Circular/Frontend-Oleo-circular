@@ -22,7 +22,6 @@ export default function AdminFilterDropdown({
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
-    // Fecha o dropdown ao clicar fora
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -33,13 +32,11 @@ export default function AdminFilterDropdown({
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    // Localiza a opção selecionada para o texto do botão
     const selectedOption = options.find((opt) => opt.value === value);
     const labelExibido = selectedOption && selectedOption.value !== "" ? selectedOption.label : placeholder;
 
     return (
         <div className="relative inline-block text-left" ref={dropdownRef}>
-            {/* Botão do Dropdown */}
             <button
                 type="button"
                 onClick={() => setIsOpen((prev) => !prev)}

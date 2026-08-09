@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
-import { useAdminAuth } from "../../hooks/useAdminAuth";
+import { useState, useRef, useEffect } from "react"
+import { NavLink, useNavigate } from "react-router-dom"
+import { useAdminAuth } from "../../hooks/useAdminAuth"
 
 const NAV_ITEMS = [
   { to: "/admin/dashboard", label: "Dashboard", iconSrc: "/assets/icons/icon-dashboard.svg" },
@@ -11,34 +11,34 @@ const NAV_ITEMS = [
 ];
 
 function AdminTopNav() {
-  const { admin, logout } = useAdminAuth();
-  const navigate = useNavigate();
+  const { admin, logout } = useAdminAuth()
+  const navigate = useNavigate()
 
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
 
-  const inicial = admin?.nome?.charAt(0).toUpperCase() ?? "A";
+  const inicial = admin?.nome?.charAt(0).toUpperCase() ?? "A"
 
   const handleLogout = async () => {
-    setLoading(true);
+    setLoading(true)
     if (logout) {
-      await logout();
+      await logout()
     } else {
-      localStorage.removeItem("admin_token");
-      localStorage.removeItem("admin_user");
+      localStorage.removeItem("admin_token")
+      localStorage.removeItem("admin_user")
     }
     setTimeout(() => {
-      setLoading(false);
-      navigate("/admin/login");
+      setLoading(false)
+      navigate("/admin/login")
     }, 300);
   };
 
   const handleProfile = () => {
-    setIsMenuOpen(false);
-    setIsMobileNavOpen(false);
-    navigate("/admin/profile-admin");
+    setIsMenuOpen(false)
+    setIsMobileNavOpen(false)
+    navigate("/admin/profile-admin")
   };
 
   useEffect(() => {
@@ -53,10 +53,8 @@ function AdminTopNav() {
 
   return (
     <header className="relative bg-white-primary border-b border-white-200 z-40">
-      {/* Topbar Layout */}
       <div className="flex items-center justify-between px-4 sm:px-6 lg:px-12 py-3.5 sm:py-5 w-full">
         
-        {/* --- MOBILE: Ícone Hambúrguer (Esquerda) --- */}
         <button
           onClick={() => setIsMobileNavOpen(true)}
           className="md:hidden p-2 rounded-lg text-black-200 hover:bg-green-100 hover:text-green-primary focus:outline-none transition-colors"
@@ -67,7 +65,6 @@ function AdminTopNav() {
           </svg>
         </button>
 
-        {/* --- LOGO: Centralizada no Mobile / À esquerda no Desktop --- */}
         <div className="flex items-center justify-center md:justify-start">
           <img
             src="/assets/logo-horizontal.svg"
@@ -77,7 +74,6 @@ function AdminTopNav() {
           />
         </div>
 
-        {/* --- DESKTOP: Navegação Central --- */}
         <nav className="hidden md:flex items-center gap-1 lg:gap-2">
           {NAV_ITEMS.map(({ to, label, iconSrc }) => (
             <NavLink
@@ -109,7 +105,6 @@ function AdminTopNav() {
           ))}
         </nav>
 
-        {/* --- DESKTOP & MOBILE: Avatar do Profile (Direita) --- */}
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => {
@@ -127,7 +122,6 @@ function AdminTopNav() {
             </div>
           </button>
 
-          {/* Dropdown Profile (Apenas Desktop) */}
           {isMenuOpen && (
             <div className="hidden md:block absolute right-0 mt-2 w-48 bg-white-primary rounded-xl shadow-lg border border-white-100 py-1 z-[100] animate-slide-down">
               <button
@@ -155,20 +149,16 @@ function AdminTopNav() {
         </div>
       </div>
 
-      {/* --- MENU LATERAL (DRAWER) MOBILE --- */}
       {isMobileNavOpen && (
         <div className="fixed inset-0 z-50 md:hidden flex">
-          {/* Overlay / Fundo Escuro com Blur */}
           <div
             className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity"
             onClick={() => setIsMobileNavOpen(false)}
           />
 
-          {/* Painel Lateral Escorregadio (Left Drawer) */}
           <div className="relative w-4/5 max-w-xs bg-white-primary h-full shadow-2xl flex flex-col justify-between p-5 z-10 animate-slide-right">
             
             <div>
-              {/* Cabeçalho da Gaveta com Logo e Fechar */}
               <div className="flex items-center justify-between pb-4 border-b border-white-100 mb-6">
                 <img
                   src="/assets/logo-horizontal.svg"
@@ -186,7 +176,6 @@ function AdminTopNav() {
                 </button>
               </div>
 
-              {/* Links de Navegação Mobile */}
               <nav className="flex flex-col gap-2">
                 {NAV_ITEMS.map(({ to, label, iconSrc }) => (
                   <NavLink
@@ -220,7 +209,6 @@ function AdminTopNav() {
               </nav>
             </div>
 
-            {/* Rodapé da Gaveta Mobile (Informações do Perfil & Sair) */}
             <div className="pt-4 border-t border-white-100">
               <div className="flex items-center justify-between">
                 <div 

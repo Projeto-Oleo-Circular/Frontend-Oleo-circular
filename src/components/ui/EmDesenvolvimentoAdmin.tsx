@@ -7,10 +7,8 @@ interface AdminUnderDevelopmentProps {
 function EmDesenvolvimentoAdmin({ title = "Em breve" }: AdminUnderDevelopmentProps) {
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-white">
-      {/* Header Admin */}
       <AdminTopNav />
 
-      {/* Conteúdo Centralizado de Espera */}
       <main className="flex-1 flex items-center justify-center p-4 sm:p-6 md:p-8 overflow-hidden">
         <div className="text-center w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl">
           <img 

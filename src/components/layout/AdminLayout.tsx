@@ -1,5 +1,5 @@
-import { Outlet } from "react-router-dom";
-import AdminTopNav from "./AdminTopNav";
+import { Outlet } from "react-router-dom"
+import AdminTopNav from "./AdminTopNav"
 
 function AdminLayout() {
     return (
@@ -9,7 +9,7 @@ function AdminLayout() {
                 <Outlet />
             </div>
         </div>
-    );
+    )
 }
 
-export default AdminLayout;
+export default AdminLayout

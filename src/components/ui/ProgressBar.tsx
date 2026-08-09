@@ -1,4 +1,3 @@
-
 interface Props {
     step: number
     totalSteps: number

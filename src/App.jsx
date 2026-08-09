@@ -1,4 +1,4 @@
-// App.jsx
+
 import { Routes, Route } from 'react-router-dom'
 
 //Rotas publicas

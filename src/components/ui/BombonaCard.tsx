@@ -1,4 +1,3 @@
-// components/ui/BombonaCard.tsx
 import { useNavigate } from "react-router-dom"
 import type { PontoColeta } from "../../services/pontosColetaService"
 
@@ -41,7 +40,6 @@ function BombonaCard({ ponto, loading }: BombonaCardProps) {
             <h2 className="text-lg font-bold text-green-primary mb-4">Bombona Cadastrada</h2>
 
             <div className="grid grid-cols-2 gap-4">
-                {/* Lado esquerdo - Capacidade */}
                 <div className="flex items-center gap-3">
                     <img
                         src="/assets/icons/icon-bombona.svg"
@@ -54,7 +52,6 @@ function BombonaCard({ ponto, loading }: BombonaCardProps) {
                     </div>
                 </div>
 
-                {/* Lado direito - Status */}
                 <div className="text-right">
                     {temNivelInformado ? (
                         <>
@@ -64,7 +61,6 @@ function BombonaCard({ ponto, loading }: BombonaCardProps) {
                             <p className="text-sm text-black-primary mt-1">Status atual</p>
                             <div className="flex items-center justify-end gap-2">
                                 <span className="font-bold text-green-primary text-xl">{nivelAtual}%</span>
-                                {/* <span className="text-xs text-black-primary">({statusLabel})</span> */}
                             </div>
                             <button
                                 onClick={handleInformarNivel}

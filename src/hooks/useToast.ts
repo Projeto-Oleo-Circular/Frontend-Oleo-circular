@@ -14,7 +14,6 @@ interface ToastItem {
 function useToast() {
   const [toasts, setToasts] = useState<ToastItem[]>([])
 
-  // Agora aceita tanto um objeto quanto os parâmetros separados (para compatibilidade)
   const addToast = useCallback((optionsOrMessage: ToastOptions | string, typeParam: 'error' | 'success' | 'info' = 'error') => {
     const id = Math.random().toString(36).substring(2)
     

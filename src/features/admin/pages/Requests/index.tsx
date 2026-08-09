@@ -168,7 +168,7 @@ function Requests() {
           <button
             onClick={() => confirmarTransicaoSimples(solicitacao, "EM_ROTA")}
             disabled={salvando}
-            className="px-3 py-1.5 rounded-lg border border-purple-500 text-purple-600 text-xs font-semibold hover:bg-purple-50 disabled:opacity-50 transition-colors cursor-pointer"
+            className="px-3 py-1.5 rounded-lg border border-violet-500 text-violet-600 text-xs font-semibold hover:bg-violet-50 disabled:opacity-50 transition-colors cursor-pointer"
           >
             Em Rota
           </button>
@@ -223,9 +223,8 @@ function Requests() {
               onClick={() => {
                 // Lógica de exportação de relatório
               }}
-              className="flex items-center gap-2 bg-green-primary hover:bg-green-hover text-white font-bold px-4 py-2 rounded-lg text-sm transition-colors cursor-pointer"
+              className="flex items-center bg-green-primary hover:bg-green-hover text-white font-bold px-4 py-2 rounded-lg text-sm transition-colors cursor-pointer"
             >
-              <Download className="w-4 h-4" />
               <span>Exportar relatório</span>
             </button>
           </div>
@@ -348,7 +347,6 @@ function Requests() {
           </table>
         </div>
 
-        {/* Componente de Paginação Novo */}
         <Pagination
           currentPage={page}
           totalPages={totalPages}
@@ -361,7 +359,6 @@ function Requests() {
           }}
         />
 
-        {/* Modais */}
         {(modal.tipo === "agendar" || modal.tipo === "concluir") && modal.solicitacao && (
           <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl animate-slide-down">
