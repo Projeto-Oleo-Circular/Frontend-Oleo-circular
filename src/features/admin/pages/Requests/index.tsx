@@ -7,9 +7,11 @@ import {
 import StatusBadge from "../../../../components/ui/StatusBadge"
 import AdminTopNav from "../../../../components/layout/AdminTopNav"
 import AdminFilterDropdown, { FilterOption } from "../../../../components/ui/AdminFilterDropdown"
-import { Clock, CalendarCheck, Truck, CheckCircle2, Layers, ChevronLeft, ChevronRight, X, Eye, MapPin, User, Building2, Phone, Mail, Download } from "lucide-react"
+import { Clock, CalendarCheck, Truck, CheckCircle2, X, Eye, MapPin, User, Building2, Phone, Mail, Download } from "lucide-react"
 import SummaryCard from "../../../../components/ui/SummaryCard"
 import Button from "../../../../components/ui/Button"
+import Pagination from "../../../../components/ui/Pagination"
+import Footer from "../../../../components/layout/Footer"
 
 interface Contagens {
   aguardando: number
@@ -35,7 +37,9 @@ function formatarEndereco(ponto: SolicitacaoColeta["pontoColeta"]): string {
 function Requests() {
   const [itens, setItens] = useState<SolicitacaoColeta[]>([]);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
   const [statusFiltro, setStatusFiltro] = useState<StatusSolicitacao | "">("");
   const [loading, setLoading] = useState(true);
   const historicoSemanalTotal = [10, 15, 8, 22, 18, 30, 25];
@@ -63,17 +67,18 @@ function Requests() {
     try {
       const resposta = await adminSolicitacoesService.listar({
         page,
-        limit: 10,
+        limit,
         status: statusFiltro || undefined,
       });
       setItens(resposta.items);
       setTotalPages(resposta.totalPages);
+      setTotalItems(resposta.total);
     } catch (error) {
       console.error("Erro ao carregar solicitações:", error);
     } finally {
       setLoading(false);
     }
-  }, [page, statusFiltro]);
+  }, [page, limit, statusFiltro]);
 
   const carregarContagens = useCallback(async () => {
     try {
@@ -343,30 +348,20 @@ function Requests() {
           </table>
         </div>
 
-        <div className="flex items-center justify-between mt-4">
-          <span className="text-sm text-white-500">
-            Página {page} de {totalPages}
-          </span>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-white-200 text-sm font-medium hover:bg-white-100 disabled:opacity-40 transition-colors cursor-pointer"
-            >
-              <ChevronLeft className="w-4 h-4" />
-              Anterior
-            </button>
-            <button
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-white-200 text-sm font-medium hover:bg-white-100 disabled:opacity-40 transition-colors cursor-pointer"
-            >
-              Próxima
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
+        {/* Componente de Paginação Novo */}
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          itemsPerPage={limit}
+          onPageChange={(novaPagina) => setPage(novaPagina)}
+          onItemsPerPageChange={(novoLimite) => {
+            setLimit(novoLimite);
+            setPage(1);
+          }}
+        />
 
+        {/* Modais */}
         {(modal.tipo === "agendar" || modal.tipo === "concluir") && modal.solicitacao && (
           <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl animate-slide-down">
@@ -523,10 +518,8 @@ function Requests() {
                     )}
                   </div>
                 )}
-
-
               </div>
-
+              
               <div className="mt-6">
                 <Button
                   variant="primary"
@@ -541,32 +534,8 @@ function Requests() {
           </div>
         )}
       </main>
-    </div>
-  );
-}
 
-function CardResumo({ 
-  label, 
-  valor, 
-  destaque, 
-  icon 
-}: { 
-  label: string; 
-  valor?: number; 
-  destaque?: boolean;
-  icon?: React.ReactNode;
-}) {
-  return (
-    <div className={`rounded-xl p-4 flex flex-col justify-between transition-all ${
-      destaque ? "bg-green-primary/10 border border-green-primary/20" : "bg-white-primary shadow-xs border border-white-100"
-    }`}>
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-medium text-white-500">{label}</span>
-        {icon}
-      </div>
-      <p className="text-2xl font-bold text-black-primary">
-        {valor === undefined ? "—" : valor}
-      </p>
+      <Footer />
     </div>
   );
 }
