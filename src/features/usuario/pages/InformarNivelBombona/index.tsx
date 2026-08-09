@@ -13,9 +13,8 @@ interface NivelBombona {
 
 const NIVEL_OPCOES: NivelBombona[] = [
   
-    
     { value: 0, label: "0%" },  
-      { value: 25, label: "25%" },  
+    { value: 25, label: "25%" },  
     { value: 50, label: "50%" },
     { value: 75, label: "75%" },
     { value: 100, label: "100%" },
@@ -53,7 +52,6 @@ function InformarNivelBombona() {
                 const data = await pontosColetaService.listarMeusPontos()
                 if (data.length > 0) {
                     setPontoSelecionado(data[0])
-                    // Se já tiver um nível salvo, pré-seleciona
                     if (data[0].nivelAtualPct) {
                         setNivelSelecionado(data[0].nivelAtualPct)
                     }
@@ -72,7 +70,6 @@ function InformarNivelBombona() {
         setNivelSelecionado(value)
     }
 
-    // --- FUNÇÃO MODIFICADA (MODO PROVISÓRIO) ---
     const calcularStatusBombona = (nivel: number): string => {
     if (nivel === 0) return "VAZIA";
     if (nivel === 100) return "CHEIA";
@@ -86,7 +83,6 @@ const handleSalvar = async () => {
     try {
         const statusBombona = calcularStatusBombona(nivelSelecionado);
 
-        // 🟢 Chamada REAL para a API (PUT /pontos-coleta/:id)
         await pontosColetaService.atualizarPontoColeta(pontoSelecionado.id, {
             nivelAtualPct: nivelSelecionado,
             statusBombona,
@@ -101,7 +97,6 @@ const handleSalvar = async () => {
         setLoading(false);
     }
 };
-    // ----------------------------------------------------------------
 
     const getStatusLabel = (value: number): string => {
         if (value === 100) return "Cheia"
@@ -154,7 +149,6 @@ const handleSalvar = async () => {
 
             <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
                 <div className="w-full max-w-md mx-auto space-y-6 pb-8">
-                    {/* Título */}
                     <div className="text-center">
                         <h1 className="text-2xl sm:text-3xl font-bold text-green-primary">
                             Informar nível da bombona
@@ -164,9 +158,7 @@ const handleSalvar = async () => {
                         </p>
                     </div>
 
-                    {/* Bombona visual + Select de nível */}
                     <div className="flex flex-col items-center gap-6">
-                        {/* Bombona visual */}
                         <div className="relative w-28 h-40 bg-gray-200 rounded-t-3xl rounded-b-xl overflow-hidden border-2 border-gray-300 shadow-lg">
                             <div 
                                 className="absolute bottom-0 w-full bg-green-primary transition-all duration-700"
@@ -179,7 +171,6 @@ const handleSalvar = async () => {
                             </div>
                         </div>
 
-                        {/* Opções de nível */}
                         <div className="grid grid-cols-5 gap-3 w-full">
                             {NIVEL_OPCOES.map(({ value, label }) => (
                                 <button
@@ -198,7 +189,6 @@ const handleSalvar = async () => {
                             ))}
                         </div>
 
-                        {/* Status atual */}
                         {nivelSelecionado !== null && (
                             <div className="bg-green-50 rounded-xl px-4 py-2 text-center w-full animate-slide-in">
                                 <p className="text-sm text-black-primary">Status</p>
@@ -209,7 +199,6 @@ const handleSalvar = async () => {
                         )}
                     </div>
 
-                    {/* Capacidade da bombona */}
                     <div className="bg-white-primary rounded-2xl shadow-card p-4 flex justify-between items-center">
                         <span className="text-sm text-black-primary">Capacidade da bombona</span>
                         <span className="font-bold text-green-primary text-lg">
@@ -217,7 +206,6 @@ const handleSalvar = async () => {
                         </span>
                     </div>
 
-                    {/* Botões */}
                     <div className="flex flex-col gap-3 pt-4">
                         <Button
                             onClick={handleSalvar}

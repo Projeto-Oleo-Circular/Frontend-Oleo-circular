@@ -51,12 +51,15 @@ function ReportBarrel() {
 
     const handleAvancar = () => {
         if (!ponto) return
-        
-        // CORREÇÃO: Navegando para o caminho em português (que será usado nas rotas)
+
+        const enderecoFormatado = `${ponto.logradouro || ''}, ${ponto.numero || ''}`.trim()        // CORREÇÃO: Navegando para o caminho em português (que será usado nas rotas)
         navigate("/observations", {
             state: {
                 pontoId: ponto.id,
-                nivel: nivelAtual // Você precisa definir essa variável antes, ou usar ponto.nivelAtualPct
+                nivel: nivelAtual,
+                capacidade: ponto.capacidadeBombona || 100,
+                endereco: enderecoFormatado,
+                ponto: ponto
             }
         })
     }

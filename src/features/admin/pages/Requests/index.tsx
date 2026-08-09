@@ -7,24 +7,9 @@ import {
 import StatusBadge from "../../../../components/ui/StatusBadge"
 import AdminTopNav from "../../../../components/layout/AdminTopNav"
 import AdminFilterDropdown, { FilterOption } from "../../../../components/ui/AdminFilterDropdown"
-import { 
-  Clock, 
-  CalendarCheck, 
-  Truck, 
-  CheckCircle2, 
-  Layers, 
-  ChevronLeft, 
-  ChevronRight, 
-  X, 
-  Eye, 
-  MapPin, 
-  User, 
-  Building2, 
-  Phone, 
-  Mail, 
-  Download 
-} from "lucide-react"
+import { Clock, CalendarCheck, Truck, CheckCircle2, Layers, ChevronLeft, ChevronRight, X, Eye, MapPin, User, Building2, Phone, Mail, Download } from "lucide-react"
 import SummaryCard from "../../../../components/ui/SummaryCard"
+import Button from "../../../../components/ui/Button"
 
 interface Contagens {
   aguardando: number
@@ -169,7 +154,7 @@ function Requests() {
         {solicitacao.status === "AGUARDANDO" && (
           <button
             onClick={() => abrirModal("agendar", solicitacao)}
-            className="px-3 py-1.5 rounded-lg border border-green-primary text-green-primary text-xs font-semibold hover:bg-green-primary transition-colors cursor-pointer"
+            className="px-3 py-1.5 rounded-lg border border-green-primary text-green-primary text-xs font-semibold hover:bg-green-100 transition-colors cursor-pointer"
           >
             Agendar
           </button>
@@ -194,7 +179,7 @@ function Requests() {
         
         <button
           onClick={() => abrirModal("detalhes", solicitacao)}
-          className="p-1.5 rounded-lg border border-white-200 text-white-600 hover:text-black-primary hover:bg-white-100 transition-colors cursor-pointer"
+          className="p-1.5 rounded-lg border border-white-200 text-white-600 hover:text-black-primary hover:bg-green-100 transition-colors cursor-pointer"
           title="Ver Detalhes"
         >
           <Eye className="w-4 h-4" />
@@ -208,7 +193,7 @@ function Requests() {
       <AdminTopNav />
 
       <main className="flex-1 p-6 max-w-7xl w-full mx-auto">
-        {/* Header */}
+
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-green-primary mt-2 sm:mt-5 mb-1">
@@ -241,7 +226,6 @@ function Requests() {
           </div>
         </div>
 
-        {/* Cards Resumo */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-6">
           <SummaryCard
             label="Aguardando"
@@ -387,17 +371,17 @@ function Requests() {
           <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl animate-slide-down">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="font-bold text-lg text-black-primary">
+                <h2 className="font-bold text-lg text-green-primary">
                   {modal.tipo === "agendar" ? "Agendar coleta" : "Concluir coleta"} — #{modal.solicitacao.id}
                 </h2>
-                <button onClick={fecharModal} className="text-white-500 hover:text-black-primary cursor-pointer">
+                <button onClick={fecharModal} className="text-red-primary hover:text-red-hover cursor-pointer">
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
               {modal.tipo === "agendar" && (
                 <label className="block mb-4">
-                  <span className="text-sm text-white-500 font-medium">Data e Hora do Agendamento</span>
+                  <span className="text-sm text-white-600 font-medium">Data e Hora do Agendamento</span>
                   <input
                     type="datetime-local"
                     value={dataAgendamento}
@@ -422,24 +406,29 @@ function Requests() {
               )}
 
               <div className="flex gap-3">
-                <button
+                <Button
+                  variant="danger"
+                  size="sm"
                   onClick={fecharModal}
                   disabled={salvando}
-                  className="flex-1 py-2 rounded-lg border border-white-200 text-black-primary text-sm font-medium hover:bg-white-100 transition-colors cursor-pointer"
+                  fullWidth
                 >
                   Cancelar
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  loading={salvando}
                   onClick={confirmarModal}
                   disabled={
                     salvando ||
                     (modal.tipo === "agendar" && !dataAgendamento) ||
                     (modal.tipo === "concluir" && !volumeColetado)
                   }
-                  className="flex-1 py-2 rounded-lg bg-green-primary text-white text-sm font-semibold hover:bg-green-hover disabled:opacity-50 transition-colors cursor-pointer"
+                  fullWidth
                 >
                   Confirmar
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -450,11 +439,11 @@ function Requests() {
             <div className="bg-white rounded-xl p-6 w-full max-w-lg shadow-xl animate-slide-down max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between pb-3 border-b border-white-100 mb-4">
                 <div>
-                  <h2 className="font-bold text-xl text-black-primary">Detalhes da Solicitação</h2>
+                  <h2 className="font-bold text-xl text-orange-primary">Detalhes da Solicitação</h2>
                   <p className="text-xs text-white-500">ID da solicitação: #{modal.solicitacao.id}</p>
                 </div>
                 <button onClick={fecharModal} className="text-white-500 hover:text-black-primary cursor-pointer">
-                  <X className="w-5 h-5" />
+                  <X className="w-5 h-5 text-red-primary" />
                 </button>
               </div>
 
@@ -504,6 +493,17 @@ function Requests() {
                   </div>
                 </div>
 
+                {modal.solicitacao?.observacoes && (
+                  <div className="bg-white-primary border border-white-100 rounded-lg p-3">
+                    <span className="text-xs font-bold text-green-primary uppercase tracking-wider block mb-1">
+                      Observações do Parceiro:
+                    </span>
+                    <p className="text-sm text-white-500 italic">
+                      "{modal.solicitacao.observacoes}"
+                    </p>
+                  </div>
+                )}
+                
                 {(modal.solicitacao.dataAgendamento || modal.solicitacao.volumeColetado) && (
                   <div className="border border-white-100 rounded-lg p-3 bg-green-primary/5">
                     <h3 className="text-xs font-bold text-green-primary uppercase tracking-wider mb-2">
@@ -523,15 +523,19 @@ function Requests() {
                     )}
                   </div>
                 )}
+
+
               </div>
 
               <div className="mt-6">
-                <button
+                <Button
+                  variant="primary"
+                  size="sm"
                   onClick={fecharModal}
-                  className="w-full py-2 rounded-lg bg-white-100 hover:bg-white-200 text-black-primary text-sm font-semibold transition-colors cursor-pointer"
+                  fullWidth
                 >
                   Fechar
-                </button>
+                </Button>
               </div>
             </div>
           </div>

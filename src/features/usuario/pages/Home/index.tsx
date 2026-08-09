@@ -1,4 +1,3 @@
-// Home.tsx
 import { useLocation, useNavigate } from "react-router-dom"
 import Button from "../../../../components/ui/Button"
 import HeaderApp from "../../../../components/layout/HeaderApp"
@@ -68,7 +67,6 @@ function Home() {
             <HeaderApp userName={userName} />
 
             <main className="flex-1 overflow-y-auto">
-                {/* Banner Verde com Curva Responsiva */}
                 <div className="bg-green-primary text-white-primary pt-6 pb-20 px-6 sm:px-8 rounded-b-[2rem] sm:rounded-b-[3rem] w-full">
                     <div className="flex justify-between items-center max-w-5xl mx-auto">
                         <div>
@@ -83,7 +81,6 @@ function Home() {
                         <button
                             className="relative p-2.5 hover:bg-green-hover rounded-full transition-colors duration-200 cursor-pointer"
                             aria-label="Notificações"
-                            /*onClick={() => navigate("/notifications")}*/
                         >
                             <img
                                 src="/assets/icons/icon-notificacao.svg"
@@ -95,7 +92,6 @@ function Home() {
                     </div>
                 </div>
 
-                {/* Conteúdo dos Cards Sobrepostos ao Banner */}
                 <div className="px-4 sm:px-6 md:px-8 max-w-5xl mx-auto relative z-10 -mt-12 sm:-mt-16 flex flex-col gap-4 pb-8">
                     <PontosColetaCard
                         pontos={pontos}
@@ -114,7 +110,7 @@ function Home() {
                     />
 
                     <Button
-                        onClick={() => navigate("/report-barrel")}
+                        onClick={() => navigate("/report-barrel", { state: {ponto: pontoAtual }})}
                         className="w-full mt-2"
                     >
                         Solicitar coleta
