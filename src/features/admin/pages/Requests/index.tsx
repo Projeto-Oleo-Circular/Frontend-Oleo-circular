@@ -289,7 +289,6 @@ function Requests() {
           />
         </div>
 
-        {/* Tabela */}
         <div className="bg-white-primary rounded-xl shadow-sm border border-white-200 overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -360,7 +359,6 @@ function Requests() {
           </table>
         </div>
 
-        {/* Paginação */}
         <div className="flex items-center justify-between mt-4">
           <span className="text-sm text-white-500">
             Página {page} de {totalPages}
@@ -385,7 +383,6 @@ function Requests() {
           </div>
         </div>
 
-        {/* Modal de Agendamento ou Conclusão */}
         {(modal.tipo === "agendar" || modal.tipo === "concluir") && modal.solicitacao && (
           <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl animate-slide-down">
@@ -448,7 +445,6 @@ function Requests() {
           </div>
         )}
 
-        {/* Modal de Detalhes Completo */}
         {modal.tipo === "detalhes" && modal.solicitacao && (
           <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl p-6 w-full max-w-lg shadow-xl animate-slide-down max-h-[90vh] overflow-y-auto">
@@ -463,7 +459,6 @@ function Requests() {
               </div>
 
               <div className="space-y-4">
-                {/* Status e Datas */}
                 <div className="flex items-center justify-between bg-white-50 p-3 rounded-lg border border-white-100">
                   <div>
                     <span className="text-xs text-white-500 block">Status Atual</span>
@@ -477,7 +472,6 @@ function Requests() {
                   </div>
                 </div>
 
-                {/* Dados do Parceiro */}
                 <div className="border border-white-100 rounded-lg p-3">
                   <h3 className="text-xs font-bold text-green-primary uppercase tracking-wider mb-2 flex items-center gap-1.5">
                     <User className="w-3.5 h-3.5" /> Solicitante / Parceiro
@@ -495,7 +489,6 @@ function Requests() {
                   )}
                 </div>
 
-                {/* Dados do Ponto de Coleta e Endereço */}
                 <div className="border border-white-100 rounded-lg p-3">
                   <h3 className="text-xs font-bold text-green-primary uppercase tracking-wider mb-2 flex items-center gap-1.5">
                     <Building2 className="w-3.5 h-3.5" /> Ponto de Coleta
@@ -511,7 +504,6 @@ function Requests() {
                   </div>
                 </div>
 
-                {/* Informações adicionais do processo */}
                 {(modal.solicitacao.dataAgendamento || modal.solicitacao.volumeColetado) && (
                   <div className="border border-white-100 rounded-lg p-3 bg-green-primary/5">
                     <h3 className="text-xs font-bold text-green-primary uppercase tracking-wider mb-2">
