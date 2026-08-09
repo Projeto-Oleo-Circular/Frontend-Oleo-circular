@@ -194,10 +194,10 @@ function Requests() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col bg-background">
       <AdminTopNav />
 
-      <main className="flex-1 p-6 max-w-7xl w-full mx-auto">
+      <main className="w-full max-w-[1440px] mx-auto p-6">
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
@@ -231,7 +231,7 @@ function Requests() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
           <SummaryCard
             label="Aguardando"
             value={contagens?.aguardando}
@@ -279,18 +279,18 @@ function Requests() {
         </div>
 
         <div className="bg-white-primary rounded-xl shadow-sm border border-white-200 overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="text-left text-white-primary border-b border-white-100 bg-green-400">
-                <th className="p-4 font-bold">ID</th>
-                <th className="p-4 font-bold">Solicitante</th>
-                <th className="p-4 font-bold">Data Solicitação</th>
-                <th className="p-4 font-bold">Endereço</th>
-                <th className="p-4 font-bold">Parceiro</th>
-                <th className="p-4 font-bold">Ponto de Coleta</th>
-                <th className="p-4 font-bold">Tamanho da Bombona</th>
-                <th className="p-4 font-bold">Status</th>
-                <th className="p-4 font-bold">Ações</th>
+              <tr className="text-white-primary bg-green-400">
+                <th className="p-3 w-16">ID</th>
+                <th className="p-3 w-64">Solicitante</th>
+                <th className="p-3 w-44">Data Solicitação</th>
+                <th className="p-3">Endereço</th>
+                <th className="p-3 w-48">Parceiro</th>
+                <th className="p-3 w-48">Ponto de Coleta</th>
+                <th className="p-3 w-40">Tamanho da Bombona</th>
+                <th className="p-3 w-32">Status</th>
+                <th className="p-3 w-36">Ações</th>
               </tr>
             </thead>
             <tbody>
