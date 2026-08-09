@@ -3,7 +3,8 @@ import api from "./api";
 export interface PontoColeta {
     id: number;
     parceiroId: number;
-    categoria: string;
+    categoriaId: string;
+    categoria?: string;
     cep: string;
     logradouro: string;
     numero: string;
@@ -11,13 +12,28 @@ export interface PontoColeta {
     cidade: string;
     estado: string | null;
     complemento: string | null;
-    expectativaGeracao: string;
+    expectativaGeracao: number | string;
     capacidadeBombona: number;
     nivelAtualPct: number;
     statusBombona: string;
     statusAprovacaoPontoColeta: string;
     nomePontoColeta: string;
     atualizadoEm: string | null;
+}
+
+export interface CriarPontoColetaPayload {
+  cep: string;
+  logradouro: string;
+  numero: string;
+  bairro: string;
+  cidade: string;
+  estado?: string;
+  complemento?: string | null;
+  categoriaId: number;
+  expectativaGeracao: number;
+  capacidadeBombona?: number;
+  nivelAtualPct?: number;
+  statusBombona?: string;
 }
 
 export interface AtualizarNivelBombonaRequest {
@@ -32,6 +48,15 @@ export const pontosColetaService = {
      */
     async listarMeusPontos(): Promise<PontoColeta[]> {
         const { data } = await api.get<PontoColeta[]>("/pontos-coleta/meus");
+        return data;
+    },
+
+    /**
+     * POST /pontos-coleta
+     * Cria um novo ponto de coleta caso o usuário crie adicionais após o cadastro.
+     */
+    async criarPontoColeta(payload: CriarPontoColetaPayload): Promise<PontoColeta> {
+        const { data } = await api.post<PontoColeta>("/pontos-coleta", payload);
         return data;
     },
 

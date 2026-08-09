@@ -334,12 +334,12 @@ function InfoSo({
                 console.log('Dados sendo enviados:', {
                     documento: formData.cnpj,
                     nomeRazaoSocial: formData.razaoSocial,
+                    responsavelLegalNome: formData.responsavel,
                     cep: formData.cep,
                     cidade: formData.cidade,
                     logradouro: formData.rua,
                     bairro: formData.bairro,
                     numero: formData.numero,
-                    responsavel: formData.responsavel,
                     categoria: Number(formData.categoria)
                 })
 
@@ -348,12 +348,12 @@ function InfoSo({
                 onDataChange({
                     documento: formData.cnpj,
                     nomeRazaoSocial: formData.razaoSocial,
+                    responsavelLegalNome: formData.responsavel,
                     cep: formData.cep,
                     cidade: formData.cidade,
                     logradouro: formData.rua,
                     bairro: formData.bairro,
                     numero: formData.numero,
-                    responsavel: formData.responsavel,
                     categoria: Number(formData.categoria)
                 })
             }

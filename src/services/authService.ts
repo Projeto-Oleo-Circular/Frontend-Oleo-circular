@@ -34,25 +34,33 @@ interface ResetPasswordCredentials {
 }
 
 interface RegisterCredentials {
-  tipoPessoa: string;
+  tipoPessoa: 'FISICA' | 'JURIDICA' | string;
+  tipoParceiro?: 'GERADOR' | 'INSTITUCIONAL' | string;
   nomeRazaoSocial: string;
+  nomeSocial?: string | null;
   email: string;
   senha: string;
   documento: string;
   telefone?: string;
   porte: string;
   aceiteMarketing: boolean;
+  responsavelLegalNome?: string | null;
+  responsavelLegalCpf?: string | null;
   cep: string;
   logradouro: string;
-  cidade: string;
   numero: string;
+  cidade: string;
   bairro: string;
+  estado?: string;
+  complemento?: string | null;
+  categoria: number;
   expectativaGeracao: number;
-  // Comunicação (etapa "comunicacao" - só institucional)
-  redesSociais?: string;
-  site?: string;
+  capacidadeBombona?: number;
+  nivelAtualPct?: number;
+  statusBombona?: string;
+  redesSociais?: string | null;
+  site?: string | null;
   aceiteDivulgacao?: boolean;
-  // Vínculo com parceiro indicador (etapa "about")
   parceiroIndicadorId?: number | null;
   comoConheceu?: string;
   observacao?: string;
@@ -100,7 +108,6 @@ export const authService = {
     return response.data;
   },
 
-  // Lista de parceiros ativos para vínculo/indicação (etapa "about" do cadastro)
   async listarParceirosIndicadores(): Promise<ParceiroIndicador[]> {
     const response = await api.get('/parceiros-indicadores');
     return response.data;
@@ -120,6 +127,7 @@ async verificarDisponibilidade(params: {
   logout(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    localStorage.removeItem('userData');
     api.put('/parceiros/logout').catch(() => {});
   },
 
@@ -148,16 +156,17 @@ async verificarDisponibilidade(params: {
     logradouro: string
     bairro: string
     cidade: string
+    estado?: string
   }> {
     const cleaned = cep.replace(/\D/g, '')
     const reponse = await api.get(`/parceiros/buscar-cep/${cleaned}`)
-    return reponse.data
+    return reponse.data;
   },
 
   async listarCategorias(): Promise<CategoriaOption[]> {
     try {
-      const response = await api.get<{ data: CategoriaOption[] }> ('/parceiros/categorias') /*Fazer req com número, pode tirar esssa rota*/
-      return response.data.data || []
+      const response = await api.get<CategoriaOption[]> ('/parceiros/categorias') /*Fazer req com número, pode tirar esssa rota*/
+      return response.data || []
     } catch (error) {
       console.error('Erro ao bucar categorias, usando fallback:', error)
       return [
@@ -183,10 +192,10 @@ async verificarDisponibilidade(params: {
         // Se não tiver no localStorage, busca da API
         const response = await api.get('/parceiros/me')
         return response.data
-    } catch (error) {
-        console.error('Erro ao buscar dados do usuário:', error)
-        throw error
-    }
+      } catch (error) {
+          console.error('Erro ao buscar dados do usuário:', error)
+          throw error
+      }
 },
 
    getCurrentUser(): User | null {

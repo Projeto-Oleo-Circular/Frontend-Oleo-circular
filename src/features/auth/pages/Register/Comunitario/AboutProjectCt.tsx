@@ -116,7 +116,7 @@ function AboutProjectCt({
     onDataChange?.({
       comoConheceu: formData.howFound,
       observacao: formData.observation,
-      partner: formData.partner,
+      parceiroIndicadorId: formData.partner ? Number(formData.partner) : null,
     });
 
     onNext();

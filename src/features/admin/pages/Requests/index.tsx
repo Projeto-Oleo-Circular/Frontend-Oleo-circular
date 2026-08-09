@@ -169,7 +169,7 @@ function Requests() {
         {solicitacao.status === "AGUARDANDO" && (
           <button
             onClick={() => abrirModal("agendar", solicitacao)}
-            className="px-3 py-1.5 rounded-lg border border-green-primary text-green-primary text-xs font-semibold hover:bg-green-primary/10 transition-colors cursor-pointer"
+            className="px-3 py-1.5 rounded-lg border border-green-primary text-green-primary text-xs font-semibold hover:bg-green-primary transition-colors cursor-pointer"
           >
             Agendar
           </button>
@@ -290,30 +290,31 @@ function Requests() {
         </div>
 
         {/* Tabela */}
-        <div className="bg-white-primary rounded-xl shadow-sm border border-white-100 overflow-x-auto">
+        <div className="bg-white-primary rounded-xl shadow-sm border border-white-200 overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-white-500 border-b border-white-100 bg-white-50">
-                <th className="p-4 font-medium">ID</th>
-                <th className="p-4 font-medium">Solicitante</th>
-                <th className="p-4 font-medium">Data Solicitação</th>
-                <th className="p-4 font-medium">Endereço</th>
-                <th className="p-4 font-medium">Ponto de Coleta</th>
-                <th className="p-4 font-medium">Capacidade</th>
-                <th className="p-4 font-medium">Status</th>
-                <th className="p-4 font-medium">Ações</th>
+              <tr className="text-left text-white-primary border-b border-white-100 bg-green-400">
+                <th className="p-4 font-bold">ID</th>
+                <th className="p-4 font-bold">Solicitante</th>
+                <th className="p-4 font-bold">Data Solicitação</th>
+                <th className="p-4 font-bold">Endereço</th>
+                <th className="p-4 font-bold">Parceiro</th>
+                <th className="p-4 font-bold">Ponto de Coleta</th>
+                <th className="p-4 font-bold">Tamanho da Bombona</th>
+                <th className="p-4 font-bold">Status</th>
+                <th className="p-4 font-bold">Ações</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="p-8 text-center text-white-500">
+                  <td colSpan={9} className="p-8 text-center text-white-500">
                     Carregando solicitações...
                   </td>
                 </tr>
               ) : itens.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="p-8 text-center text-white-500">
+                  <td colSpan={9} className="p-8 text-center text-white-500">
                     Nenhuma solicitação encontrada.
                   </td>
                 </tr>
@@ -321,13 +322,33 @@ function Requests() {
                 itens.map((s) => (
                   <tr key={s.id} className="border-b border-white-100 last:border-0 hover:bg-white-50 transition-colors">
                     <td className="p-4 font-semibold text-black-primary">#{s.id}</td>
-                    <td className="p-4 text-black-primary font-medium">{s.parceiro.nomeRazaoSocial}</td>
-                    <td className="p-4 text-white-500 whitespace-nowrap">{formatarData(s.dataSolicitacao)}</td>
-                    <td className="p-4 text-white-500 max-w-xs truncate" title={formatarEndereco(s.pontoColeta)}>
-                      {formatarEndereco(s.pontoColeta)}
+                    
+                    <td className="p-4">
+                      <p className="font-semibold text-black-primary">{s.parceiro.nomeRazaoSocial}</p>
+                        {s.parceiro.documento && (
+                          <p className="text-xs text-white-500 mt-0.5">{s.parceiro.documento}</p>
+                        )}
+                      </td>
+
+                    <td className="p-4 text-black-primary whitespace-nowrap">{formatarData(s.dataSolicitacao)}</td>
+                    
+                    <td className="p-4 text-black-primary max-w-xs">
+                      <div className="flex items-start gap-1.5" title={formatarEndereco(s.pontoColeta)}>
+                        <MapPin className="w-4 h-4 shrink-0 text-green-primary mt-0.5" />
+                        <span className="text-xs leading-relaxed truncate">
+                          {formatarEndereco(s.pontoColeta)}
+                        </span>
+                      </div>
                     </td>
+
+                    <td className="p-4 font-medium text-black-primary">
+                      {s.parceiro?.nomeParceiro || s.parceiro?.nomeRazaoSocial || "—"}
+                    </td>
+                    
                     <td className="p-4 text-black-primary">{s.pontoColeta.nomePontoColeta}</td>
-                    <td className="p-4 text-black-primary">{s.pontoColeta.capacidadeBombona} L</td>
+                    
+                    <td className="p-4 text-black-primary whitespace-nowrap">{s.pontoColeta.capacidadeBombona} L</td>
+                    
                     <td className="p-4 whitespace-nowrap">
                       <StatusBadge status={s.status} />
                     </td>

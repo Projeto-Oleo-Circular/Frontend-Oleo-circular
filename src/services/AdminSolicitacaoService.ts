@@ -28,6 +28,7 @@ export interface ParceiroResumo {
     tipoPessoa: string;
     tipoParceiro: string;
     nomeRazaoSocial: string;
+    nomeParceiro?: string;
     nomeSocial: string | null;
     email: string;
     documento: string;

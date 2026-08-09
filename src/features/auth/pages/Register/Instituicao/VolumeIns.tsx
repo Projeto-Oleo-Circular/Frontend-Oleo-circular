@@ -25,6 +25,9 @@ function VolumeIns({
 }: Props) {
     const [volume, setVolume] = useState<number>(initialData.expectativaGeracao || 0);
     
+    const handleVolumeChange = (value: number) => {
+        setVolume(value);
+    };
     const volumeMarks = [
         { value: 0, label: '0'},
         { value: 20, label: '20 L'},
@@ -32,11 +35,6 @@ function VolumeIns({
         { value: 100, label: '100 L'},
         { value: 1000, label: '1000 L'},
     ];
-
-    const handleVolumeChange = (value: number) => {
-        setVolume(value);
-        console.log('Volume selecionado:', value);
-    };
 
     const handleNext = () => {
         if (onDataChange) {

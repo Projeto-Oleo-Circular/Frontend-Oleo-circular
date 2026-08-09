@@ -31,14 +31,16 @@ function InfoIns({
     const [loadingCategorias, setLoadingCategorias] = useState(false)
 
     const [formData, setFormData] = useState({
-        responsavel: initialData.responsavel || '',
-        cnpj: initialData.documento || '',
-        razaoSocial: initialData.nomeRazaoSocial || '',
+        responsavel: initialData.responsavel || initialData.responsavelLegalNome || '',
+        cnpj: initialData.cnpj || initialData.documento || '',
+        razaoSocial: initialData.razaoSocial || initialData.nomeRazaoSocial || '',
         cep: initialData.cep || '',
         cidade: initialData.cidade || '',
-        rua: initialData.logradouro || '',
+        estado: initialData.estado || initialData.estado || '',
+        rua: initialData.rua || initialData.logradouro || '',
         bairro: initialData.bairro || '',
         numero: initialData.numero || '',
+        complemento: initialData.complemento || '',
         categoria: initialData.categoria?.toString() || '',
     })
 
@@ -48,12 +50,17 @@ function InfoIns({
         razaoSocial: '',
         cep: '',
         cidade: '',
+        estado: '',
         rua: '',
         bairro: '',
         numero: '',
         categoria: ''
     })
 
+    const { addToast } = useToast()
+    const [loading, setLoading] = useState(false)
+    const [loadingCep, setLoadingCep] = useState(false)
+    const [loadingEstado, setLoadingEstado] = useState(false)
 
     const formatCep = (value: string): string => {
         const cleaned = value.replace(/\D/g, '').slice(0, 8)
@@ -62,10 +69,6 @@ function InfoIns({
         }
         return cleaned
     }
-
-    const { addToast } = useToast()
-    const [loading, setLoading] = useState(false)
-    const [loadingCep, setLoadingCep] = useState(false)
 
     useEffect(() => {
         const carregarCategorias = async () => {
@@ -197,13 +200,14 @@ function InfoIns({
             razaoSocial: '',
             cep: '',
             cidade: '',
+            estado: '',
             rua: '',
             bairro: '',
             numero: '',
             categoria: ''
         };
 
-        if (!formData.responsavel) {
+        if (!formData.responsavel.trim()) {
             errors.responsavel = 'Nome do responsável é obrigatório'
             hasError = true
         }
@@ -214,32 +218,37 @@ function InfoIns({
             hasError = true
         }
 
-        if (!formData.razaoSocial) {
+        if (!formData.razaoSocial.trim()) {
             errors.razaoSocial = 'Razão social é obrigatória'
             hasError = true
         }
 
-        if (!formData.cep) {
+        if (!formData.cep.trim()) {
             errors.cep = 'CEP é obrigatório'
             hasError = true
         }
 
-        if (!formData.cidade) {
+        if (!formData.estado.trim()) {
+            errors.estado = 'Estado é obrigatório'
+            hasError = true
+        }
+
+        if (!formData.cidade.trim()) {
             errors.cidade = 'Cidade é obrigatória'
             hasError = true
         }
 
-        if (!formData.rua) {
+        if (!formData.rua.trim()) {
             errors.rua = 'Rua é obrigatória'
             hasError = true
         }
 
-        if (!formData.bairro) {
+        if (!formData.bairro.trim()) {
             errors.bairro = 'Bairro é obrigatório'
             hasError = true
         }
 
-        if (!formData.numero) {
+        if (!formData.numero.trim()) {
             errors.numero = 'Número é obrigatório'
             hasError = true
         }
@@ -271,6 +280,7 @@ function InfoIns({
             if (onDataChange) {
                 onDataChange({ tipoPessoa })
             }
+            return
         }
 
         if (name === 'cep') {
@@ -285,14 +295,17 @@ function InfoIns({
                     setFormData(prev => ({
                         ...prev,
                         cidade: address.cidade || '',
+                        estado: address.estado || '',
                         rua: address.logradouro || '',
                         bairro: address.bairro || '',
                     }))
                     setFieldErrors(prev => ({
                         ...prev,
                         cidade: '',
+                        estado: '',
                         rua: '',
                         bairro: '',
+                        cep: ''
                     }))
                 } catch {
                     setFieldErrors(prev => ({ ...prev, cep: 'CEP não encontrado' }))
@@ -331,33 +344,23 @@ function InfoIns({
                 return
             }
 
-                console.log('Dados sendo enviados:', {
-                    documento: formData.cnpj,
-                    nomeRazaoSocial: formData.razaoSocial,
-                    cep: formData.cep,
-                    cidade: formData.cidade,
-                    logradouro: formData.rua,
-                    bairro: formData.bairro,
-                    numero: formData.numero,
-                    responsavel: formData.responsavel,
-                    categoria: Number(formData.categoria)
-                })
-
+            const dataToSave = {
+                documento: formData.cnpj,
+                nomeRazaoSocial: formData.razaoSocial,
+                responsavelLegalNome: formData.responsavel,
+                cep: formData.cep,
+                cidade: formData.cidade,
+                estado: formData.estado,
+                logradouro: formData.rua,
+                bairro: formData.bairro,
+                numero: formData.numero,
+                complemento: formData.complemento,
+                categoria: Number(formData.categoria)
+            }
 
             if (onDataChange) {
-                onDataChange({
-                    documento: formData.cnpj,
-                    nomeRazaoSocial: formData.razaoSocial,
-                    cep: formData.cep,
-                    cidade: formData.cidade,
-                    logradouro: formData.rua,
-                    bairro: formData.bairro,
-                    numero: formData.numero,
-                    responsavel: formData.responsavel,
-                    categoria: Number(formData.categoria)
-                })
+                onDataChange(dataToSave)  
             }
-            
             onNext()
 
         } catch (error: any) {
@@ -451,8 +454,6 @@ function InfoIns({
                             />
                             <hr className="border-white-100" />
 
-                            <hr className="border-white-100" />
-
                             <Input
                                 type="text"
                                 icon="icon-CEP"
@@ -463,6 +464,19 @@ function InfoIns({
                                 noBorder
                                 error={fieldErrors.cep}
                                 disabled={loadingCep}
+                            />
+                            <hr className="border-white-100" />
+
+                             <Input
+                                type="text"
+                                icon="icon-CEP"
+                                placeholder={loadingEstado ? 'Buscando estado...' : 'Estado'}
+                                name="estado"
+                                value={formData.estado}
+                                onChange={handleInputChange}
+                                noBorder
+                                error={fieldErrors.estado}
+                                disabled={loadingEstado}
                             />
                             <hr className="border-white-100" />
 
@@ -512,6 +526,17 @@ function InfoIns({
                                 noBorder
                                 error={fieldErrors.numero}
                             />
+                            <hr className="border-white-100" />
+
+                            <Input
+                                type="text"
+                                icon="icon-info"
+                                placeholder="Complemento (opcional)"
+                                name="complemento"
+                                value={formData.complemento}
+                                onChange={handleInputChange}
+                                noBorder
+                            />
                         </div>
 
                         <div className="flex flex-col gap-3 sm:gap-4">
@@ -520,8 +545,9 @@ function InfoIns({
                                 onClick={handleNext}
                                 variant="primary"
                                 fullWidth
+                                disabled={loading}
                             >
-                                Avançar
+                                {loading ? 'Verificando...' : 'Avançar'}
                             </Button>
 
                             <Button
@@ -529,6 +555,7 @@ function InfoIns({
                                 onClick={onBack}
                                 variant="secondary"
                                 fullWidth
+                                disabled={loading}
                             >
                                 Voltar
                             </Button>
