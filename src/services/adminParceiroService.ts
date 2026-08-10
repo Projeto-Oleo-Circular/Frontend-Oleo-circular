@@ -14,7 +14,16 @@ export interface Parceiro {
   responsavelLegalNome?: string;
   statusAprovacaoParceiro: StatusAprovacao;
   criadoEm?: string;
+
+  parceiroIndicadorId?: number | string | null;
+  parceiroIndicador?: {
+    id: number;
+    nome: string;
+    tipo?: string;
+  } | null;
+  outroParceiro?: string | null;
 }
+
 
 export interface ListarParceirosParams {
   page?: number;

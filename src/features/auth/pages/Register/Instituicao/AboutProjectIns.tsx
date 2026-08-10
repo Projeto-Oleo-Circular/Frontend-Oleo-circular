@@ -216,11 +216,11 @@ function AboutProjectIns({
               {formData.partner === "outros" && (
                 <div>
                   <Input
+                    type="text"
                     name="otherPartnerName"
                     value={formData.otherPartnerName}
                     onChange={handleInputChange}
-                    placeholder="Qual é o parceiro?"
-                    className="w-full bg-white rounded-xl border border-white-200 px-4 py-3 text-sm text-black-primary outline-none resize-none h-28 placeholder:text-black-100 focus:border-green-primary transition-colors duration-200"
+                    placeholder="Quem foi o parceiro indicador?"
                     error={fieldErrors.otherPartnerName}
                   />
                 </div>

@@ -32,7 +32,6 @@ import AdminLogin from './features/admin/pages/AdminLogin'
 import Dashboard from './features/admin/pages/Dashboard'
 import Requests from './features/admin/pages/Requests'
 import AdminMap from './features/admin/pages/Map'
-import List from './features/admin/pages/List'
 import AdminMyPoints from './features/admin/pages/MyPoints'
 import PartnersApproval from './features/admin/pages/PartnersApproval'
 import ProfileAdmin from './features/admin/pages/ProfileAdmin'
@@ -72,7 +71,6 @@ function App() {
       <Route path="/admin/dashboard" element={<AdminProtectedRoute><Dashboard /></AdminProtectedRoute>} />
       <Route path="/admin/requests" element={<AdminProtectedRoute><Requests /></AdminProtectedRoute>} />
       <Route path="/admin/map" element={<AdminProtectedRoute><AdminMap /></AdminProtectedRoute>} />
-      <Route path="/admin/list" element={<AdminProtectedRoute><List /></AdminProtectedRoute>} />
       <Route path="/admin/my-points" element={<AdminProtectedRoute><AdminMyPoints /></AdminProtectedRoute>} />
       <Route path="/admin/profile-admin" element={<AdminProtectedRoute><ProfileAdmin /></AdminProtectedRoute>} />
       <Route path="/admin/partners-approval" element={<AdminProtectedRoute><PartnersApproval /></AdminProtectedRoute>} />

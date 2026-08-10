@@ -308,33 +308,33 @@ function Requests() {
               ) : (
                 itens.map((s) => (
                   <tr key={s.id} className="border-b border-white-100 last:border-0 hover:bg-white-50 transition-colors">
-                    <td className="p-4 font-semibold text-black-primary">#{s.id}</td>
+                    <td className="p-4 text-sm font-medium text-black-primary">#{s.id}</td>
                     
                     <td className="p-4">
-                      <p className="font-semibold text-black-primary">{s.parceiro.nomeRazaoSocial}</p>
+                      <p className="font-medium text-sm text-sm text-black-primary">{s.parceiro.nomeRazaoSocial}</p>
                         {s.parceiro.documento && (
                           <p className="text-xs text-white-500 mt-0.5">{s.parceiro.documento}</p>
                         )}
                       </td>
 
-                    <td className="p-4 text-black-primary whitespace-nowrap">{formatarData(s.dataSolicitacao)}</td>
+                    <td className="p-4 text-sm text-black-primary font-medium whitespace-nowrap">{formatarData(s.dataSolicitacao)}</td>
                     
-                    <td className="p-4 text-black-primary max-w-xs">
+                    <td className="p-4 text-black-primary font-medium max-w-xs">
                       <div className="flex items-start gap-1.5" title={formatarEndereco(s.pontoColeta)}>
                         <MapPin className="w-4 h-4 shrink-0 text-green-primary mt-0.5" />
-                        <span className="text-xs leading-relaxed truncate">
+                        <span className="text-sm leading-relaxed truncate">
                           {formatarEndereco(s.pontoColeta)}
                         </span>
                       </div>
                     </td>
 
-                    <td className="p-4 font-medium text-black-primary">
+                    <td className="p-4 text-sm font-medium text-black-primary">
                       {s.parceiro?.nomeParceiro || s.parceiro?.nomeRazaoSocial || "—"}
                     </td>
                     
-                    <td className="p-4 text-black-primary">{s.pontoColeta.nomePontoColeta}</td>
+                    <td className="p-4 text-sm text-black-primary font-medium">{s.pontoColeta.nomePontoColeta}</td>
                     
-                    <td className="p-4 text-black-primary whitespace-nowrap">{s.pontoColeta.capacidadeBombona} L</td>
+                    <td className="p-4 text-sm text-black-primary font-medium  whitespace-nowrap">{s.pontoColeta.capacidadeBombona} L</td>
                     
                     <td className="p-4 whitespace-nowrap">
                       <StatusBadge status={s.status} />

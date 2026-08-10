@@ -4,6 +4,10 @@ import {
   type Parceiro,
   type StatusAprovacao,
 } from "../../../../services/adminParceiroService";
+import {
+  authService,
+  type ParceiroIndicador,
+} from "../../../../services/authService";
 
 import StatusBadge from "../../../../components/ui/StatusBadge";
 import AdminTopNav from "../../../../components/layout/AdminTopNav";
@@ -11,16 +15,7 @@ import AdminFilterDropdown, {
   FilterOption,
 } from "../../../../components/ui/AdminFilterDropdown";
 
-import {
-  User,
-  Phone,
-  Mail,
-  Eye,
-  X,
-  Check,
-  Search,
-} from "lucide-react";
-
+import { User, Phone, Mail, Eye, X, Check, Search } from "lucide-react";
 import Button from "../../../../components/ui/Button";
 import Footer from "../../../../components/layout/Footer";
 
@@ -38,11 +33,11 @@ function formatarData(iso?: string | null): string {
 
 export function PartnersApproval() {
   const [parceiros, setParceiros] = useState<Parceiro[]>([]);
+  const [indicadores, setIndicadores] = useState<ParceiroIndicador[]>([]);
   const [loading, setLoading] = useState(true);
   const [salvando, setSalvando] = useState(false);
   const [observacaoModal, setObservacaoModal] = useState("");
 
-  // ESTADOS DOS FILTROS
   const [statusFiltro, setStatusFiltro] = useState<StatusAprovacao | "">("");
   const [termoBusca, setTermoBusca] = useState("");
 
@@ -61,6 +56,18 @@ export function PartnersApproval() {
     { value: "REJEITADO", label: "Rejeitado" },
   ];
 
+  useEffect(() => {
+    async function carregarIndicadores() {
+      try {
+        const lista = await authService.listarParceirosIndicadores();
+        setIndicadores(lista);
+      } catch (error) {
+        console.error("Erro ao carregar parceiros indicadores:", error);
+      }
+    }
+    carregarIndicadores();
+  }, []);
+
   const carregarParceiros = useCallback(async () => {
     setLoading(true);
     try {
@@ -69,7 +76,6 @@ export function PartnersApproval() {
         busca: termoBusca || undefined,
       });
 
-      // Trata caso a API retorne objeto paginado { items, total } ou um Array direto
       if (Array.isArray(resposta)) {
         setParceiros(resposta);
       } else if (resposta && Array.isArray(resposta.items)) {
@@ -88,7 +94,29 @@ export function PartnersApproval() {
     carregarParceiros();
   }, [carregarParceiros]);
 
-  // Filtro local no Front-End (Garante o funcionamento mesmo se a API ainda não tiver o filtro no backend)
+  // Função auxiliar para resolver o nome do Parceiro Indicador
+  const obterNomeParceiroIndicador = (parceiro: Parceiro): string => {
+    // 1. Caso a API retorne o objeto aninhado
+    if (parceiro.parceiroIndicador?.nome) {
+      return parceiro.parceiroIndicador.nome;
+    }
+
+    // 2. Caso a API retorne o ID e seja encontrado na lista obtida pelo endpoint /parceiros-indicadores
+    if (parceiro.parceiroIndicadorId) {
+      const encontrado = indicadores.find(
+        (ind) => String(ind.id) === String(parceiro.parceiroIndicadorId)
+      );
+      if (encontrado) return encontrado.nome;
+    }
+
+    // 3. Caso o usuário tenha marcado a opção "Outro" no cadastro
+    if (parceiro.outroParceiro) {
+      return parceiro.outroParceiro;
+    }
+
+    return "—";
+  };
+
   const parceirosFiltrados = parceiros.filter((parceiro) => {
     const atendeStatus =
       !statusFiltro || parceiro.statusAprovacaoParceiro === statusFiltro;
@@ -142,8 +170,6 @@ export function PartnersApproval() {
       <AdminTopNav />
 
       <main className="w-full max-w-[1440px] mx-auto p-6">
-        
-        {/* HEADER E BARRA DE FILTROS */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-green-primary mt-2 sm:mt-5 mb-1">
@@ -154,9 +180,7 @@ export function PartnersApproval() {
             </p>
           </div>
 
-          {/* CONTROLES DE FILTRO */}
           <div className="flex flex-col sm:flex-row items-center gap-3">
-            {/* Input de Pesquisa por Nome/Documento/E-mail */}
             <div className="relative w-full sm:w-64">
               <input
                 type="text"
@@ -168,7 +192,6 @@ export function PartnersApproval() {
               <Search className="w-4 h-4 text-white-400 absolute left-3 top-2.5" />
             </div>
 
-            {/* Dropdown de Filtro por Status */}
             <AdminFilterDropdown
               placeholder="Filtros"
               options={statusOptions}
@@ -178,14 +201,13 @@ export function PartnersApproval() {
           </div>
         </div>
 
-        {/* TABELA DE PARCEIROS */}
         <div className="bg-white-primary rounded-xl shadow-sm border border-white-200 overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="text-white-primary bg-green-400">
                 <th className="p-3 w-16">ID</th>
                 <th className="p-3 w-64">Razão Social / Nome</th>
-                <th className="p-3 w-40">Documento</th>
+                <th className="p-3 w-48">Parceiro Indicador</th>
                 <th className="p-3 w-48">E-mail / Telefone</th>
                 <th className="p-3 w-44">Responsável Legal</th>
                 <th className="p-3 w-32">Aprovação</th>
@@ -214,29 +236,31 @@ export function PartnersApproval() {
                       key={parceiro.id}
                       className="border-b border-white-100 last:border-0 hover:bg-white-50 transition-colors"
                     >
-                      <td className="p-4 font-semibold text-black-primary">
+                      <td className="p-4 font-medium text-sm text-black-primary">
                         #{parceiro.id}
                       </td>
                       <td className="p-4">
-                        <p className="font-bold text-black-primary">
+                        <p className="font-medium text-sm text-black-primary">
                           {parceiro.nomeRazaoSocial}
                         </p>
                         {parceiro.nomeSocial && (
-                          <p className="text-xs text-white-500">{parceiro.nomeSocial}</p>
+                          <p className="text-sm text-white-500">
+                            {parceiro.nomeSocial}
+                          </p>
                         )}
                       </td>
-                      <td className="p-4 text-black-primary whitespace-nowrap">
-                        {parceiro.documento || "—"}
+                      <td className="p-4 text-sm text-black-primary font-medium whitespace-nowrap">
+                        {obterNomeParceiroIndicador(parceiro)}
                       </td>
                       <td className="p-4">
-                        <p className="text-xs text-black-primary font-medium">
+                        <p className="text-black-primary text-sm font-medium">
                           {parceiro.email}
                         </p>
-                        <p className="text-xs text-white-500 mt-0.5">
+                        <p className="text-sm text-white-500 mt-0.5">
                           {parceiro.telefone || "—"}
                         </p>
                       </td>
-                      <td className="p-4 text-black-primary text-xs whitespace-nowrap">
+                      <td className="p-4 text-sm text-black-primary whitespace-nowrap">
                         {parceiro.responsavelLegalNome || "—"}
                       </td>
                       <td className="p-4 whitespace-nowrap">
@@ -285,9 +309,14 @@ export function PartnersApproval() {
             <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl animate-slide-down">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-bold text-lg text-green-primary">
-                  {modal.tipo === "aprovar" ? "Confirmar Aprovação" : "Confirmar Rejeição"}
+                  {modal.tipo === "aprovar"
+                    ? "Confirmar Aprovação"
+                    : "Confirmar Rejeição"}
                 </h2>
-                <button onClick={fecharModal} className="text-red-primary hover:text-red-hover cursor-pointer">
+                <button
+                  onClick={fecharModal}
+                  className="text-red-primary hover:text-red-hover cursor-pointer"
+                >
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -298,7 +327,9 @@ export function PartnersApproval() {
               </p>
 
               <label className="block mb-4">
-                <span className="text-sm text-white-600 font-medium">Observações (opcional)</span>
+                <span className="text-sm text-white-600 font-medium">
+                  Observações (opcional)
+                </span>
                 <textarea
                   rows={3}
                   placeholder="Escreva um comentário..."
@@ -309,10 +340,22 @@ export function PartnersApproval() {
               </label>
 
               <div className="flex gap-3">
-                <Button variant="danger" size="sm" onClick={fecharModal} disabled={salvando} fullWidth>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={fecharModal}
+                  disabled={salvando}
+                  fullWidth
+                >
                   Cancelar
                 </Button>
-                <Button variant="primary" size="sm" loading={salvando} onClick={processarAcaoModal} fullWidth>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  loading={salvando}
+                  onClick={processarAcaoModal}
+                  fullWidth
+                >
                   Confirmar
                 </Button>
               </div>
@@ -326,10 +369,17 @@ export function PartnersApproval() {
             <div className="bg-white rounded-xl p-6 w-full max-w-lg shadow-xl animate-slide-down max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between pb-3 border-b border-white-100 mb-4">
                 <div>
-                  <h2 className="font-bold text-xl text-green-primary">Detalhes do Parceiro</h2>
-                  <p className="text-xs text-white-500">ID do Parceiro: #{modal.parceiro.id}</p>
+                  <h2 className="font-bold text-xl text-green-primary">
+                    Detalhes do Parceiro
+                  </h2>
+                  <p className="text-xs text-white-500">
+                    ID do Parceiro: #{modal.parceiro.id}
+                  </p>
                 </div>
-                <button onClick={fecharModal} className="text-white-500 hover:text-black-primary cursor-pointer">
+                <button
+                  onClick={fecharModal}
+                  className="text-white-500 hover:text-black-primary cursor-pointer"
+                >
                   <X className="w-5 h-5 text-red-primary" />
                 </button>
               </div>
@@ -337,12 +387,23 @@ export function PartnersApproval() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between bg-white-50 p-3 rounded-lg border border-white-100">
                   <div>
-                    <span className="text-xs text-white-500 block">Status de Cadastro</span>
-                    <StatusBadge status={modal.parceiro.statusAprovacaoParceiro || "PENDENTE"} tipo="parceiro" />
+                    <span className="text-xs text-white-500 block">
+                      Status de Cadastro
+                    </span>
+                    <StatusBadge
+                      status={
+                        modal.parceiro.statusAprovacaoParceiro || "PENDENTE"
+                      }
+                      tipo="parceiro"
+                    />
                   </div>
                   <div className="text-right">
-                    <span className="text-xs text-white-500 block">Data de Cadastro</span>
-                    <span className="text-xs font-semibold text-black-primary">{formatarData(modal.parceiro.criadoEm)}</span>
+                    <span className="text-xs text-white-500 block">
+                      Data de Cadastro
+                    </span>
+                    <span className="text-xs font-semibold text-black-primary">
+                      {formatarData(modal.parceiro.criadoEm)}
+                    </span>
                   </div>
                 </div>
 
@@ -350,14 +411,25 @@ export function PartnersApproval() {
                   <h3 className="text-xs font-bold text-green-primary uppercase tracking-wider mb-2 flex items-center gap-1.5">
                     <User className="w-3.5 h-3.5" /> Identificação
                   </h3>
-                  <p className="text-sm font-semibold text-black-primary">{modal.parceiro.nomeRazaoSocial}</p>
+                  <p className="text-sm font-semibold text-black-primary">
+                    {modal.parceiro.nomeRazaoSocial}
+                  </p>
                   {modal.parceiro.nomeSocial && (
-                    <p className="text-xs text-white-500">Nome Fantasia: {modal.parceiro.nomeSocial}</p>
+                    <p className="text-xs text-white-500">
+                      Nome Fantasia: {modal.parceiro.nomeSocial}
+                    </p>
                   )}
                   <p className="text-xs text-white-500 mt-1">
-                    Tipo: <strong>{modal.parceiro.tipoPessoa}</strong> ({modal.parceiro.tipoParceiro})
+                    Tipo: <strong>{modal.parceiro.tipoPessoa}</strong> (
+                    {modal.parceiro.tipoParceiro})
                   </p>
-                  <p className="text-xs text-white-500 mt-0.5">CPF/CNPJ: {modal.parceiro.documento || "—"}</p>
+                  <p className="text-xs text-white-500 mt-0.5">
+                    Parceiro Indicador:{" "}
+                    <strong>{obterNomeParceiroIndicador(modal.parceiro)}</strong>
+                  </p>
+                  <p className="text-xs text-white-500 mt-0.5">
+                    CPF/CNPJ: {modal.parceiro.documento || "—"}
+                  </p>
                 </div>
 
                 <div className="border border-white-100 rounded-lg p-3">
@@ -372,15 +444,24 @@ export function PartnersApproval() {
                   </p>
                   {modal.parceiro.responsavelLegalNome && (
                     <div className="mt-2 pt-2 border-t border-white-100 text-xs">
-                      <span className="text-white-500 block">Responsável Legal:</span>
-                      <span className="font-semibold text-black-primary">{modal.parceiro.responsavelLegalNome}</span>
+                      <span className="text-white-500 block">
+                        Responsável Legal:
+                      </span>
+                      <span className="font-semibold text-black-primary">
+                        {modal.parceiro.responsavelLegalNome}
+                      </span>
                     </div>
                   )}
                 </div>
               </div>
 
               <div className="mt-6">
-                <Button variant="primary" size="sm" onClick={fecharModal} fullWidth>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={fecharModal}
+                  fullWidth
+                >
                   Fechar
                 </Button>
               </div>

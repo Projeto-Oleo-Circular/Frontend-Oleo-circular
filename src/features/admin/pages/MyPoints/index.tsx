@@ -253,14 +253,14 @@ export function PointsApproval() {
                       key={ponto.id}
                       className="border-b border-white-100 last:border-0 hover:bg-white-50 transition-colors"
                     >
-                      <td className="p-4 font-semibold text-black-primary">
+                      <td className="p-4 text-sm font-medium text-black-primary">
                         #{ponto.id}
                       </td>
-                      <td className="p-4 font-bold text-black-primary">
+                      <td className="p-4 text-sm font-medium text-black-primary">
                         {ponto.nomePontoColeta}
                       </td>
                       <td className="p-4">
-                        <p className="font-semibold text-black-primary">
+                        <p className="text-sm font-medium text-black-primary">
                           {ponto.parceiro?.nomeRazaoSocial}
                         </p>
                         {ponto.parceiro?.documento && (
@@ -269,7 +269,7 @@ export function PointsApproval() {
                           </p>
                         )}
                       </td>
-                      <td className="p-4 text-black-primary max-w-xs">
+                      <td className="p-4 text-sm text-black-primary max-w-xs">
                         <div
                           className="flex items-start gap-1.5"
                           title={formatarEndereco(ponto)}
@@ -280,7 +280,7 @@ export function PointsApproval() {
                           </span>
                         </div>
                       </td>
-                      <td className="p-4 text-black-primary whitespace-nowrap">
+                      <td className="p-4 text-sm text-black-primary whitespace-nowrap">
                         {ponto.capacidadeBombona} L
                       </td>
                       <td className="p-4 whitespace-nowrap">

@@ -6,9 +6,8 @@ const NAV_ITEMS = [
   { to: "/admin/dashboard", label: "Dashboard", iconSrc: "/assets/icons/icon-dashboard.svg" },
   { to: "/admin/requests", label: "Solicitações", iconSrc: "/assets/icons/icon-solicitacao.svg" },
   { to: "/admin/map", label: "Mapa", iconSrc: "/assets/icons/map.svg" },
-  { to: "/admin/list", label: "Lista", iconSrc: "/assets/icons/icon-list.svg" },
-  { to: "/admin/my-points", label: "Meus Pontos", iconSrc: "/assets/icons/icon-pontos.svg" },
-    { to: "/admin/partners-approval", label: "Meus Parceiros", iconSrc: "/assets/icons/icon-pontos.svg" },
+  { to: "/admin/my-points", label: "Pontos", iconSrc: "/assets/icons/icon-pontos.svg" },
+  { to: "/admin/partners-approval", label: "Parceiros", iconSrc: "/assets/icons/icon-pontos.svg" },
 
 ];
 

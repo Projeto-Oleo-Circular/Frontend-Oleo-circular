@@ -56,7 +56,7 @@ function Input({
   }
 
   return (
-    <div className={`flex flex-col px-4 py-4 gap-0 bg-white ${borderClass} ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}>
+    <div className={`flex flex-col px-4 py-4 rounded-xl bg-white ${borderClass} ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}>
       <div className="flex items-center gap-3">
         {icon && (
           <img
@@ -96,7 +96,7 @@ function Input({
         )}
       </div>
       {error && (
-        <p className="text-red-primary text-xs mt-1 font-medium pl-8">
+        <p className={`text-red-primary text-xs mt-1 font-medium ${icon ? 'pl-8' : ''}`}>
           {error}
         </p>
       )}
