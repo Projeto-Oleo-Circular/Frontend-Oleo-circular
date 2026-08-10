@@ -355,7 +355,7 @@ function InfoIns({
                 bairro: formData.bairro,
                 numero: formData.numero,
                 complemento: formData.complemento,
-                categoria: Number(formData.categoria)
+                categoriaId: Number(formData.categoria)
             }
 
             if (onDataChange) {

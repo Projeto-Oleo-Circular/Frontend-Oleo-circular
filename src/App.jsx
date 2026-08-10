@@ -34,6 +34,7 @@ import Requests from './features/admin/pages/Requests'
 import AdminMap from './features/admin/pages/Map'
 import List from './features/admin/pages/List'
 import AdminMyPoints from './features/admin/pages/MyPoints'
+import PartnersApproval from './features/admin/pages/PartnersApproval'
 import ProfileAdmin from './features/admin/pages/ProfileAdmin'
 
 function App() {
@@ -74,6 +75,7 @@ function App() {
       <Route path="/admin/list" element={<AdminProtectedRoute><List /></AdminProtectedRoute>} />
       <Route path="/admin/my-points" element={<AdminProtectedRoute><AdminMyPoints /></AdminProtectedRoute>} />
       <Route path="/admin/profile-admin" element={<AdminProtectedRoute><ProfileAdmin /></AdminProtectedRoute>} />
+      <Route path="/admin/partners-approval" element={<AdminProtectedRoute><PartnersApproval /></AdminProtectedRoute>} />
     </Routes>
   )
 }

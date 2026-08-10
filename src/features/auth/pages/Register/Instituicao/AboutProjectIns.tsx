@@ -148,7 +148,7 @@ function AboutProjectIns({
     const isOther = formData.partner === "outros";
     const parceiroId =
       formData.partner && !isOther ? Number(formData.partner) : null;
-
+    const outroParceiroNome = isOther ? formData.otherPartnerName.trim() : null;
     let comoConheceuFinal = formData.howFound;
     if (isOther && formData.otherPartnerName) {
       comoConheceuFinal = `Parceiro indicado: ${formData.otherPartnerName.trim()}.${
@@ -160,7 +160,7 @@ function AboutProjectIns({
       comoConheceu: comoConheceuFinal,
       observacao: formData.observation,
       parceiroIndicadorId: parceiroId,
-      outroParceiro: formData.otherPartnerName,
+      outroParceiro: outroParceiroNome,
     });
 
     onNext();

@@ -41,10 +41,8 @@ function Home() {
         const carregarPontos = async () => {
             try {
                 const data = await pontosColetaService.listarMeusPontos()
-                console.log("📦 Pontos carregados da API:", data)
                 setPontos(data)
             } catch (error) {
-                console.error("Erro ao carregar pontos de coleta:", error)
             } finally {
                 setLoadingPontos(false)
             }

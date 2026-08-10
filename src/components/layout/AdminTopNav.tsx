@@ -8,6 +8,8 @@ const NAV_ITEMS = [
   { to: "/admin/map", label: "Mapa", iconSrc: "/assets/icons/map.svg" },
   { to: "/admin/list", label: "Lista", iconSrc: "/assets/icons/icon-list.svg" },
   { to: "/admin/my-points", label: "Meus Pontos", iconSrc: "/assets/icons/icon-pontos.svg" },
+    { to: "/admin/partners-approval", label: "Meus Parceiros", iconSrc: "/assets/icons/icon-pontos.svg" },
+
 ];
 
 function AdminTopNav() {

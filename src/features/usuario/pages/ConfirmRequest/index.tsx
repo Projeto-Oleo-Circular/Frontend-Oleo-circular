@@ -3,6 +3,15 @@ import { useNavigate, useLocation } from "react-router-dom"
 import HeaderApp from "../../../../components/layout/HeaderApp"
 import Button from "../../../../components/ui/Button"
 import useToast from "../../../../hooks/useToast"
+import { solicitacaoColetaService } from "../../../../services/solicitacaoColetaService"
+
+interface RequestData {
+    pontoId: number
+    nivel: number
+    capacidade: number
+    endereco: string
+    observacao: string
+}
 
 function ConfirmRequest() {
     const navigate = useNavigate()
@@ -11,7 +20,8 @@ function ConfirmRequest() {
 
     const [loading, setLoading] = useState(false)
     const [showSuccessModal, setShowSuccessModal] = useState(false)
-    const [data, setData] = useState({
+    const [data, setData] = useState<RequestData>({
+        pontoId: 0,
         nivel: 0,
         capacidade: 0,
         endereco: "",
@@ -19,7 +29,7 @@ function ConfirmRequest() {
     })
 
     useEffect(() => {
-        // Pega os dados enviados pela tela de Observações
+        // Recebe os dados repassados pelas telas anteriores
         const state = location.state as { 
             pontoId?: number
             nivel?: number
@@ -28,16 +38,16 @@ function ConfirmRequest() {
             observacao?: string 
         }
 
-        if (state) {
+        if (state && (state.pontoId || state.pontoId === 0)) {
             setData({
+                pontoId: state.pontoId || 0,
                 nivel: state.nivel || 0,
                 capacidade: state.capacidade || 0,
                 endereco: state.endereco || "Endereço não informado",
-                observacao: state.observacao || "Nenhuma observação"
+                observacao: state.observacao || ""
             })
         } else {
-            // Se por algum motivo vier sem dados, volta para o início
-            addToast("Dados da solicitação não encontrados", "error")
+            addToast("Dados da solicitação não encontrados.", "error")
             navigate("/home")
         }
     }, [location.state, addToast, navigate])
@@ -50,29 +60,44 @@ function ConfirmRequest() {
         return "Vazia"
     }
 
-    const handleConfirmarSolicitacao = async () => {
-        setLoading(true)
-        try {
-            // Simula o envio da solicitação para o Back-end
-            // await solicitacaoColetaService.criarSolicitacao({ ...data })
-            
-            // Espera um tempinho para simular o carregamento
-            await new Promise(resolve => setTimeout(resolve, 800))
-
-            // Abre o modal de sucesso
-            setShowSuccessModal(true)
-        } catch (error) {
-            console.error("Erro ao enviar solicitação:", error)
-            addToast("Erro ao confirmar solicitação", "error")
-        } finally {
-            setLoading(false)
-        }
-    }
-
     const getStatusColor = (value: number): string => {
         if (value >= 75) return "text-orange-500"
         if (value >= 50) return "text-orange-primary"
         return "text-green-500"
+    }
+
+    const handleConfirmarSolicitacao = async () => {
+        if (!data.pontoId) {
+            addToast("Ponto de coleta não identificado.", "error")
+            return
+        }
+
+        setLoading(true)
+
+        try {
+            // Calcula o volume aproximado em Litros
+            const volumeCalculado = Math.round((data.capacidade * data.nivel) / 100) || data.capacidade
+
+            // Envio para a API
+            await solicitacaoColetaService.criarSolicitacao({
+                pontoColetaId: Number(data.pontoId),
+                volumeInformado: volumeCalculado,
+                observacoes: data.observacao.trim() ? data.observacao.trim() : undefined
+            })
+
+            // Exibe modal de confirmação
+            setShowSuccessModal(true)
+
+        } catch (error: any) {
+            console.error("Erro ao enviar solicitação:", error)
+
+            // Captura a mensagem retornada pelo Back-end (Ex: "Este ponto de coleta já possui uma solicitação...")
+            const backendMessage = error.response?.data?.message || "Erro ao confirmar solicitação. Tente novamente."
+            
+            addToast(backendMessage, "error")
+        } finally {
+            setLoading(false)
+        }
     }
 
     return (
@@ -92,7 +117,7 @@ function ConfirmRequest() {
                                 <polyline points="15 18 9 12 15 6"></polyline>
                             </svg>
                         </button>
-                        <h1 className="text-xl font-bold text-green-primary">Confirmar Solicitações</h1>
+                        <h1 className="text-xl font-bold text-green-primary">Confirmar Solicitação</h1>
                     </div>
 
                     {/* Título */}
@@ -139,21 +164,23 @@ function ConfirmRequest() {
                                 <img src="/assets/icons/icon-observations.svg" alt="Observações" className="w-7 h-7 object-contain" />
                                 <span className="font-bold text-black-primary">Observações</span>
                             </div>
-                            <p className="text-sm text-white-600 pl-10">{data.observacao}</p>
+                            <p className="text-sm text-white-600 pl-10">
+                                {data.observacao ? data.observacao : "Nenhuma observação"}
+                            </p>
                         </div>
                     </div>
 
                     {/* Alerta Informativo */}
                     <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 flex items-start gap-3">
                         <div className="mt-0.5 shrink-0 text-black-primary">
-                            <img src="/assets/icons/icon-info.svg"alt="Alerta" className="w-5 h-5 object-contain" />
+                            <img src="/assets/icons/icon-info.svg" alt="Alerta" className="w-5 h-5 object-contain" />
                         </div>
                         <p className="text-sm text-black-primary leading-relaxed">
                             Sua solicitação será enviada para análise e nossa equipe entrará em contato em breve.
                         </p>
                     </div>
 
-                    {/* Botões */}
+                    {/* Botões de Ação */}
                     <div className="flex flex-col gap-3 mt-2">
                         <Button
                             onClick={handleConfirmarSolicitacao}
@@ -167,6 +194,7 @@ function ConfirmRequest() {
                             onClick={() => navigate(-1)}
                             variant="secondary"
                             fullWidth
+                            disabled={loading}
                         >
                             Voltar
                         </Button>
@@ -175,9 +203,9 @@ function ConfirmRequest() {
                 </div>
             </main>
 
-            {/* MODAL DE SUCESSO (Renderizado por cima de tudo) */}
+            {/* MODAL DE SUCESSO */}
             {showSuccessModal && (
-                <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 p-6 backdrop-blur-sm">
+                <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 p-6 backdrop-blur-sm animate-fade-in">
                     <div className="bg-white rounded-3xl w-full max-w-sm p-6 relative overflow-hidden shadow-2xl animate-fade-in-up">
                         
                         <img 
@@ -185,17 +213,14 @@ function ConfirmRequest() {
                             alt="" 
                             className="absolute -top-10 -right-10 w-40 h-40 object-contain pointer-events-none opacity-90"
                         />
-                        {/* Imagem do canto inferior esquerdo */}
                         <img 
                             src="/assets/fundo-popUp-inferior.svg" 
                             alt="" 
                             className="absolute -bottom-10 -left-10 w-40 h-40 object-contain pointer-events-none opacity-90"
                         />
 
-                        {/* Conteúdo do Modal */}
                         <div className="relative z-10 flex flex-col items-center text-center pt-4">
                             
-                            {/* Ícone do Relógio */}
                             <div className="w-16 h-16 flex items-center justify-center mb-4">
                                 <img src="/assets/icons/icon-relogio.svg" alt="Relógio" className="w-10 h-10 object-contain text-green-600" />
                             </div>

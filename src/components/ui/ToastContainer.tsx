@@ -1,23 +1,28 @@
-import { createPortal } from 'react-dom'
-import Toast from './Toast'
+import { createPortal } from "react-dom";
+import Toast from "./Toast";
 
 interface ToastItem {
-  id: string
-  message: string
-  type: 'error' | 'success' | 'info'
+  id: string;
+  message: string;
+  type: "error" | "success" | "info";
 }
 
 interface Props {
-  toasts: ToastItem[]
-  onClose: (id: string) => void
+  toasts?: ToastItem[];
+  onClose: (id: string) => void;
 }
 
-function ToastContainer({ toasts, onClose }: Props) {
-  if (toasts.length === 0) return null
+function ToastContainer({
+  toasts = [],
+  onClose,
+}: Props) {
+  if (toasts.length === 0) {
+    return null;
+  }
 
-  const toast = toasts[0]
+  const toast = toasts[0];
 
-  return createPortal (
+  return createPortal(
     <div className="fixed top-4 left-0 right-0 z-[9999] flex flex-col items-center pointer-events-none px-4 sm:px-6">
       <div className="pointer-events-auto w-full max-w-sm sm:max-w-md">
         <Toast
@@ -29,7 +34,7 @@ function ToastContainer({ toasts, onClose }: Props) {
       </div>
     </div>,
     document.body
-  )
+  );
 }
 
-export default ToastContainer
+export default ToastContainer;

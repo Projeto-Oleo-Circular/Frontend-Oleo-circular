@@ -15,7 +15,7 @@ export interface SolicitacaoColeta {
 export interface CriarSolicitacaoRequest {
     pontoColetaId: number
     volumeInformado: number
-    observacao?: string
+    observacoes?: string
 }
 
 export const solicitacaoColetaService = {

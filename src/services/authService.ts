@@ -62,7 +62,8 @@ export interface RegisterCredentials {
   redesSociais?: string[]; // Array de strings no Swagger
   site?: string | null;
   aceiteDivulgacao?: boolean;
-  parceiroIndicadorId?: string | null; // String no Swagger
+  parceiroIndicadorId?: string | number | null;
+  outroParceiro?: string | null; 
   comoConheceu?: string;
   observacao?: string;
 }

@@ -84,11 +84,12 @@ function Register() {
     observacao: '',
     nomeSocial: '',
     parceiroIndicadorId: '',
+    outroParceiro:'',
     responsavelLegalNome: '',
     responsavelLegalCpf: '',
     estado: 'BA',
     complemento: '',
-    categoriaId: ''
+    categoriaId: 0
   })
 
   const formatPhone = (value: string): string => {
@@ -126,34 +127,82 @@ function Register() {
     return !hasError
   }
 
-  const getCompleteRegisterData = (): RegisterCredentials => ({
-  tipoPessoa: additionalData.tipoPessoa || 'JURIDICA',
-  tipoParceiro: profile ? profile.toUpperCase() : 'INSTITUCIONAL',
-  nomeRazaoSocial: formData.nome,
-  nomeSocial: additionalData.nomeSocial || null,
-  email: formData.email,
-  senha: formData.senha,
-  documento: additionalData.documento || '',
-  telefone: formData.telefone ? formData.telefone.replace(/\D/g, '') : '',
-  redesSociais: additionalData.redesSociais ? [additionalData.redesSociais] : [], // Converte a string do formulário em Array de Strings
-  aceiteMarketing: additionalData.aceiteMarketing,
-  parceiroIndicadorId: additionalData.parceiroIndicadorId ? String(additionalData.parceiroIndicadorId) : null,
-  responsavelLegalNome: additionalData.responsavelLegalNome || null,
-  responsavelLegalCpf: additionalData.responsavelLegalCpf || null,
-  cep: additionalData.cep ? additionalData.cep.replace(/\D/g, '') : '',
-  logradouro: additionalData.logradouro || '',
-  numero: additionalData.numero || '',
-  bairro: additionalData.bairro || '',
-  cidade: additionalData.cidade || '',
-  estado: additionalData.estado || '',
-  complemento: additionalData.complemento || null,
-  expectativaGeracao: Number(additionalData.capacidadeBombona) || 0,
-  capacidadeBombona: Number(additionalData.capacidadeBombona) || 0,
-  nivelAtualPct: 0,
-  statusBombona: 'VAZIA',
-  categoria: additionalData.categoriaId ? Number(additionalData.categoriaId) : 1, // Envia o ID numérico da categoria
-})
+  const getCompleteRegisterData = (): RegisterCredentials => {
+  const categoriaId = Number(additionalData.categoriaId);
 
+  if (!categoriaId || categoriaId <= 0) {
+    throw new Error("Selecione uma categoria.");
+  }
+
+  // Trata o ID do parceiro indicador: se tiver valor numérico envia o número, senão envia null
+  const parceiroIndicadorIdNum = 
+    additionalData.parceiroIndicadorId && !isNaN(Number(additionalData.parceiroIndicadorId))
+      ? Number(additionalData.parceiroIndicadorId)
+      : null;
+
+  return {
+    tipoPessoa: additionalData.tipoPessoa as 'FISICA' | 'JURIDICA',
+    tipoParceiro: profile
+      ? (profile.toUpperCase() as 'GERADOR' | 'INSTITUCIONAL')
+      : 'INSTITUCIONAL',
+
+    nomeRazaoSocial: formData.nome,
+    nomeSocial: additionalData.nomeSocial || null,
+
+    email: formData.email,
+    senha: formData.senha,
+    documento: additionalData.documento || '',
+
+    telefone: formData.telefone
+      ? formData.telefone.replace(/\D/g, '')
+      : '',
+
+    porte: additionalData.porte,
+
+    aceiteMarketing: additionalData.aceiteMarketing,
+
+    responsavelLegalNome: additionalData.responsavelLegalNome || null,
+
+    responsavelLegalCpf: additionalData.responsavelLegalCpf || null,
+
+    cep: additionalData.cep
+      ? additionalData.cep.replace(/\D/g, '')
+      : '',
+
+    logradouro: additionalData.logradouro || '',
+    numero: additionalData.numero || '',
+    bairro: additionalData.bairro || '',
+    cidade: additionalData.cidade || '',
+
+    estado: additionalData.estado || '',
+    complemento: additionalData.complemento || null,
+
+    expectativaGeracao: Number(additionalData.capacidadeBombona) || 0,
+
+    capacidadeBombona: Number(additionalData.capacidadeBombona) || 0,
+
+    nivelAtualPct: 0,
+    statusBombona: 'VAZIA',
+
+    categoria: categoriaId,
+
+    redesSociais: additionalData.redesSociais
+      ? [additionalData.redesSociais]
+      : [],
+
+    site: additionalData.site || null,
+
+    aceiteDivulgacao: additionalData.aceiteDivulgacao,
+
+    parceiroIndicadorId: parceiroIndicadorIdNum ? String(parceiroIndicadorIdNum) : null,
+
+    outroParceiro: additionalData.outroParceiro || null,
+
+    comoConheceu: additionalData.comoConheceu || '',
+
+    observacao: additionalData.observacao || '',
+  };
+};
 const handleRegister = async () => {
     if (!validateForm()) return
 
