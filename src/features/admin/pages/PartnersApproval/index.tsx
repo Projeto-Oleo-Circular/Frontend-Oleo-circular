@@ -16,7 +16,7 @@ import AdminFilterDropdown, {
   FilterOption,
 } from "../../../../components/ui/AdminFilterDropdown";
 
-import { User, Phone, Mail, Eye, X, Check, Search, Clock, CheckCircle2, XCircle, } from "lucide-react";
+import { User, Phone, Mail, Eye, X, Check, Search, Clock, CheckCircle2, XCircle } from "lucide-react";
 import Button from "../../../../components/ui/Button";
 import Footer from "../../../../components/layout/Footer";
 import SummaryCard from "../../../../components/ui/SummaryCard";
@@ -47,11 +47,10 @@ export function PartnersApproval() {
   const [salvando, setSalvando] = useState(false);
   const [observacaoModal, setObservacaoModal] = useState("");
   const [contagens, setContagens] = useState<ContagensParceiros | null>(null);
-  
 
   const [statusFiltro, setStatusFiltro] = useState<StatusAprovacao | "">("");
   const [termoBusca, setTermoBusca] = useState("");
-  
+
   const [modal, setModal] = useState<{
     tipo: ModalTipo;
     parceiro: Parceiro | null;
@@ -66,7 +65,7 @@ export function PartnersApproval() {
     { value: "APROVADO", label: "Aprovado" },
     { value: "REJEITADO", label: "Rejeitado" },
   ];
-  
+
   const carregarParceiros = useCallback(async () => {
     setLoading(true);
     try {
@@ -92,37 +91,32 @@ export function PartnersApproval() {
 
   const extrairTotal = (r: ListarParceirosResponse | Parceiro[]) =>
     Array.isArray(r) ? r.length : r.total;
-  
+
   const carregarContagensParceiros = useCallback(async () => {
     try {
       const [pendentes, aprovados, rejeitados, total] = await Promise.all([
         adminParceiroService.listarParceiros({ statusAprovacao: "PENDENTE", limit: 1 }),
         adminParceiroService.listarParceiros({ statusAprovacao: "APROVADO", limit: 1 }),
-        adminParceiroService.listarParceiros({ statusAprovacao: "REJEITADO",limit: 1 }),
-        adminParceiroService.listarParceiros({ limit: 1}),
+        adminParceiroService.listarParceiros({ statusAprovacao: "REJEITADO", limit: 1 }),
+        adminParceiroService.listarParceiros({ limit: 1 }),
       ]);
 
-      console.log("pendentes", pendentes);
-      console.log("aprovados", aprovados);
-      console.log("rejeitados", rejeitados);
-      console.log("total", total);
-
       setContagens({
-      pendentes: extrairTotal(pendentes),
-      aprovados: extrairTotal(aprovados),
-      rejeitados: extrairTotal(rejeitados),
-      total: extrairTotal(total),
-    });
+        pendentes: extrairTotal(pendentes),
+        aprovados: extrairTotal(aprovados),
+        rejeitados: extrairTotal(rejeitados),
+        total: extrairTotal(total),
+      });
     } catch (error) {
       console.error("Erro ao carregar contagens de parceiros:", error);
     }
   }, []);
-  
-    useEffect(() => {
-      carregarParceiros();
-      carregarContagensParceiros();
-    }, [carregarParceiros, carregarContagensParceiros]);
-  
+
+  useEffect(() => {
+    carregarParceiros();
+    carregarContagensParceiros();
+  }, [carregarParceiros, carregarContagensParceiros]);
+
   useEffect(() => {
     async function carregarIndicadores() {
       try {
@@ -135,16 +129,11 @@ export function PartnersApproval() {
     carregarIndicadores();
   }, []);
 
-
-
-  // Função auxiliar para resolver o nome do Parceiro Indicador
   const obterNomeParceiroIndicador = (parceiro: Parceiro): string => {
-    // 1. Caso a API retorne o objeto aninhado
     if (parceiro.parceiroIndicador?.nome) {
       return parceiro.parceiroIndicador.nome;
     }
 
-    // 2. Caso a API retorne o ID e seja encontrado na lista obtida pelo endpoint /parceiros-indicadores
     if (parceiro.parceiroIndicadorId) {
       const encontrado = indicadores.find(
         (ind) => String(ind.id) === String(parceiro.parceiroIndicadorId)
@@ -152,7 +141,6 @@ export function PartnersApproval() {
       if (encontrado) return encontrado.nome;
     }
 
-    // 3. Caso o usuário tenha marcado a opção "Outro" no cadastro
     if (parceiro.outroParceiro) {
       return parceiro.outroParceiro;
     }
@@ -290,7 +278,6 @@ export function PartnersApproval() {
                 <th className="p-3 w-64">Razão Social / Nome</th>
                 <th className="p-3 w-48">Parceiro Indicador</th>
                 <th className="p-3 w-48">E-mail / Telefone</th>
-                <th className="p-3 w-44">Responsável Legal</th>
                 <th className="p-3 w-32">Aprovação</th>
                 <th className="p-3 w-36">Ações</th>
               </tr>
@@ -298,13 +285,13 @@ export function PartnersApproval() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="p-8 text-center text-white-500">
+                  <td colSpan={6} className="p-8 text-center text-white-500">
                     Carregando parceiros...
                   </td>
                 </tr>
               ) : parceirosFiltrados.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="p-8 text-center text-white-500">
+                  <td colSpan={6} className="p-8 text-center text-white-500">
                     Nenhum parceiro encontrado com os filtros aplicados.
                   </td>
                 </tr>
@@ -340,9 +327,6 @@ export function PartnersApproval() {
                         <p className="text-sm text-white-500 mt-0.5">
                           {parceiro.telefone || "—"}
                         </p>
-                      </td>
-                      <td className="p-4 text-sm text-black-primary whitespace-nowrap">
-                        {parceiro.responsavelLegalNome || "—"}
                       </td>
                       <td className="p-4 whitespace-nowrap">
                         <StatusBadge status={status} tipo="parceiro" />
@@ -515,7 +499,7 @@ export function PartnersApproval() {
 
                 <div className="border border-white-100 rounded-lg p-3">
                   <h3 className="text-xs font-bold text-green-primary uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                    <Phone className="w-3.5 h-3.5" /> Contato e Responsável
+                    <Phone className="w-3.5 h-3.5" /> Contato
                   </h3>
                   <p className="text-xs text-white-500 flex items-center gap-1">
                     <Mail className="w-3 h-3" /> {modal.parceiro.email}
@@ -523,16 +507,6 @@ export function PartnersApproval() {
                   <p className="text-xs text-white-500 flex items-center gap-1 mt-1">
                     <Phone className="w-3 h-3" /> {modal.parceiro.telefone || "—"}
                   </p>
-                  {modal.parceiro.responsavelLegalNome && (
-                    <div className="mt-2 pt-2 border-t border-white-100 text-xs">
-                      <span className="text-white-500 block">
-                        Responsável Legal:
-                      </span>
-                      <span className="font-semibold text-black-primary">
-                        {modal.parceiro.responsavelLegalNome}
-                      </span>
-                    </div>
-                  )}
                 </div>
               </div>
 

@@ -294,7 +294,7 @@ export function PointsApproval() {
                           title={formatarEndereco(ponto)}
                         >
                           <MapPin className="w-4 h-4 shrink-0 text-green-primary mt-0.5" />
-                          <span className="text-xs leading-relaxed truncate">
+                          <span className="text-sm leading-relaxed truncate">
                             {formatarEndereco(ponto)}
                           </span>
                         </div>
