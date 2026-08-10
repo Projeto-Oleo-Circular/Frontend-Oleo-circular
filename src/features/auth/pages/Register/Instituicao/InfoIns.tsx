@@ -76,17 +76,8 @@ function InfoIns({
                 setLoadingCategorias(true)
                 const categorias = await authService.listarCategorias()
                 
-                let filtradas = categorias
-                if (profile === 'institucional') {
-                    filtradas = categorias.filter(c => c.value <= 6)
-                } else if (profile === 'comunitario') {
-                    filtradas = categorias.filter(c => c.value === 7)
-                } else if (profile === 'solidario') {
-                    filtradas = []
-                }
-                
                 setEstabelecimentoOptions(
-                    filtradas.map(c => ({
+                    categorias.map(c => ({
                         value: c.value.toString(),
                         label: c.label
                     }))
