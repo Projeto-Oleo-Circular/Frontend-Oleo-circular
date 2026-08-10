@@ -6,7 +6,7 @@ interface ButtonProps {
     children: ReactNode
     loading?: boolean
     disabled?: boolean
-    variant?: 'primary' | 'secondary' | 'outline' | 'danger' | 'success'
+    variant?: 'primary' | 'secondary' | 'terciary' | 'outline' | 'danger' | 'success'
     size?: 'sm' | 'md' | 'lg'
     fullWidth?: boolean
     className?: string
@@ -34,12 +34,19 @@ function Button({
     const variants = {
         primary: 'bg-green-primary text-white-primary hover:bg-green-hover',
         secondary: 'bg-white-primary text-green-primary border-2 border-green-primary hover:bg-green-100',
+        terciary: 'bg-orange-primary text-white-primary border-2 hover:bg-orange-hover',
         outline: 'bg-transparent text-green-primary border-2 border-green-primary hover:bg-green-50',
         danger: 'bg-red-primary text-white-primary hover:bg-red-hover',
         success: 'bg-green-400 text-white-primary hover:bg-green-500'
     }
 
     const widthClass = fullWidth ? 'w-full' : ''
+
+    const getSpinnerColor = () => {
+        if (['primary', 'danger', 'success'].includes(variant)) return 'white'
+        if (variant === 'terciary') return 'orange'
+        return 'green'
+    }
 
     return (
         <button
@@ -50,7 +57,7 @@ function Button({
         >
             {loading ? (
                 <Spinner
-                    color={variant === 'primary' || variant === 'danger' || variant === 'success' ? 'white' : 'green'} 
+                    color={getSpinnerColor()}
                     size={size === 'sm' ? 'sm' : size === 'lg' ? 'lg' : 'md'} 
                 />
             ) : (
@@ -60,7 +67,7 @@ function Button({
     )
 }
 
-function Spinner({ color = 'white', size = 'md' }: { color?: 'white' | 'green' | 'black'; size?: 'sm' | 'md' | 'lg' }) {
+function Spinner({ color = 'white', size = 'md' }: { color?: 'white' | 'green' | 'orange' | 'black'; size?: 'sm' | 'md' | 'lg' }) {
     const sizes = {
         sm: 'w-4 h-4 border-2',
         md: 'w-5 h-5 border-2',
@@ -70,6 +77,7 @@ function Spinner({ color = 'white', size = 'md' }: { color?: 'white' | 'green' |
     const colors = {
         white: 'border-white/30 border-t-white',
         green: 'border-green-primary/30 border-t-green-primary',
+        orange: 'border-orange-primary/30 border-t-orange-primary',
         black: 'border-black-300 border-t-white-600'
     }
 
