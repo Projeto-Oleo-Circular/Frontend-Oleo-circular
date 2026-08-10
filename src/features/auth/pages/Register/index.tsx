@@ -83,7 +83,7 @@ function Register() {
     outroParceiro:'',
     responsavelLegalNome: '',
     responsavelLegalCpf: '',
-    estado: 'BA',
+    estado: '',
     complemento: '',
     categoriaId: 0
   })
