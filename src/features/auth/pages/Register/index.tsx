@@ -4,7 +4,6 @@ import Input from '../../../../components/ui/Input'
 import { useState, ChangeEvent } from "react"
 import StepProfile from "./StepProfile"
 import useToast from '../../../../hooks/useToast'
-import ToastContainer from '../../../../components/ui/ToastContainer'
 import { authService, RegisterCredentials } from '../../../../services/authService'
 
 import InfoIns from "./Instituicao/InfoIns"
@@ -26,8 +25,6 @@ import FeedbackSo from "./Solidario/FeedbackSo"
 import Checkbox from "../../../../components/ui/Checkbox"
 import Button from "../../../../components/ui/Button"
 
-
-
 const validatePhone = (phone: string): boolean => {
   const cleaned = phone.replace(/\D/g, '')
   return cleaned.length >= 10 && cleaned.length <= 11
@@ -39,10 +36,9 @@ const STEPS: Record<string, string[]> = {
   solidario:     ['profile', 'info', 'volume', 'about', 'feedback'],
 }
 
-
 function Register() {
   const navigate = useNavigate()
-  const { toasts, addToast, removeToast } = useToast()
+  const { addToast } = useToast()
   const [loading, setLoading] = useState(false)
 
   const [step, setStep] = useState(0)
@@ -128,82 +124,82 @@ function Register() {
   }
 
   const getCompleteRegisterData = (): RegisterCredentials => {
-  const categoriaId = Number(additionalData.categoriaId);
+    const categoriaId = Number(additionalData.categoriaId);
 
-  if (!categoriaId || categoriaId <= 0) {
-    throw new Error("Selecione uma categoria.");
-  }
+    if (!categoriaId || categoriaId <= 0) {
+      throw new Error("Selecione uma categoria.");
+    }
 
-  // Trata o ID do parceiro indicador: se tiver valor numérico envia o número, senão envia null
-  const parceiroIndicadorIdNum = 
-    additionalData.parceiroIndicadorId && !isNaN(Number(additionalData.parceiroIndicadorId))
-      ? Number(additionalData.parceiroIndicadorId)
-      : null;
+    const parceiroIndicadorIdNum = 
+      additionalData.parceiroIndicadorId && !isNaN(Number(additionalData.parceiroIndicadorId))
+        ? Number(additionalData.parceiroIndicadorId)
+        : null;
 
-  return {
-    tipoPessoa: additionalData.tipoPessoa as 'FISICA' | 'JURIDICA',
-    tipoParceiro: profile
-      ? (profile.toUpperCase() as 'GERADOR' | 'INSTITUCIONAL')
-      : 'INSTITUCIONAL',
+    return {
+      tipoPessoa: additionalData.tipoPessoa as 'FISICA' | 'JURIDICA',
+      tipoParceiro: profile
+        ? (profile.toUpperCase() as 'GERADOR' | 'INSTITUCIONAL')
+        : 'INSTITUCIONAL',
 
-    nomeRazaoSocial: formData.nome,
-    nomeSocial: additionalData.nomeSocial || null,
+      nomeRazaoSocial: formData.nome,
+      nomeSocial: additionalData.nomeSocial || null,
 
-    email: formData.email,
-    senha: formData.senha,
-    documento: additionalData.documento || '',
+      email: formData.email,
+      senha: formData.senha,
+      documento: additionalData.documento || '',
 
-    telefone: formData.telefone
-      ? formData.telefone.replace(/\D/g, '')
-      : '',
+      telefone: formData.telefone
+        ? formData.telefone.replace(/\D/g, '')
+        : '',
 
-    porte: additionalData.porte,
+      porte: additionalData.porte,
 
-    aceiteMarketing: additionalData.aceiteMarketing,
+      aceiteMarketing: additionalData.aceiteMarketing,
 
-    responsavelLegalNome: additionalData.responsavelLegalNome || null,
+      responsavelLegalNome: additionalData.responsavelLegalNome || null,
 
-    responsavelLegalCpf: additionalData.responsavelLegalCpf || null,
+      responsavelLegalCpf: additionalData.responsavelLegalCpf || null,
 
-    cep: additionalData.cep
-      ? additionalData.cep.replace(/\D/g, '')
-      : '',
+      cep: additionalData.cep
+        ? additionalData.cep.replace(/\D/g, '')
+        : '',
 
-    logradouro: additionalData.logradouro || '',
-    numero: additionalData.numero || '',
-    bairro: additionalData.bairro || '',
-    cidade: additionalData.cidade || '',
+      logradouro: additionalData.logradouro || '',
+      numero: additionalData.numero || '',
+      bairro: additionalData.bairro || '',
+      cidade: additionalData.cidade || '',
 
-    estado: additionalData.estado || '',
-    complemento: additionalData.complemento || null,
+      estado: additionalData.estado || '',
+      complemento: additionalData.complemento || null,
 
-    expectativaGeracao: Number(additionalData.capacidadeBombona) || 0,
+      expectativaGeracao: Number(additionalData.capacidadeBombona) || 0,
 
-    capacidadeBombona: Number(additionalData.capacidadeBombona) || 0,
+      capacidadeBombona: Number(additionalData.capacidadeBombona) || 0,
 
-    nivelAtualPct: 0,
-    statusBombona: 'VAZIA',
+      nivelAtualPct: 0,
+      statusBombona: 'VAZIA',
 
-    categoria: categoriaId,
+      categoria: categoriaId,
 
-    redesSociais: additionalData.redesSociais
-      ? [additionalData.redesSociais]
-      : [],
+      redesSociais: additionalData.redesSociais
+        ? [additionalData.redesSociais]
+        : [],
 
-    site: additionalData.site || null,
+      site: additionalData.site || null,
 
-    aceiteDivulgacao: additionalData.aceiteDivulgacao,
+      aceiteDivulgacao: additionalData.aceiteDivulgacao,
 
-    parceiroIndicadorId: parceiroIndicadorIdNum ? String(parceiroIndicadorIdNum) : null,
+      parceiroIndicadorId: parceiroIndicadorIdNum ? String(parceiroIndicadorIdNum) : null,
 
-    outroParceiro: additionalData.outroParceiro || null,
+      outroParceiro: additionalData.outroParceiro || null,
 
-    comoConheceu: additionalData.comoConheceu || '',
+      comoConheceu: additionalData.comoConheceu || '',
 
-    observacao: additionalData.observacao || '',
+      observacao: additionalData.observacao || '',
+    };
   };
-};
-const handleRegister = async () => {
+
+  const handleRegister = async () => {
     if (!validateForm()) return
 
     try {
@@ -229,6 +225,7 @@ const handleRegister = async () => {
       setLoading(false)
     }
   }
+
   const handleFinalSubmit = async () => {
     setLoading(true)
     try {
@@ -295,7 +292,6 @@ const handleRegister = async () => {
   }
 
   const handleStepDataChange = (data: any) => {
-
     if(data.expectativaGeracao !== undefined){
       data.capacidadeBombona = data.expectativaGeracao
     }
@@ -356,7 +352,6 @@ const handleRegister = async () => {
     return (
       <div className="flex flex-col h-screen">
         <HeaderCadastro title="Criar Conta" onBack={onBack} />
-        <ToastContainer toasts={toasts} onClose={removeToast} />
 
         <div className="flex flex-1 overflow-hidden">
           <aside className="hidden md:flex md:w-1/2 relative">
@@ -432,7 +427,6 @@ const handleRegister = async () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <ToastContainer toasts={toasts} onClose={removeToast} />
       {renderStep()}
     </div>
   )

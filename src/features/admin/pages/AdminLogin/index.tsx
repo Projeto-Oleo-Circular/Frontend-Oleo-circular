@@ -2,7 +2,6 @@ import { useState, ChangeEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import HeaderPublic from '../../../../components/layout/HeaderPublic'
 import Input from '../../../../components/ui/Input'
-import ToastContainer from '../../../../components/ui/ToastContainer'
 import useToast from '../../../../hooks/useToast'
 import { useAdminAuth } from '../../../../hooks/useAdminAuth'
 import Button from '../../../../components/ui/Button'
@@ -10,7 +9,7 @@ import Button from '../../../../components/ui/Button'
 function AdminLogin() {
   const navigate = useNavigate()
   const { login } = useAdminAuth()
-  const { toasts, addToast, removeToast } = useToast()
+  const { addToast } = useToast()
   const [loading, setLoading] = useState(false)
   const [fieldErrors, setFieldErrors] = useState({ email: '', senha: '' })
   const [formData, setFormData] = useState({ email: '', senha: '' })
@@ -71,7 +70,7 @@ function AdminLogin() {
     <div className="flex flex-col h-screen">
       <HeaderPublic />
 
-      <ToastContainer toasts={toasts} onClose={removeToast} />
+      {/* 2. ToastContainer removido daqui pois é injetado globalmente pelo ToastProvider */}
 
       <div className="flex flex-1 overflow-hidden">
         <aside className="hidden md:flex md:w-1/2 relative">

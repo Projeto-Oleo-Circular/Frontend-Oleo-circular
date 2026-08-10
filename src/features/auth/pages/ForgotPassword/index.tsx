@@ -1,7 +1,6 @@
 import HeaderPublic from '../../../../components/layout/HeaderPublic';
 import Input from '../../../../components/ui/Input';
 import { useNavigate } from 'react-router-dom';
-import ToastContainer from '../../../../components/ui/ToastContainer';
 import useToast from '../../../../hooks/useToast';
 import { ChangeEvent, useState } from 'react';
 import { authService } from '../../../../services/authService';
@@ -9,69 +8,69 @@ import Button from '../../../../components/ui/Button';
 
 function ForgotPassword() {
     const navigate = useNavigate();
-    const { toasts, addToast, removeToast } = useToast()
-    const [fieldErrors, setFieldErrors] = useState({ email: '' })
-    const [formData, setFormData] = useState({ email: ''})
-    const [loading, setLoading] = useState(false)
+    const { addToast } = useToast();
+    const [fieldErrors, setFieldErrors] = useState({ email: '' });
+    const [formData, setFormData] = useState({ email: '' });
+    const [loading, setLoading] = useState(false);
 
     const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target as HTMLInputElement
-        setFormData(prev => ({ ...prev, [name]: value }))
+        const { name, value } = e.target as HTMLInputElement;
+        setFormData(prev => ({ ...prev, [name]: value }));
         if (fieldErrors[name as keyof typeof fieldErrors]) {
-          setFieldErrors(prev => ({ ...prev, [name]: '' }))
+          setFieldErrors(prev => ({ ...prev, [name]: '' }));
         }
-      }
+    };
       
     const validateForm = () => {
-        let hasError = false
-        const errors = { email: '' }
+        let hasError = false;
+        const errors = { email: '' };
 
         if (!formData.email) {
-            errors.email = 'E-mail é obrigatório'
-            hasError = true
+            errors.email = 'E-mail é obrigatório';
+            hasError = true;
         } else if (!formData.email.includes('@') || !formData.email.includes('.')) {
-            errors.email = 'E-mail inválido'
-            hasError = true
+            errors.email = 'E-mail inválido';
+            hasError = true;
         }
 
-        setFieldErrors(errors)
-        return !hasError
-    }
+        setFieldErrors(errors);
+        return !hasError;
+    };
 
     const handleForgotPassword = async (e: React.FormEvent) => {
-        e.preventDefault()
-        if (!validateForm()) return
+        e.preventDefault();
+        if (!validateForm()) return;
 
-        setLoading(true)
+        setLoading(true);
         try {
-            await authService.ForgotPassword(formData.email)
+            await authService.ForgotPassword(formData.email);
 
-            addToast('E-mail enviado com sucesso!', 'success')
+            addToast('E-mail enviado com sucesso!', 'success');
 
             setTimeout(() => {
-                navigate('/login')
-            }, 3000)
+                navigate('/login');
+            }, 3000);
 
         } catch (err: any) {
-            console.error('Erro ao recuperar senha:', err)
+            console.error('Erro ao recuperar senha:', err);
 
-        if (err.response?.status === 404) {
-            addToast('E-mail não encontrado. Verifique e tente novamente', 'error')
-        } else if (err.response?.data?.message) {
-            addToast(err.response.data.message, 'error')
-        } else {
-            addToast('Erro ao enviar link de recuperação. Tente novamente', 'error')
+            if (err.response?.status === 404) {
+                addToast('E-mail não encontrado. Verifique e tente novamente', 'error');
+            } else if (err.response?.data?.message) {
+                addToast(err.response.data.message, 'error');
+            } else {
+                addToast('Erro ao enviar link de recuperação. Tente novamente', 'error');
+            }
+        } finally {
+            setLoading(false);
         }
-        }finally {
-                setLoading(false)
-        }
-    }
+    };
 
     return (
         <div className="flex flex-col h-screen">
             <HeaderPublic />
             
-            <ToastContainer toasts={toasts} onClose={removeToast} />
+            {/* ToastContainer removido daqui pois o ToastProvider gerencia isso no topo */}
 
             <div className="flex flex-1 overflow-hidden">
                 <aside className="hidden md:flex md:w-1/2 relative">
@@ -141,7 +140,7 @@ function ForgotPassword() {
                 </main>
             </div>
         </div>
-    )
+    );
 }
 
 export default ForgotPassword;

@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import {
   adminParceiroService,
+  ListarParceirosResponse,
   type Parceiro,
   type StatusAprovacao,
 } from "../../../../services/adminParceiroService";
@@ -15,9 +16,17 @@ import AdminFilterDropdown, {
   FilterOption,
 } from "../../../../components/ui/AdminFilterDropdown";
 
-import { User, Phone, Mail, Eye, X, Check, Search } from "lucide-react";
+import { User, Phone, Mail, Eye, X, Check, Search, Clock, CheckCircle2, XCircle, } from "lucide-react";
 import Button from "../../../../components/ui/Button";
 import Footer from "../../../../components/layout/Footer";
+import SummaryCard from "../../../../components/ui/SummaryCard";
+
+interface ContagensParceiros {
+  pendentes: number;
+  aprovados: number;
+  rejeitados: number;
+  total: number;
+}
 
 type ModalTipo = "aprovar" | "rejeitar" | "detalhes" | null;
 
@@ -37,10 +46,12 @@ export function PartnersApproval() {
   const [loading, setLoading] = useState(true);
   const [salvando, setSalvando] = useState(false);
   const [observacaoModal, setObservacaoModal] = useState("");
+  const [contagens, setContagens] = useState<ContagensParceiros | null>(null);
+  
 
   const [statusFiltro, setStatusFiltro] = useState<StatusAprovacao | "">("");
   const [termoBusca, setTermoBusca] = useState("");
-
+  
   const [modal, setModal] = useState<{
     tipo: ModalTipo;
     parceiro: Parceiro | null;
@@ -55,19 +66,7 @@ export function PartnersApproval() {
     { value: "APROVADO", label: "Aprovado" },
     { value: "REJEITADO", label: "Rejeitado" },
   ];
-
-  useEffect(() => {
-    async function carregarIndicadores() {
-      try {
-        const lista = await authService.listarParceirosIndicadores();
-        setIndicadores(lista);
-      } catch (error) {
-        console.error("Erro ao carregar parceiros indicadores:", error);
-      }
-    }
-    carregarIndicadores();
-  }, []);
-
+  
   const carregarParceiros = useCallback(async () => {
     setLoading(true);
     try {
@@ -85,14 +84,58 @@ export function PartnersApproval() {
       }
     } catch (error) {
       console.error("Erro ao carregar parceiros:", error);
+      setParceiros([]);
     } finally {
       setLoading(false);
     }
   }, [statusFiltro, termoBusca]);
 
+  const extrairTotal = (r: ListarParceirosResponse | Parceiro[]) =>
+    Array.isArray(r) ? r.length : r.total;
+  
+  const carregarContagensParceiros = useCallback(async () => {
+    try {
+      const [pendentes, aprovados, rejeitados, total] = await Promise.all([
+        adminParceiroService.listarParceiros({ statusAprovacao: "PENDENTE", limit: 1 }),
+        adminParceiroService.listarParceiros({ statusAprovacao: "APROVADO", limit: 1 }),
+        adminParceiroService.listarParceiros({ statusAprovacao: "REJEITADO",limit: 1 }),
+        adminParceiroService.listarParceiros({ limit: 1}),
+      ]);
+
+      console.log("pendentes", pendentes);
+      console.log("aprovados", aprovados);
+      console.log("rejeitados", rejeitados);
+      console.log("total", total);
+
+      setContagens({
+      pendentes: extrairTotal(pendentes),
+      aprovados: extrairTotal(aprovados),
+      rejeitados: extrairTotal(rejeitados),
+      total: extrairTotal(total),
+    });
+    } catch (error) {
+      console.error("Erro ao carregar contagens de parceiros:", error);
+    }
+  }, []);
+  
+    useEffect(() => {
+      carregarParceiros();
+      carregarContagensParceiros();
+    }, [carregarParceiros, carregarContagensParceiros]);
+  
   useEffect(() => {
-    carregarParceiros();
-  }, [carregarParceiros]);
+    async function carregarIndicadores() {
+      try {
+        const lista = await authService.listarParceirosIndicadores();
+        setIndicadores(lista);
+      } catch (error) {
+        console.error("Erro ao carregar parceiros indicadores:", error);
+      }
+    }
+    carregarIndicadores();
+  }, []);
+
+
 
   // Função auxiliar para resolver o nome do Parceiro Indicador
   const obterNomeParceiroIndicador = (parceiro: Parceiro): string => {
@@ -156,7 +199,7 @@ export function PartnersApproval() {
         observacao: observacaoModal.trim() || undefined,
       });
 
-      await carregarParceiros();
+      await Promise.all([carregarParceiros(), carregarContagensParceiros()]);
       fecharModal();
     } catch (error) {
       console.error("Erro ao atualizar status do parceiro:", error);
@@ -199,6 +242,44 @@ export function PartnersApproval() {
               onChange={(val) => setStatusFiltro(val as StatusAprovacao | "")}
             />
           </div>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+          <SummaryCard
+            label="Pendentes"
+            value={contagens?.pendentes}
+            subtext="Parceiros"
+            labelColor="text-orange-primary"
+            iconBgColor="bg-orange-200"
+            icon={<Clock className="w-5 h-5 sm:w-6 sm:h-6 text-orange-primary" />}
+          />
+
+          <SummaryCard
+            label="Aprovados"
+            value={contagens?.aprovados}
+            subtext="Parceiros"
+            labelColor="text-green-primary"
+            iconBgColor="bg-green-bg-card"
+            icon={<CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6 text-green-primary" />}
+          />
+
+          <SummaryCard
+            label="Rejeitados"
+            value={contagens?.rejeitados}
+            subtext="Parceiros"
+            labelColor="text-red-primary"
+            iconBgColor="bg-red-200"
+            icon={<XCircle className="w-5 h-5 sm:w-6 sm:h-6 text-red-primary" />}
+          />
+
+          <SummaryCard
+            label="Total de Parceiros"
+            value={contagens?.total}
+            subtext="Cadastrados"
+            labelColor="text-green-primary"
+            iconBgColor="bg-green-100"
+            icon={<User className="w-5 h-5 sm:w-6 sm:h-6 text-green-primary" />}
+          />
         </div>
 
         <div className="bg-white-primary rounded-xl shadow-sm border border-white-200 overflow-x-auto">

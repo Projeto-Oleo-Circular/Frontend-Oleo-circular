@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import axios from "axios";
 import {
   adminPontosService,
   type PontoColetaAdmin,
@@ -37,7 +38,7 @@ interface ContagensPontos {
   total: number;
 }
 
-type ModalTipo = "aprovar" | "rejeitar" | "detalhes" | null;
+type ModalTipo = "aprovar" | "rejeitar" | "detalhes" | "erro_parceiro" | null;
 
 function formatarEndereco(ponto: PontoColetaAdmin): string {
   const base = `${ponto.logradouro}, ${ponto.numero} - ${ponto.bairro}, ${ponto.cidade}`;
@@ -56,6 +57,7 @@ export function PointsApproval() {
   const [loading, setLoading] = useState(true);
   const [salvando, setSalvando] = useState(false);
   const [observacaoModal, setObservacaoModal] = useState("");
+  const [mensagemErroModal, setMensagemErroModal] = useState("")
 
   const [modal, setModal] = useState<{
     tipo: ModalTipo;
@@ -144,10 +146,27 @@ export function PointsApproval() {
       fecharModal();
     } catch (error) {
       console.error("Erro ao atualizar status do ponto:", error);
-    } finally {
-      setSalvando(false);
-    }
-  };
+
+        let msg = "Não foi possível concluir a ação no ponto de coleta.";
+        let status: number | undefined;
+
+        // Verifica se o erro veio de uma requisição do Axios
+        if (axios.isAxiosError(error)) {
+          msg = error.response?.data?.message || msg;
+          status = error.response?.status;
+        } else if (error instanceof Error) {
+          msg = error.message;
+        }
+
+        // Verifica se a mensagem contém o motivo do parceiro ou se foi status 400
+        if (msg.includes("parceiro") || status === 400) {
+          setMensagemErroModal(msg);
+          setModal((prev) => ({ ...prev, tipo: "erro_parceiro" }));
+        }
+      } finally {
+    setSalvando(false);
+  }
+};
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -440,8 +459,43 @@ export function PointsApproval() {
             </div>
           </div>
         )}
-      </main>
 
+        {/* MODAL DE ERRO - PARCEIRO PENDENTE OU REJEITADO */}
+        {modal.tipo === "erro_parceiro" && modal.ponto && (
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl animate-slide-down">
+              <div className="flex items-center justify-between mb-4 border-b border-white-100 pb-3">
+                <div className="flex items-center gap-2 text-red-primary">
+                  <XCircle className="w-5 h-5" />
+                  <h2 className="font-bold text-lg">Ação Impedida</h2>
+                </div>
+                <button
+                  onClick={fecharModal}
+                  className="text-white-500 hover:text-black-primary cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="mb-6 space-y-2">
+                <p className="text-sm text-black-primary leading-relaxed">
+                  {mensagemErroModal}
+                </p>
+                <p className="text-xs text-white-500">
+                  Você precisa primeiro aprovar o cadastro do parceiro{" "}
+                  <strong>{modal.ponto.parceiro?.nomeRazaoSocial}</strong> para depois aprovar este ponto.
+                </p>
+              </div>
+
+              <div className="flex justify-end">
+                <Button variant="primary" size="sm" onClick={fecharModal} fullWidth>
+                  Entendi
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
       <Footer />
     </div>
   );

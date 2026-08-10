@@ -2,7 +2,6 @@ import { useState, ChangeEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import HeaderPublic from '../../../../components/layout/HeaderPublic'
 import Input from '../../../../components/ui/Input'
-import ToastContainer from '../../../../components/ui/ToastContainer'
 import useToast from '../../../../hooks/useToast'
 import { useAuth } from '../../../../hooks/useAuth'
 import Button from '../../../../components/ui/Button'
@@ -10,7 +9,7 @@ import Button from '../../../../components/ui/Button'
 function Login() {
   const navigate = useNavigate()
   const { login } = useAuth()
-  const { toasts, addToast, removeToast } = useToast()
+  const { addToast } = useToast()
   const [loading, setLoading] = useState(false)
   const [fieldErrors, setFieldErrors] = useState({ email: '', senha: '' })
   const [formData, setFormData] = useState({ email: '', senha: '' })
@@ -79,8 +78,6 @@ function Login() {
   return (
     <div className="flex flex-col h-screen">
       <HeaderPublic />
-
-      <ToastContainer toasts={toasts} onClose={removeToast} />
 
       <div className="flex flex-1 overflow-hidden">
         <aside className="hidden md:flex md:w-1/2 relative">
