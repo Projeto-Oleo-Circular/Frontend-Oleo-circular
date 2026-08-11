@@ -12,6 +12,10 @@ import SummaryCard from "../../../../components/ui/SummaryCard"
 import Button from "../../../../components/ui/Button"
 import Pagination from "../../../../components/ui/Pagination"
 import Footer from "../../../../components/layout/Footer"
+import {
+  authService,
+  type ParceiroIndicador, // ← ADICIONE ESTE IMPORT
+} from "../../../../services/authService";
 
 interface Contagens {
   aguardando: number
@@ -26,7 +30,16 @@ type ModalTipo = "agendar" | "concluir" | "detalhes" | null;
 function formatarData(iso: string | null): string {
   if (!iso) return "—";
   const data = new Date(iso);
-  return `${data.toLocaleDateString("pt-BR")} ${data.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`;
+  
+  // Garante a formatação no fuso horário de Brasília
+  const dataFormatada = data.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
+  const horaFormatada = data.toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "America/Sao_Paulo",
+  });
+
+  return `${dataFormatada} ${horaFormatada}`;
 }
 
 function formatarEndereco(ponto: SolicitacaoColeta["pontoColeta"]): string {
@@ -43,6 +56,7 @@ function Requests() {
   const [statusFiltro, setStatusFiltro] = useState<StatusSolicitacao | "">("");
   const [loading, setLoading] = useState(true);
   const historicoSemanalTotal = [10, 15, 8, 22, 18, 30, 25];
+  const [indicadores, setIndicadores] = useState<ParceiroIndicador[]>([]);
 
   const statusOptions: FilterOption[] = [
     { value: "", label: "Todos os Status" },
@@ -109,11 +123,35 @@ function Requests() {
     carregarContagens();
   }, [carregarContagens]);
 
-  const abrirModal = (tipo: ModalTipo, solicitacao: SolicitacaoColeta) => {
-    setModal({ tipo, solicitacao });
-    setDataAgendamento("");
-    setVolumeColetado("");
-  };
+  useEffect(() => {
+    async function carregarIndicadores() {
+      try {
+        const lista = await authService.listarParceirosIndicadores();
+        setIndicadores(lista);
+      } catch (error) {
+        console.error("Erro ao carregar parceiros indicadores:", error);
+      }
+    }
+    carregarIndicadores();
+  }, []);
+
+      const obterNomeParceiroIndicador = (solicitacao: SolicitacaoColeta): string => {
+      // 1. Tenta buscar pelo ID na lista de indicadores
+      if (solicitacao.parceiro?.parceiroIndicadorId) {
+        const encontrado = indicadores.find(
+          (ind) => String(ind.id) === String(solicitacao.parceiro?.parceiroIndicadorId)
+        );
+        if (encontrado) return encontrado.nome;
+      }
+
+      // 2. Se não encontrou, retorna "—"
+      return "—";
+    };
+      const abrirModal = (tipo: ModalTipo, solicitacao: SolicitacaoColeta) => {
+        setModal({ tipo, solicitacao });
+        setDataAgendamento("");
+        setVolumeColetado("");
+      };
 
   const fecharModal = () => setModal({ tipo: null, solicitacao: null });
 
@@ -328,8 +366,8 @@ function Requests() {
                       </div>
                     </td>
 
-                    <td className="p-4 text-sm font-medium text-black-primary">
-                      {s.parceiro?.nomeParceiro || s.parceiro?.nomeRazaoSocial || "—"}
+                     <td className="p-4 text-sm font-medium text-black-primary">
+                      {obterNomeParceiroIndicador(s)}
                     </td>
                     
                     <td className="p-4 text-sm text-black-primary font-medium">{s.pontoColeta.nomePontoColeta}</td>

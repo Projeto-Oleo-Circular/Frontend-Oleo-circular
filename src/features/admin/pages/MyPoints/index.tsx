@@ -57,7 +57,7 @@ export function PointsApproval() {
   const [loading, setLoading] = useState(true);
   const [salvando, setSalvando] = useState(false);
   const [observacaoModal, setObservacaoModal] = useState("");
-  const [mensagemErroModal, setMensagemErroModal] = useState("")
+  const [mensagemErroModal, setMensagemErroModal] = useState("");
 
   const [modal, setModal] = useState<{
     tipo: ModalTipo;
@@ -147,26 +147,24 @@ export function PointsApproval() {
     } catch (error) {
       console.error("Erro ao atualizar status do ponto:", error);
 
-        let msg = "Não foi possível concluir a ação no ponto de coleta.";
-        let status: number | undefined;
+      let msg = "Não foi possível concluir a ação no ponto de coleta.";
+      let status: number | undefined;
 
-        // Verifica se o erro veio de uma requisição do Axios
-        if (axios.isAxiosError(error)) {
-          msg = error.response?.data?.message || msg;
-          status = error.response?.status;
-        } else if (error instanceof Error) {
-          msg = error.message;
-        }
+      if (axios.isAxiosError(error)) {
+        msg = error.response?.data?.message || msg;
+        status = error.response?.status;
+      } else if (error instanceof Error) {
+        msg = error.message;
+      }
 
-        // Verifica se a mensagem contém o motivo do parceiro ou se foi status 400
-        if (msg.includes("parceiro") || status === 400) {
-          setMensagemErroModal(msg);
-          setModal((prev) => ({ ...prev, tipo: "erro_parceiro" }));
-        }
-      } finally {
-    setSalvando(false);
-  }
-};
+      if (msg.includes("parceiro") || status === 400) {
+        setMensagemErroModal(msg);
+        setModal((prev) => ({ ...prev, tipo: "erro_parceiro" }));
+      }
+    } finally {
+      setSalvando(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -280,7 +278,7 @@ export function PointsApproval() {
                       </td>
                       <td className="p-4">
                         <p className="text-sm font-medium text-black-primary">
-                          {ponto.parceiro?.nomeRazaoSocial}
+                          {ponto.parceiro?.responsavelLegalNome || ponto.parceiro?.nomeRazaoSocial}
                         </p>
                         {ponto.parceiro?.documento && (
                           <p className="text-xs text-white-500 mt-0.5">
@@ -437,7 +435,9 @@ export function PointsApproval() {
                   <h3 className="text-xs font-bold text-green-primary uppercase tracking-wider mb-2 flex items-center gap-1.5">
                     <User className="w-3.5 h-3.5" /> Parceiro Responsável
                   </h3>
-                  <p className="text-sm font-semibold text-black-primary">{modal.ponto.parceiro.nomeRazaoSocial}</p>
+                  <p className="text-sm font-semibold text-black-primary">
+                    {modal.ponto.parceiro.responsavelLegalNome || modal.ponto.parceiro.nomeRazaoSocial}
+                  </p>
                   {modal.ponto.parceiro.documento && (
                     <p className="text-xs text-white-500 flex items-center gap-1 mt-1">
                       <FileText className="w-3 h-3" /> {modal.ponto.parceiro.documento}
@@ -483,7 +483,10 @@ export function PointsApproval() {
                 </p>
                 <p className="text-xs text-white-500">
                   Você precisa primeiro aprovar o cadastro do parceiro{" "}
-                  <strong>{modal.ponto.parceiro?.nomeRazaoSocial}</strong> para depois aprovar este ponto.
+                  <strong>
+                    {modal.ponto.parceiro?.responsavelLegalNome || modal.ponto.parceiro?.nomeRazaoSocial}
+                  </strong>{" "}
+                  para depois aprovar este ponto.
                 </p>
               </div>
 

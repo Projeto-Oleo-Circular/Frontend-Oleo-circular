@@ -32,7 +32,10 @@ export interface PontoColetaAdmin {
 
   parceiro: {
     id: number;
+    tipoPessoa?: string;
+    tipoParceiro?: string;
     nomeRazaoSocial: string;
+    responsavelLegalNome?: string | null;
     email?: string;
     documento?: string;
   };
