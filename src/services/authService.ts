@@ -171,10 +171,9 @@ export const authService = {
       { value: 1, label: 'Restaurante industrial' },
       { value: 2, label: 'Restaurante e lanchonete' },
       { value: 3, label: 'Escola / Universidade' },
-      { value: 4, label: 'Hospital / Unidade de saúde' },
-      { value: 5, label: 'Hotel / Pousada' },
-      { value: 6, label: 'Empresa / Refeitório corporativo' },
-      { value: 7, label: 'Condomínio / Casa residencial' },
+      { value: 4, label: 'Hotel / Pousada' },
+      { value: 5, label: 'Empresa / Refeitório corporativo' },
+      { value: 6, label: 'Condomínio / Casa residencial' },
     ];
   },
 
