@@ -103,10 +103,10 @@ export function PointsApproval() {
       ]);
 
       setContagens({
-        pendentes: pendentes.total,
-        aprovados: aprovados.total,
-        rejeitados: rejeitados.total,
-        total: total.total,
+        pendentes: pendentes.total ?? 0,
+        aprovados: aprovados.total ?? 0,
+        rejeitados: rejeitados.total ?? 0,
+        total: total.total ?? 0,
       });
     } catch (error) {
       console.error("Erro ao carregar contagens:", error);
@@ -265,6 +265,14 @@ export function PointsApproval() {
                   const status: StatusAprovacao =
                     ponto.statusAprovacaoPontoColeta || "PENDENTE";
 
+                  // 1. Nome do Ponto: Exibe a Razão Social da entidade
+                  const razaoSocialPonto =
+                    ponto.parceiro?.nomeRazaoSocial || ponto.nomePontoColeta;
+
+                  // 2. Parceiro Responsável: Exibe diretamente o Nome do Responsável Legal
+                  const responsavelLegal =
+                    ponto.parceiro?.responsavelLegalNome || "—";
+
                   return (
                     <tr
                       key={ponto.id}
@@ -273,12 +281,16 @@ export function PointsApproval() {
                       <td className="p-4 text-sm font-medium text-black-primary">
                         #{ponto.id}
                       </td>
+
+                      {/* Nome do Ponto -> Razão Social */}
                       <td className="p-4 text-sm font-medium text-black-primary">
-                        {ponto.nomePontoColeta}
+                        {razaoSocialPonto}
                       </td>
+
+                      {/* Parceiro Responsável -> Nome do Responsável Legal */}
                       <td className="p-4">
                         <p className="text-sm font-medium text-black-primary">
-                          {ponto.parceiro?.responsavelLegalNome || ponto.parceiro?.nomeRazaoSocial}
+                          {responsavelLegal}
                         </p>
                         {ponto.parceiro?.documento && (
                           <p className="text-xs text-white-500 mt-0.5">
@@ -286,6 +298,7 @@ export function PointsApproval() {
                           </p>
                         )}
                       </td>
+
                       <td className="p-4 text-sm text-black-primary max-w-xs">
                         <div
                           className="flex items-start gap-1.5"
@@ -297,12 +310,15 @@ export function PointsApproval() {
                           </span>
                         </div>
                       </td>
+
                       <td className="p-4 text-sm text-black-primary whitespace-nowrap">
                         {ponto.capacidadeBombona} L
                       </td>
+
                       <td className="p-4 whitespace-nowrap">
                         <StatusBadge status={status} tipo="ponto" />
                       </td>
+
                       <td className="p-4 whitespace-nowrap">
                         <div className="flex items-center gap-2">
                           {status === "PENDENTE" && (
@@ -368,7 +384,7 @@ export function PointsApproval() {
 
               <p className="text-sm text-white-600 mb-4">
                 Deseja {modal.tipo === "aprovar" ? "aprovar" : "rejeitar"} o ponto de coleta{" "}
-                <strong>{modal.ponto.nomePontoColeta}</strong>?
+                <strong>{modal.ponto.parceiro?.nomeRazaoSocial || modal.ponto.nomePontoColeta}</strong>?
               </p>
 
               <label className="block mb-4">
@@ -422,9 +438,11 @@ export function PointsApproval() {
 
                 <div className="border border-white-100 rounded-lg p-3">
                   <h3 className="text-xs font-bold text-green-primary uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                    <Building2 className="w-3.5 h-3.5" /> Informações do Ponto
+                    <Building2 className="w-3.5 h-3.5" /> Informações do Ponto (Razão Social)
                   </h3>
-                  <p className="text-sm font-semibold text-black-primary">{modal.ponto.nomePontoColeta}</p>
+                  <p className="text-sm font-semibold text-black-primary">
+                    {modal.ponto.parceiro?.nomeRazaoSocial || modal.ponto.nomePontoColeta}
+                  </p>
                   <p className="text-xs text-white-500 flex items-start gap-1 mt-1">
                     <MapPin className="w-3.5 h-3.5 shrink-0 mt-0.5 text-green-primary" />
                     <span>{formatarEndereco(modal.ponto)}</span>
@@ -433,17 +451,17 @@ export function PointsApproval() {
 
                 <div className="border border-white-100 rounded-lg p-3">
                   <h3 className="text-xs font-bold text-green-primary uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                    <User className="w-3.5 h-3.5" /> Parceiro Responsável
+                    <User className="w-3.5 h-3.5" /> Responsável Legal
                   </h3>
                   <p className="text-sm font-semibold text-black-primary">
-                    {modal.ponto.parceiro.responsavelLegalNome || modal.ponto.parceiro.nomeRazaoSocial}
+                    {modal.ponto.parceiro?.responsavelLegalNome || "—"}
                   </p>
-                  {modal.ponto.parceiro.documento && (
+                  {modal.ponto.parceiro?.documento && (
                     <p className="text-xs text-white-500 flex items-center gap-1 mt-1">
                       <FileText className="w-3 h-3" /> {modal.ponto.parceiro.documento}
                     </p>
                   )}
-                  {modal.ponto.parceiro.email && (
+                  {modal.ponto.parceiro?.email && (
                     <p className="text-xs text-white-500 flex items-center gap-1 mt-1">
                       <Mail className="w-3 h-3" /> {modal.ponto.parceiro.email}
                     </p>
@@ -484,7 +502,7 @@ export function PointsApproval() {
                 <p className="text-xs text-white-500">
                   Você precisa primeiro aprovar o cadastro do parceiro{" "}
                   <strong>
-                    {modal.ponto.parceiro?.responsavelLegalNome || modal.ponto.parceiro?.nomeRazaoSocial}
+                    {modal.ponto.parceiro?.nomeRazaoSocial || modal.ponto.parceiro?.responsavelLegalNome}
                   </strong>{" "}
                   para depois aprovar este ponto.
                 </p>

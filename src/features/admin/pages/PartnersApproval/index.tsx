@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import {
   adminParceiroService,
-  ListarParceirosResponse,
+  type ListarParceirosResponse,
   type Parceiro,
   type StatusAprovacao,
 } from "../../../../services/adminParceiroService";
@@ -13,10 +13,23 @@ import {
 import StatusBadge from "../../../../components/ui/StatusBadge";
 import AdminTopNav from "../../../../components/layout/AdminTopNav";
 import AdminFilterDropdown, {
-  FilterOption,
+  type FilterOption,
 } from "../../../../components/ui/AdminFilterDropdown";
 
-import { User, Phone, Mail, Eye, X, Check, Search, Clock, CheckCircle2, XCircle } from "lucide-react";
+import {
+  User,
+  Phone,
+  Mail,
+  Eye,
+  X,
+  Check,
+  Search,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import Button from "../../../../components/ui/Button";
 import Footer from "../../../../components/layout/Footer";
 import SummaryCard from "../../../../components/ui/SummaryCard";
@@ -40,6 +53,22 @@ function formatarData(iso?: string | null): string {
   })}`;
 }
 
+// Helper para padronizar o extrato da contagem total independente da resposta
+function extrairTotal(resposta: ListarParceirosResponse | Parceiro[]): number {
+  if (Array.isArray(resposta)) {
+    return resposta.length;
+  }
+  return resposta.total ?? 0;
+}
+
+// Helper para padronizar a lista de itens
+function extrairItens(resposta: ListarParceirosResponse | Parceiro[]): Parceiro[] {
+  if (Array.isArray(resposta)) {
+    return resposta;
+  }
+  return resposta.items ?? [];
+}
+
 export function PartnersApproval() {
   const [parceiros, setParceiros] = useState<Parceiro[]>([]);
   const [indicadores, setIndicadores] = useState<ParceiroIndicador[]>([]);
@@ -48,6 +77,10 @@ export function PartnersApproval() {
   const [observacaoModal, setObservacaoModal] = useState("");
   const [contagens, setContagens] = useState<ContagensParceiros | null>(null);
 
+  // Paginação e Filtros
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
   const [statusFiltro, setStatusFiltro] = useState<StatusAprovacao | "">("");
   const [termoBusca, setTermoBusca] = useState("");
 
@@ -66,56 +99,77 @@ export function PartnersApproval() {
     { value: "REJEITADO", label: "Rejeitado" },
   ];
 
+  // Carrega a listagem do grid respeitando o parâmetro de busca/filtros
   const carregarParceiros = useCallback(async () => {
     setLoading(true);
     try {
       const resposta = await adminParceiroService.listarParceiros({
+        page,
+        limit,
         statusAprovacao: statusFiltro || undefined,
-        busca: termoBusca || undefined,
+        busca: termoBusca.trim() || undefined,
       });
 
-      if (Array.isArray(resposta)) {
-        setParceiros(resposta);
-      } else if (resposta && Array.isArray(resposta.items)) {
-        setParceiros(resposta.items);
+      const itens = extrairItens(resposta);
+      setParceiros(itens);
+
+      if (!Array.isArray(resposta)) {
+        setTotalPages(resposta.totalPages || 1);
       } else {
-        setParceiros([]);
+        setTotalPages(Math.ceil(itens.length / limit) || 1);
       }
     } catch (error) {
       console.error("Erro ao carregar parceiros:", error);
-      setParceiros([]);
     } finally {
       setLoading(false);
     }
-  }, [statusFiltro, termoBusca]);
+  }, [page, limit, statusFiltro, termoBusca]);
 
-  const extrairTotal = (r: ListarParceirosResponse | Parceiro[]) =>
-    Array.isArray(r) ? r.length : r.total;
-
-  const carregarContagensParceiros = useCallback(async () => {
-    try {
-      const [pendentes, aprovados, rejeitados, total] = await Promise.all([
-        adminParceiroService.listarParceiros({ statusAprovacao: "PENDENTE", limit: 1 }),
-        adminParceiroService.listarParceiros({ statusAprovacao: "APROVADO", limit: 1 }),
-        adminParceiroService.listarParceiros({ statusAprovacao: "REJEITADO", limit: 1 }),
-        adminParceiroService.listarParceiros({ limit: 1 }),
+  // Carrega os dados para os cards de resumo estatístico
+ const carregarContagensParceiros = useCallback(async () => {
+  try {
+    // Traz a lista global para calcular os totais reais
+    const resposta = await adminParceiroService.listarParceiros();
+    
+    // Se o service retornar o objeto paginado { items, total }
+    if (!Array.isArray(resposta) && resposta.items) {
+      // Caso o backend aceite statusAprovacao para contagens paginadas:
+      const [pendentes, aprovados, rejeitados] = await Promise.all([
+        adminParceiroService.listarParceiros({ statusAprovacao: "PENDENTE" }),
+        adminParceiroService.listarParceiros({ statusAprovacao: "APROVADO" }),
+        adminParceiroService.listarParceiros({ statusAprovacao: "REJEITADO" }),
       ]);
 
       setContagens({
         pendentes: extrairTotal(pendentes),
         aprovados: extrairTotal(aprovados),
         rejeitados: extrairTotal(rejeitados),
-        total: extrairTotal(total),
+        total: resposta.total ?? extrairTotal(resposta),
       });
-    } catch (error) {
-      console.error("Erro ao carregar contagens de parceiros:", error);
+      return;
     }
-  }, []);
+
+    // Se o backend retorna um Array simples de Parceiro[]:
+    const lista = Array.isArray(resposta) ? resposta : [];
+    
+    setContagens({
+      pendentes: lista.filter((p) => p.statusAprovacaoParceiro === "PENDENTE").length,
+      aprovados: lista.filter((p) => p.statusAprovacaoParceiro === "APROVADO").length,
+      rejeitados: lista.filter((p) => p.statusAprovacaoParceiro === "REJEITADO").length,
+      total: lista.length,
+    });
+  } catch (error) {
+    console.error("Erro ao carregar contagens de parceiros:", error);
+  }
+}, []);
 
   useEffect(() => {
     carregarParceiros();
+  }, [carregarParceiros]);
+
+  useEffect(() => {
     carregarContagensParceiros();
-  }, [carregarParceiros, carregarContagensParceiros]);
+  }, [carregarContagensParceiros]);
 
   useEffect(() => {
     async function carregarIndicadores() {
@@ -128,6 +182,17 @@ export function PartnersApproval() {
     }
     carregarIndicadores();
   }, []);
+
+  // Reseta para página 1 ao mudar filtros ou busca
+  const handleFilterChange = (val: StatusAprovacao | "") => {
+    setStatusFiltro(val);
+    setPage(1);
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTermoBusca(e.target.value);
+    setPage(1);
+  };
 
   const obterNomeParceiroIndicador = (parceiro: Parceiro): string => {
     if (parceiro.parceiroIndicador?.nome) {
@@ -148,6 +213,7 @@ export function PartnersApproval() {
     return "—";
   };
 
+  // Garante filtragem client-side caso a API devolva lista inteira e não filtre no backend
   const parceirosFiltrados = parceiros.filter((parceiro) => {
     const atendeStatus =
       !statusFiltro || parceiro.statusAprovacaoParceiro === statusFiltro;
@@ -200,7 +266,7 @@ export function PartnersApproval() {
     <div className="min-h-screen flex flex-col bg-background">
       <AdminTopNav />
 
-      <main className="w-full max-w-[1440px] mx-auto p-6">
+      <main className="w-full max-w-[1440px] mx-auto p-6 flex-1">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-green-primary mt-2 sm:mt-5 mb-1">
@@ -217,7 +283,7 @@ export function PartnersApproval() {
                 type="text"
                 placeholder="Buscar parceiro..."
                 value={termoBusca}
-                onChange={(e) => setTermoBusca(e.target.value)}
+                onChange={handleSearchChange}
                 className="w-full pl-9 pr-4 py-2 text-sm bg-white border border-white-200 rounded-lg text-black-primary focus:outline-none focus:border-green-primary"
               />
               <Search className="w-4 h-4 text-white-400 absolute left-3 top-2.5" />
@@ -227,11 +293,12 @@ export function PartnersApproval() {
               placeholder="Filtros"
               options={statusOptions}
               value={statusFiltro}
-              onChange={(val) => setStatusFiltro(val as StatusAprovacao | "")}
+              onChange={(val) => handleFilterChange(val as StatusAprovacao | "")}
             />
           </div>
         </div>
 
+        {/* CARDS DE RESUMO */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
           <SummaryCard
             label="Pendentes"
@@ -270,6 +337,7 @@ export function PartnersApproval() {
           />
         </div>
 
+        {/* TABELA */}
         <div className="bg-white-primary rounded-xl shadow-sm border border-white-200 overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -368,7 +436,30 @@ export function PartnersApproval() {
           </table>
         </div>
 
-        {/* MODAL DE CONFIRMAÇÃO */}
+        {/* CONTROLES DE PAGINAÇÃO */}
+        {totalPages > 1 && (
+          <div className="flex justify-end items-center gap-2 mt-4">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="p-2 rounded-lg border border-white-200 disabled:opacity-50 hover:bg-white-50 transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <span className="text-sm text-white-600">
+              Página {page} de {totalPages}
+            </span>
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className="p-2 rounded-lg border border-white-200 disabled:opacity-50 hover:bg-white-50 transition-colors"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
+        {/* MODAL DE CONFIRMAÇÃO (APROVAR/REJEITAR) */}
         {(modal.tipo === "aprovar" || modal.tipo === "rejeitar") && modal.parceiro && (
           <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl animate-slide-down">
