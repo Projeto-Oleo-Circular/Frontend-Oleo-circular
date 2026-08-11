@@ -349,7 +349,7 @@ function Requests() {
                     <td className="p-4 text-sm font-medium text-black-primary">#{s.id}</td>
                     
                     <td className="p-4">
-                      <p className="font-medium text-sm text-sm text-black-primary">{s.parceiro.nomeRazaoSocial}</p>
+                      <p className="font-medium text-sm text-sm text-black-primary">{s.parceiro.razaoSocial}</p>
                         {s.parceiro.documento && (
                           <p className="text-xs text-white-500 mt-0.5">{s.parceiro.documento}</p>
                         )}
@@ -495,7 +495,7 @@ function Requests() {
                   <h3 className="text-xs font-bold text-green-primary uppercase tracking-wider mb-2 flex items-center gap-1.5">
                     <User className="w-3.5 h-3.5" /> Solicitante / Parceiro
                   </h3>
-                  <p className="text-sm font-semibold text-black-primary">{modal.solicitacao.parceiro.nomeRazaoSocial}</p>
+                  <p className="text-sm font-semibold text-black-primary">{modal.solicitacao.parceiro.razaoSocial}</p>
                   {modal.solicitacao.parceiro.email && (
                     <p className="text-xs text-white-500 flex items-center gap-1 mt-1">
                       <Mail className="w-3 h-3" /> {modal.solicitacao.parceiro.email}

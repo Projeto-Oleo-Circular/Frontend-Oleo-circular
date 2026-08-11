@@ -33,7 +33,7 @@ function InfoIns({
     const [formData, setFormData] = useState({
         responsavel: initialData.responsavel || initialData.responsavelLegalNome || '',
         cnpj: initialData.cnpj || initialData.documento || '',
-        razaoSocial: initialData.razaoSocial || initialData.nomeRazaoSocial || '',
+        razaoSocial: initialData.razaoSocial || initialData.razaoSocial || '',
         cep: initialData.cep || '',
         cidade: initialData.cidade || '',
         estado: initialData.estado || initialData.estado || '',
@@ -337,7 +337,7 @@ function InfoIns({
 
             const dataToSave = {
                 documento: formData.cnpj,
-                nomeRazaoSocial: formData.razaoSocial,
+                razaoSocial: formData.razaoSocial,
                 responsavelLegalNome: formData.responsavel,
                 cep: formData.cep,
                 cidade: formData.cidade,
@@ -411,37 +411,39 @@ function InfoIns({
                         <div className="bg-white rounded-xl shadow-sm mb-6 overflow-hidden">
                             <Input
                                 type="text"
-                                icon="icon-name"
-                                placeholder="Nome do responsável legal"
-                                name="responsavel"
-                                value={formData.responsavel}
-                                onChange={handleInputChange}
-                                noBorder
-                                error={fieldErrors.responsavel}
-                            />
-                            <hr className="border-white-100" />
-
-                            <Input
-                                type="text"
                                 icon="icon-CNPJ"
-                                placeholder="CNPJ ou CPF"
+                                placeholder="CNPJ da instituição"
                                 name="cnpj"
                                 value={formData.cnpj}
                                 onChange={handleInputChange}
                                 noBorder
                                 error={fieldErrors.cnpj}
                             />
+
                             <hr className="border-white-100" />
 
                             <Input
                                 type="text"
                                 icon="icon-razaoSocial"
-                                placeholder="Razão social"
+                                placeholder="Razão social da empresa"
                                 name="razaoSocial"
                                 value={formData.razaoSocial}
                                 onChange={handleInputChange}
                                 noBorder
                                 error={fieldErrors.razaoSocial}
+                            />
+
+                            <hr className="border-white-100" />
+
+                            <Input
+                                type="text"
+                                icon="icon-name"
+                                placeholder="Nome responsável social"
+                                name="responsavel"
+                                value={formData.responsavel}
+                                onChange={handleInputChange}
+                                noBorder
+                                error={fieldErrors.responsavel}
                             />
                             <hr className="border-white-100" />
 

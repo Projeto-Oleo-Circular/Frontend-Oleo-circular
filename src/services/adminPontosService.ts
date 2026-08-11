@@ -9,8 +9,8 @@ export interface Parceiro {
   id: number;
   tipoPessoa: string;
   tipoParceiro: string;
-  nomeRazaoSocial: string;
-  nomeSocial?: string | null;
+  razaoSocial: string;
+  nome?: string | null;
   email: string;
   documento?: string;
   telefone?: string;
@@ -34,7 +34,7 @@ export interface PontoColetaAdmin {
     id: number;
     tipoPessoa?: string;
     tipoParceiro?: string;
-    nomeRazaoSocial: string;
+    razaoSocial: string;
     responsavelLegalNome?: string | null;
     email?: string;
     documento?: string;

@@ -69,6 +69,15 @@ function extrairItens(resposta: ListarParceirosResponse | Parceiro[]): Parceiro[
   return resposta.items ?? [];
 }
 
+// Helper para obter o nome ou razão social com base no tipo de parceiro
+function obterNomeOuRazaoSocial(parceiro: Parceiro): string {
+  if (parceiro.tipoParceiro === "SOLIDARIO") {
+    return parceiro.nome || "—";
+  }
+  // Para INSTITUCIONAL, COMUNITARIO e demais pessoas jurídicas
+  return parceiro.razaoSocial || parceiro.nome || "—";
+}
+
 export function PartnersApproval() {
   const [parceiros, setParceiros] = useState<Parceiro[]>([]);
   const [indicadores, setIndicadores] = useState<ParceiroIndicador[]>([]);
@@ -126,42 +135,38 @@ export function PartnersApproval() {
   }, [page, limit, statusFiltro, termoBusca]);
 
   // Carrega os dados para os cards de resumo estatístico
- const carregarContagensParceiros = useCallback(async () => {
-  try {
-    // Traz a lista global para calcular os totais reais
-    const resposta = await adminParceiroService.listarParceiros();
-    
-    // Se o service retornar o objeto paginado { items, total }
-    if (!Array.isArray(resposta) && resposta.items) {
-      // Caso o backend aceite statusAprovacao para contagens paginadas:
-      const [pendentes, aprovados, rejeitados] = await Promise.all([
-        adminParceiroService.listarParceiros({ statusAprovacao: "PENDENTE" }),
-        adminParceiroService.listarParceiros({ statusAprovacao: "APROVADO" }),
-        adminParceiroService.listarParceiros({ statusAprovacao: "REJEITADO" }),
-      ]);
+  const carregarContagensParceiros = useCallback(async () => {
+    try {
+      const resposta = await adminParceiroService.listarParceiros();
+
+      if (!Array.isArray(resposta) && resposta.items) {
+        const [pendentes, aprovados, rejeitados] = await Promise.all([
+          adminParceiroService.listarParceiros({ statusAprovacao: "PENDENTE" }),
+          adminParceiroService.listarParceiros({ statusAprovacao: "APROVADO" }),
+          adminParceiroService.listarParceiros({ statusAprovacao: "REJEITADO" }),
+        ]);
+
+        setContagens({
+          pendentes: extrairTotal(pendentes),
+          aprovados: extrairTotal(aprovados),
+          rejeitados: extrairTotal(rejeitados),
+          total: resposta.total ?? extrairTotal(resposta),
+        });
+        return;
+      }
+
+      const lista = Array.isArray(resposta) ? resposta : [];
 
       setContagens({
-        pendentes: extrairTotal(pendentes),
-        aprovados: extrairTotal(aprovados),
-        rejeitados: extrairTotal(rejeitados),
-        total: resposta.total ?? extrairTotal(resposta),
+        pendentes: lista.filter((p) => p.statusAprovacaoParceiro === "PENDENTE").length,
+        aprovados: lista.filter((p) => p.statusAprovacaoParceiro === "APROVADO").length,
+        rejeitados: lista.filter((p) => p.statusAprovacaoParceiro === "REJEITADO").length,
+        total: lista.length,
       });
-      return;
+    } catch (error) {
+      console.error("Erro ao carregar contagens de parceiros:", error);
     }
-
-    // Se o backend retorna um Array simples de Parceiro[]:
-    const lista = Array.isArray(resposta) ? resposta : [];
-    
-    setContagens({
-      pendentes: lista.filter((p) => p.statusAprovacaoParceiro === "PENDENTE").length,
-      aprovados: lista.filter((p) => p.statusAprovacaoParceiro === "APROVADO").length,
-      rejeitados: lista.filter((p) => p.statusAprovacaoParceiro === "REJEITADO").length,
-      total: lista.length,
-    });
-  } catch (error) {
-    console.error("Erro ao carregar contagens de parceiros:", error);
-  }
-}, []);
+  }, []);
 
   useEffect(() => {
     carregarParceiros();
@@ -219,10 +224,12 @@ export function PartnersApproval() {
       !statusFiltro || parceiro.statusAprovacaoParceiro === statusFiltro;
 
     const termo = termoBusca.toLowerCase().trim();
+    const nomeExibicao = obterNomeOuRazaoSocial(parceiro).toLowerCase();
     const atendeBusca =
       !termo ||
-      parceiro.nomeRazaoSocial?.toLowerCase().includes(termo) ||
-      parceiro.nomeSocial?.toLowerCase().includes(termo) ||
+      nomeExibicao.includes(termo) ||
+      parceiro.nome?.toLowerCase().includes(termo) ||
+      parceiro.razaoSocial?.toLowerCase().includes(termo) ||
       parceiro.email?.toLowerCase().includes(termo) ||
       parceiro.documento?.includes(termo);
 
@@ -273,7 +280,7 @@ export function PartnersApproval() {
               Aprovação de Parceiros
             </h1>
             <p className="text-sm sm:text-base text-white-500">
-              Analise, filtre e aprove os parceiros institucionais cadastrados.
+              Analise, filtre e aprove os parceiros cadastrados.
             </p>
           </div>
 
@@ -338,15 +345,15 @@ export function PartnersApproval() {
         </div>
 
         {/* TABELA */}
-        <div className="bg-white-primary rounded-xl shadow-sm border border-white-200 overflow-x-auto">
+        <div className="bg-white rounded-xl shadow-sm border border-white-200 overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="text-white-primary bg-green-400">
+              <tr className="text-white bg-green-primary text-sm font-semibold">
                 <th className="p-3 w-16">ID</th>
-                <th className="p-3 w-64">Razão Social / Nome</th>
+                <th className="p-3 w-64">Nome / Razão Social</th>
                 <th className="p-3 w-48">Parceiro Indicador</th>
                 <th className="p-3 w-48">E-mail / Telefone</th>
-                <th className="p-3 w-32">Aprovação</th>
+                <th className="p-3 w-32">Status</th>
                 <th className="p-3 w-36">Ações</th>
               </tr>
             </thead>
@@ -366,39 +373,49 @@ export function PartnersApproval() {
               ) : (
                 parceirosFiltrados.map((parceiro) => {
                   const status = parceiro.statusAprovacaoParceiro || "PENDENTE";
+                  const nomeExibicao = obterNomeOuRazaoSocial(parceiro);
 
                   return (
                     <tr
                       key={parceiro.id}
                       className="border-b border-white-100 last:border-0 hover:bg-white-50 transition-colors"
                     >
+                      {/* 1. Coluna ID */}
                       <td className="p-4 font-medium text-sm text-black-primary">
                         #{parceiro.id}
                       </td>
+
+                      {/* 2. Coluna Nome / Razão Social */}
                       <td className="p-4">
-                        <p className="font-medium text-sm text-black-primary">
-                          {parceiro.nomeRazaoSocial}
+                        <p className="font-semibold text-sm text-black-primary">
+                          {nomeExibicao}
                         </p>
-                        {parceiro.nomeSocial && (
-                          <p className="text-sm text-white-500">
-                            {parceiro.nomeSocial}
-                          </p>
-                        )}
+                        <span className="text-xs text-white-400">
+                          {parceiro.tipoParceiro} ({parceiro.tipoPessoa})
+                        </span>
                       </td>
+
+                      {/* 3. Coluna Parceiro Indicador */}
                       <td className="p-4 text-sm text-black-primary font-medium whitespace-nowrap">
                         {obterNomeParceiroIndicador(parceiro)}
                       </td>
+
+                      {/* 4. Coluna E-mail / Telefone */}
                       <td className="p-4">
                         <p className="text-black-primary text-sm font-medium">
                           {parceiro.email}
                         </p>
-                        <p className="text-sm text-white-500 mt-0.5">
+                        <p className="text-xs text-white-500 mt-0.5">
                           {parceiro.telefone || "—"}
                         </p>
                       </td>
+
+                      {/* 5. Coluna Status de Aprovação */}
                       <td className="p-4 whitespace-nowrap">
                         <StatusBadge status={status} tipo="parceiro" />
                       </td>
+
+                      {/* 6. Coluna Ações */}
                       <td className="p-4 whitespace-nowrap">
                         <div className="flex items-center gap-2">
                           {status === "PENDENTE" && (
@@ -479,7 +496,7 @@ export function PartnersApproval() {
 
               <p className="text-sm text-white-600 mb-4">
                 Deseja {modal.tipo === "aprovar" ? "aprovar" : "rejeitar"} o parceiro{" "}
-                <strong>{modal.parceiro.nomeRazaoSocial}</strong>?
+                <strong>{obterNomeOuRazaoSocial(modal.parceiro)}</strong>?
               </p>
 
               <label className="block mb-4">
@@ -568,11 +585,16 @@ export function PartnersApproval() {
                     <User className="w-3.5 h-3.5" /> Identificação
                   </h3>
                   <p className="text-sm font-semibold text-black-primary">
-                    {modal.parceiro.nomeRazaoSocial}
+                    {obterNomeOuRazaoSocial(modal.parceiro)}
                   </p>
-                  {modal.parceiro.nomeSocial && (
+                  {modal.parceiro.tipoParceiro !== "SOLIDARIO" && modal.parceiro.nome && (
                     <p className="text-xs text-white-500">
-                      Nome Fantasia: {modal.parceiro.nomeSocial}
+                      Nome Fantasia / Nome: {modal.parceiro.nome}
+                    </p>
+                  )}
+                  {modal.parceiro.responsavelLegal && (
+                    <p className="text-xs text-white-500 mt-1">
+                      Responsável Legal: {modal.parceiro.responsavelLegal}
                     </p>
                   )}
                   <p className="text-xs text-white-500 mt-1">

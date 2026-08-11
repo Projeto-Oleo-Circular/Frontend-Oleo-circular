@@ -22,7 +22,6 @@ const profiles = [
       { label: 'Cozinha Industrial', icon: 'icon-CozinhaIndustrial.svg' },
       { label: 'Empresa / Indústria', icon: 'icon-empresa.svg' },
       { label: 'Escolas / Universidade', icon: 'icon-universidade.svg' },
-      { label: 'Hospital / Unidade de Saúde', icon: 'icon-hospital.svg' },
       { label: 'Hotel / Pousada', icon: 'icon-hotel.svg' },
       { label: 'Restaurante / Bar', icon: 'icon-restaurante.svg' },
     ],
@@ -32,13 +31,11 @@ const profiles = [
     icon: 'icon-parceiros.svg',
     label: 'Parceiros',
     title: 'Comunitários',
-    description: 'Organizações com alta capacidade de doação.',
+    description: 'Locais com geração compartilhada entre várias pessoas.',
     totalSteps: 5,
     tags: [
       { label: 'Condomínio', icon: 'icon-condominio.svg' },
-      { label: 'Unidade de Saúde', icon: 'icon-unidadeSaude.svg' },
-      { label: 'Feira Livre', icon: 'icon-feira.svg' },
-      { label: 'Evento Fechado', icon: 'icon-evento.svg' },
+      { label: 'Feira Livre / Eventos', icon: 'icon-feira.svg' },
     ],
   },
   {
@@ -46,12 +43,10 @@ const profiles = [
     icon: 'icon-parceiros.svg',
     label: 'Parceiros',
     title: 'Solidários',
-    description: 'Organizações com alta capacidade de doação.',
+    description: 'Pessoas e iniciativas que colaboram com pequenas quantidades.',
     totalSteps: 5,
     tags: [
-      { label: 'Pessoa Física', icon: 'icon-profileFisica.svg' },
       { label: 'Doador Avulso', icon: 'icon-doadorAvulso.svg' },
-      { label: 'Outros', icon: 'icon-outros.svg' },
     ],
   },
 ];

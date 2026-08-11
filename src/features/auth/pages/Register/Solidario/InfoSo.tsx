@@ -31,9 +31,8 @@ function InfoSo({
     const [loadingCategorias, setLoadingCategorias] = useState(false)
 
     const [formData, setFormData] = useState({
-        responsavel: initialData.responsavel || initialData.responsavelLegalNome || '',
+        nome: initialData.nome || '',
         cnpj: initialData.cnpj || initialData.documento || '',
-        razaoSocial: initialData.razaoSocial || initialData.nomeRazaoSocial || '',
         cep: initialData.cep || '',
         cidade: initialData.cidade || '',
         estado: initialData.estado || initialData.estado || '',
@@ -45,9 +44,8 @@ function InfoSo({
     })
 
     const [fieldErrors, setFieldErrors] = useState({
-        responsavel: '',
+        nome: '',
         cnpj: '',
-        razaoSocial: '',
         cep: '',
         cidade: '',
         estado: '',
@@ -186,9 +184,8 @@ function InfoSo({
     const validateForm = (): boolean => {
         let hasError = false;
         const errors = {
-            responsavel: '',
+            nome: '',
             cnpj: '',
-            razaoSocial: '',
             cep: '',
             cidade: '',
             estado: '',
@@ -198,19 +195,14 @@ function InfoSo({
             categoria: ''
         };
 
-        if (!formData.responsavel.trim()) {
-            errors.responsavel = 'Nome do responsável é obrigatório'
+        if (!formData.nome.trim()) {
+            errors.nome = 'Nome completo é obrigatório'
             hasError = true
         }
 
         const docValidation = validateDocument(formData.cnpj)
         if (!docValidation.valid) {
             errors.cnpj = docValidation.message
-            hasError = true
-        }
-
-        if (!formData.razaoSocial.trim()) {
-            errors.razaoSocial = 'Razão social é obrigatória'
             hasError = true
         }
 
@@ -337,8 +329,7 @@ function InfoSo({
 
             const dataToSave = {
                 documento: formData.cnpj,
-                nomeRazaoSocial: formData.razaoSocial,
-                responsavelLegalNome: formData.responsavel,
+                nome: formData.nome,
                 cep: formData.cep,
                 cidade: formData.cidade,
                 estado: formData.estado,
@@ -412,19 +403,19 @@ function InfoSo({
                             <Input
                                 type="text"
                                 icon="icon-name"
-                                placeholder="Nome do responsável legal"
-                                name="responsavel"
-                                value={formData.responsavel}
+                                placeholder="Nome"
+                                name="name"
+                                value={formData.nome}
                                 onChange={handleInputChange}
                                 noBorder
-                                error={fieldErrors.responsavel}
+                                error={fieldErrors.nome}
                             />
                             <hr className="border-white-100" />
 
                             <Input
                                 type="text"
                                 icon="icon-CNPJ"
-                                placeholder="CNPJ ou CPF"
+                                placeholder="CPF"
                                 name="cnpj"
                                 value={formData.cnpj}
                                 onChange={handleInputChange}
@@ -433,17 +424,6 @@ function InfoSo({
                             />
                             <hr className="border-white-100" />
 
-                            <Input
-                                type="text"
-                                icon="icon-razaoSocial"
-                                placeholder="Razão social"
-                                name="razaoSocial"
-                                value={formData.razaoSocial}
-                                onChange={handleInputChange}
-                                noBorder
-                                error={fieldErrors.razaoSocial}
-                            />
-                            <hr className="border-white-100" />
 
                             <Input
                                 type="text"

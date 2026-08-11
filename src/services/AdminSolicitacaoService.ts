@@ -27,9 +27,9 @@ export interface ParceiroResumo {
     id: number;
     tipoPessoa: string;
     tipoParceiro: string;
-    nomeRazaoSocial: string;
+    razaoSocial: string;
     nomeParceiro?: string;
-    nomeSocial: string | null;
+    nome: string | null;
     email: string;
     documento: string;
     telefone: string;

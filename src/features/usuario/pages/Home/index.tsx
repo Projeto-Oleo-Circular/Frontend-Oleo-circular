@@ -23,8 +23,8 @@ function Home() {
             try {
                 const userData = await authService.getUserData()
 
-                if (userData?.nomeRazaoSocial || userData?.nomeSocial) {
-                    const nomeCompleto = userData.nomeRazaoSocial || userData.nomeSocial || "Usuário"
+                if (userData?.razaoSocial || userData?.nome) {
+                    const nomeCompleto = userData.razaoSocial || userData.nome || "Usuário"
                     const primeiroNome = nomeCompleto.split(" ")[0]
                     setUserName(primeiroNome)
                 }

@@ -76,8 +76,8 @@ function Register() {
   const [additionalData, setAdditionalData] = useState({
     tipoPessoa: "JURIDICA", // "JURIDICA" | "FISICA"
     tipoParceiro: "INSTITUCIONAL",
-    nomeRazaoSocial: "", // Razão Social formal (PJ) ou Nome Completo do documento (PF)
-    nomeSocial: "", 
+    razaoSocial: "", // Razão Social formal (PJ) ou Nome Completo do documento (PF)
+    nome: "", 
     documento: "",
     redesSociais: "",
     aceiteMarketing: false,
@@ -194,7 +194,7 @@ function Register() {
 
     // Razão Social ou Nome Registro Formal
     const razaoSocialOuFormal =
-      additionalData.nomeRazaoSocial?.trim() || nomeExibicaoInicial;
+      additionalData.razaoSocial?.trim() || nomeExibicaoInicial;
 
     return {
       tipoPessoa: additionalData.tipoPessoa || "JURIDICA",
@@ -203,10 +203,10 @@ function Register() {
         : "INSTITUCIONAL",
 
       // Salva no banco o registro formal/jurídico
-      nomeRazaoSocial: razaoSocialOuFormal,
+      razaoSocial: razaoSocialOuFormal,
 
       // Salva no banco o Nome Fantasia (PJ) ou Nome Amigável (PF)
-      nomeSocial: nomeExibicaoInicial,
+      nome: nomeExibicaoInicial,
 
       email: formData.email.trim(),
       senha: formData.senha,
@@ -585,11 +585,7 @@ function Register() {
                 <Input
                   type="text"
                   icon="icon-name"
-                  placeholder={
-                    additionalData.tipoPessoa === "JURIDICA"
-                      ? "Nome Fantasia da Empresa / Ponto"
-                      : "Seu nome completo"
-                  }
+                  placeholder="Seu nome"
                   name="nome"
                   value={formData.nome}
                   onChange={handleInputChange}

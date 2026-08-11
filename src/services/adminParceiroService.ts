@@ -6,12 +6,12 @@ export interface Parceiro {
   id: number;
   tipoPessoa: string;
   tipoParceiro: string;
-  nomeRazaoSocial: string;
-  nomeSocial?: string | null;
+  razaoSocial: string;
+  nome?: string | null;
   email: string;
   documento?: string;
   telefone?: string;
-  responsavelLegalNome?: string;
+  responsavelLegal?: string;
   statusAprovacaoParceiro: StatusAprovacao;
   criadoEm?: string;
 

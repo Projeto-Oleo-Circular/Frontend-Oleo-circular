@@ -9,7 +9,7 @@ import {
 import StatusBadge from "../../../../components/ui/StatusBadge";
 import AdminTopNav from "../../../../components/layout/AdminTopNav";
 import AdminFilterDropdown, {
-  FilterOption,
+  type FilterOption,
 } from "../../../../components/ui/AdminFilterDropdown";
 
 import {
@@ -43,6 +43,34 @@ type ModalTipo = "aprovar" | "rejeitar" | "detalhes" | "erro_parceiro" | null;
 function formatarEndereco(ponto: PontoColetaAdmin): string {
   const base = `${ponto.logradouro}, ${ponto.numero} - ${ponto.bairro}, ${ponto.cidade}`;
   return ponto.estado ? `${base}/${ponto.estado}` : base;
+}
+
+// Helper para obter o Nome do Ponto / Razão Social
+function obterNomePontoOuRazaoSocial(ponto: PontoColetaAdmin): string {
+  const parceiro = ponto.parceiro as any;
+  if (!parceiro) {
+    return ponto.nomePontoColeta || "—";
+  }
+
+  if (parceiro.tipoParceiro === "SOLIDARIO" || parceiro.tipoPessoa === "FISICA") {
+    return parceiro.nome || ponto.nomePontoColeta || "—";
+  }
+
+  // INSTITUCIONAL, COMUNITARIO ou JURIDICA
+  return parceiro.razaoSocial || parceiro.razaoSocial || parceiro.nome || ponto.nomePontoColeta || "—";
+}
+
+// Helper para obter o Responsável Legal / Nome da Pessoa
+function obterNomeResponsavel(ponto: PontoColetaAdmin): string {
+  const parceiro = ponto.parceiro as any;
+  if (!parceiro) return "—";
+
+  if (parceiro.tipoParceiro === "SOLIDARIO" || parceiro.tipoPessoa === "FISICA") {
+    return parceiro.nome || "—";
+  }
+
+  // INSTITUCIONAL, COMUNITARIO ou JURIDICA
+  return parceiro.responsavelLegal || parceiro.responsavelLegalNome || parceiro.nome || "—";
 }
 
 export function PointsApproval() {
@@ -170,7 +198,7 @@ export function PointsApproval() {
     <div className="min-h-screen flex flex-col bg-background">
       <AdminTopNav />
 
-      <main className="w-full max-w-[1440px] mx-auto p-6">
+      <main className="w-full max-w-[1440px] mx-auto p-6 flex-1">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-green-primary mt-2 sm:mt-5 mb-1">
@@ -234,15 +262,15 @@ export function PointsApproval() {
         </div>
 
         {/* TABELA DE PONTOS */}
-        <div className="bg-white-primary rounded-xl shadow-sm border border-white-200 overflow-x-auto">
+        <div className="bg-white rounded-xl shadow-sm border border-white-200 overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="text-white-primary bg-green-400">
+              <tr className="text-white bg-green-primary text-sm font-semibold">
                 <th className="p-3 w-16">ID</th>
-                <th className="p-3 w-48">Nome do Ponto</th>
-                <th className="p-3 w-64">Parceiro Responsável</th>
+                <th className="p-3 w-56">Nome do Ponto / Razão Social</th>
+                <th className="p-3 w-56">Responsável</th>
                 <th className="p-3">Endereço</th>
-                <th className="p-3 w-40">Capacidade</th>
+                <th className="p-3 w-32">Capacidade</th>
                 <th className="p-3 w-32">Aprovação</th>
                 <th className="p-3 w-36">Ações</th>
               </tr>
@@ -265,13 +293,9 @@ export function PointsApproval() {
                   const status: StatusAprovacao =
                     ponto.statusAprovacaoPontoColeta || "PENDENTE";
 
-                  // 1. Nome do Ponto: Exibe a Razão Social da entidade
-                  const razaoSocialPonto =
-                    ponto.parceiro?.nomeRazaoSocial || ponto.nomePontoColeta;
-
-                  // 2. Parceiro Responsável: Exibe diretamente o Nome do Responsável Legal
-                  const responsavelLegal =
-                    ponto.parceiro?.responsavelLegalNome || "—";
+                  const nomeExibicaoPonto = obterNomePontoOuRazaoSocial(ponto);
+                  const responsavel = obterNomeResponsavel(ponto);
+                  const parceiro = ponto.parceiro as any;
 
                   return (
                     <tr
@@ -282,23 +306,31 @@ export function PointsApproval() {
                         #{ponto.id}
                       </td>
 
-                      {/* Nome do Ponto -> Razão Social */}
-                      <td className="p-4 text-sm font-medium text-black-primary">
-                        {razaoSocialPonto}
+                      {/* 1. Nome do Ponto / Razão Social */}
+                      <td className="p-4">
+                        <p className="font-semibold text-sm text-black-primary">
+                          {nomeExibicaoPonto}
+                        </p>
+                        {parceiro?.tipoParceiro && (
+                          <span className="text-xs text-white-400">
+                            {parceiro.tipoParceiro} ({parceiro.tipoPessoa || "PJ"})
+                          </span>
+                        )}
                       </td>
 
-                      {/* Parceiro Responsável -> Nome do Responsável Legal */}
+                      {/* 2. Responsável Legal / Nome */}
                       <td className="p-4">
                         <p className="text-sm font-medium text-black-primary">
-                          {responsavelLegal}
+                          {responsavel}
                         </p>
-                        {ponto.parceiro?.documento && (
+                        {parceiro?.documento && (
                           <p className="text-xs text-white-500 mt-0.5">
-                            {ponto.parceiro.documento}
+                            {parceiro.documento}
                           </p>
                         )}
                       </td>
 
+                      {/* 3. Endereço */}
                       <td className="p-4 text-sm text-black-primary max-w-xs">
                         <div
                           className="flex items-start gap-1.5"
@@ -311,14 +343,17 @@ export function PointsApproval() {
                         </div>
                       </td>
 
+                      {/* 4. Capacidade */}
                       <td className="p-4 text-sm text-black-primary whitespace-nowrap">
                         {ponto.capacidadeBombona} L
                       </td>
 
+                      {/* 5. Status */}
                       <td className="p-4 whitespace-nowrap">
                         <StatusBadge status={status} tipo="ponto" />
                       </td>
 
+                      {/* 6. Ações */}
                       <td className="p-4 whitespace-nowrap">
                         <div className="flex items-center gap-2">
                           {status === "PENDENTE" && (
@@ -384,7 +419,7 @@ export function PointsApproval() {
 
               <p className="text-sm text-white-600 mb-4">
                 Deseja {modal.tipo === "aprovar" ? "aprovar" : "rejeitar"} o ponto de coleta{" "}
-                <strong>{modal.ponto.parceiro?.nomeRazaoSocial || modal.ponto.nomePontoColeta}</strong>?
+                <strong>{obterNomePontoOuRazaoSocial(modal.ponto)}</strong>?
               </p>
 
               <label className="block mb-4">
@@ -438,10 +473,10 @@ export function PointsApproval() {
 
                 <div className="border border-white-100 rounded-lg p-3">
                   <h3 className="text-xs font-bold text-green-primary uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                    <Building2 className="w-3.5 h-3.5" /> Informações do Ponto (Razão Social)
+                    <Building2 className="w-3.5 h-3.5" /> Informações do Ponto
                   </h3>
                   <p className="text-sm font-semibold text-black-primary">
-                    {modal.ponto.parceiro?.nomeRazaoSocial || modal.ponto.nomePontoColeta}
+                    {obterNomePontoOuRazaoSocial(modal.ponto)}
                   </p>
                   <p className="text-xs text-white-500 flex items-start gap-1 mt-1">
                     <MapPin className="w-3.5 h-3.5 shrink-0 mt-0.5 text-green-primary" />
@@ -451,19 +486,19 @@ export function PointsApproval() {
 
                 <div className="border border-white-100 rounded-lg p-3">
                   <h3 className="text-xs font-bold text-green-primary uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                    <User className="w-3.5 h-3.5" /> Responsável Legal
+                    <User className="w-3.5 h-3.5" /> Responsável
                   </h3>
                   <p className="text-sm font-semibold text-black-primary">
-                    {modal.ponto.parceiro?.responsavelLegalNome || "—"}
+                    {obterNomeResponsavel(modal.ponto)}
                   </p>
-                  {modal.ponto.parceiro?.documento && (
+                  {(modal.ponto.parceiro as any)?.documento && (
                     <p className="text-xs text-white-500 flex items-center gap-1 mt-1">
-                      <FileText className="w-3 h-3" /> {modal.ponto.parceiro.documento}
+                      <FileText className="w-3 h-3" /> {(modal.ponto.parceiro as any).documento}
                     </p>
                   )}
-                  {modal.ponto.parceiro?.email && (
+                  {(modal.ponto.parceiro as any)?.email && (
                     <p className="text-xs text-white-500 flex items-center gap-1 mt-1">
-                      <Mail className="w-3 h-3" /> {modal.ponto.parceiro.email}
+                      <Mail className="w-3 h-3" /> {(modal.ponto.parceiro as any).email}
                     </p>
                   )}
                 </div>
@@ -502,7 +537,7 @@ export function PointsApproval() {
                 <p className="text-xs text-white-500">
                   Você precisa primeiro aprovar o cadastro do parceiro{" "}
                   <strong>
-                    {modal.ponto.parceiro?.nomeRazaoSocial || modal.ponto.parceiro?.responsavelLegalNome}
+                    {obterNomePontoOuRazaoSocial(modal.ponto)}
                   </strong>{" "}
                   para depois aprovar este ponto.
                 </p>
