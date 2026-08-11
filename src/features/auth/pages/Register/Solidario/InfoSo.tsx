@@ -404,7 +404,7 @@ function InfoSo({
                                 type="text"
                                 icon="icon-name"
                                 placeholder="Nome"
-                                name="name"
+                                name="nome"
                                 value={formData.nome}
                                 onChange={handleInputChange}
                                 noBorder

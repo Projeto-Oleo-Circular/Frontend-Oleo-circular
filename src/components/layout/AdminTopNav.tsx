@@ -7,7 +7,7 @@ const NAV_ITEMS = [
   { to: "/admin/requests", label: "Solicitações", iconSrc: "/assets/icons/icon-solicitacao.svg" },
   { to: "/admin/map", label: "Mapa", iconSrc: "/assets/icons/map.svg" },
   { to: "/admin/my-points", label: "Pontos", iconSrc: "/assets/icons/icon-pontos.svg" },
-  { to: "/admin/partners-approval", label: "Parceiros", iconSrc: "/assets/icons/icon-pontos.svg" },
+  { to: "/admin/partners-approval", label: "Parceiros", iconSrc: "/assets/icons/profile.svg" },
 
 ];
 
