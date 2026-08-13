@@ -35,7 +35,7 @@ function InfoSo({
         cnpj: initialData.cnpj || initialData.documento || '',
         cep: initialData.cep || '',
         cidade: initialData.cidade || '',
-        estado: initialData.estado || initialData.estado || '',
+        estado: initialData.estado || '',
         rua: initialData.rua || initialData.logradouro || '',
         bairro: initialData.bairro || '',
         numero: initialData.numero || '',
@@ -58,7 +58,7 @@ function InfoSo({
     const { addToast } = useToast()
     const [loading, setLoading] = useState(false)
     const [loadingCep, setLoadingCep] = useState(false)
-    const [loadingEstado, setLoadingEstado] = useState(false)
+    const [loadingEstado] = useState(false)
 
     const formatCep = (value: string): string => {
         const cleaned = value.replace(/\D/g, '').slice(0, 8)
@@ -206,9 +206,13 @@ function InfoSo({
             hasError = true
         }
 
-        if (!formData.cep.trim()) {
-            errors.cep = 'CEP é obrigatório'
-            hasError = true
+        const cleanedCep = formData.cep.replace(/\D/g, '');
+        if (!cleanedCep) {
+            errors.cep = 'CEP é obrigatório';
+            hasError = true;
+        } else if (cleanedCep.length !== 8) {
+            errors.cep = 'CEP deve conter 8 dígitos';
+            hasError = true;
         }
 
         if (!formData.estado.trim()) {
@@ -318,11 +322,10 @@ function InfoSo({
             setLoading(true)
 
             const disponibilidade = await authService.verificarDisponibilidade({
-                documento: formData.cnpj
+                documento: formData.cnpj.replace(/\D/g, '')
             })
 
             if (disponibilidade.documentoDisponivel === false) {
-                addToast('Este documento já está cadastrado', 'error')
                 setFieldErrors(prev => ({ ...prev, cnpj: 'Este documento já está cadastrado' }))
                 return
             }

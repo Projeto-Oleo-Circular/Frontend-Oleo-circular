@@ -318,48 +318,59 @@ function InfoCt({
     }
 
     const handleNext = async () => {
-        if (!validateForm()) {
+    if (!validateForm()) {
+        return
+    }
+
+    try {
+        setLoading(true)
+
+        // Limpa os caracteres não numéricos antes de consultar o backend
+        const documentoLimpo = formData.cnpj.replace(/\D/g, '')
+
+        const disponibilidade = await authService.verificarDisponibilidade({
+            documento: documentoLimpo
+        })
+
+        // Verifica se a API respondeu que o documento NÃO está disponível
+        if (disponibilidade.documentoDisponivel === false) {
+            const msg = 'Este documento já está cadastrado'
+            setFieldErrors(prev => ({ ...prev, cnpj: msg }))
             return
         }
 
-        try {
-            setLoading(true)
-
-            const disponibilidade = await authService.verificarDisponibilidade({
-                documento: formData.cnpj
-            })
-
-            if (disponibilidade.documentoDisponivel === false) {
-                addToast('Este documento já está cadastrado', 'error')
-                setFieldErrors(prev => ({ ...prev, cnpj: 'Este documento já está cadastrado' }))
-                return
-            }
-
-            const dataToSave = {
-                documento: formData.cnpj,
-                razaoSocial: formData.razaoSocial,
-                responsavelLegalNome: formData.responsavel,
-                cep: formData.cep,
-                cidade: formData.cidade,
-                estado: formData.estado,
-                logradouro: formData.rua,
-                bairro: formData.bairro,
-                numero: formData.numero,
-                complemento: formData.complemento,
-                categoriaId: Number(formData.categoria)
-            }
-
-            if (onDataChange) {
-                onDataChange(dataToSave)  
-            }
-            onNext()
-
-        } catch (error: any) {
-            addToast(error.response?.data?.message || 'Erro ao verificar documento', 'error')
-        } finally {
-            setLoading(false)
+        const dataToSave = {
+            documento: documentoLimpo, // Envia limpo ou formatado dependendo da sua necessidade
+            razaoSocial: formData.razaoSocial,
+            responsavelLegalNome: formData.responsavel,
+            cep: formData.cep.replace(/\D/g, ''),
+            cidade: formData.cidade,
+            estado: formData.estado,
+            logradouro: formData.rua,
+            bairro: formData.bairro,
+            numero: formData.numero,
+            complemento: formData.complemento,
+            categoriaId: Number(formData.categoria)
         }
+
+        if (onDataChange) {
+            onDataChange(dataToSave)  
+        }
+        onNext()
+
+    } catch (error: any) {
+        // Trata caso a API retorne um status 400/409 informando que já existe
+        const errorMessage = error.response?.data?.message || 'Erro ao verificar documento'
+        
+        if (errorMessage.toLowerCase().includes('cadastrado') || error.response?.status === 409) {
+            setFieldErrors(prev => ({ ...prev, cnpj: 'Este documento já está cadastrado' }))
+        }
+        
+        addToast(errorMessage, 'error')
+    } finally {
+        setLoading(false)
     }
+}
     return (
         <div className="flex flex-col h-screen">
             <HeaderCadastro title="Criar Conta" onBack={onBack} />
