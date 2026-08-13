@@ -318,7 +318,7 @@ function Requests() {
         <div className="bg-white-primary rounded-xl shadow-sm border border-white-200 overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="text-white-primary bg-green-400">
+              <tr className="text-white bg-green-primary text-sm font-semibold">
                 <th className="p-3 w-16">ID</th>
                 <th className="p-3 w-64">Solicitante</th>
                 <th className="p-3 w-44">Data Solicitação</th>
