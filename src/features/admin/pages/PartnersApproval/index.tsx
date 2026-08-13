@@ -46,11 +46,16 @@ type ModalTipo = "aprovar" | "rejeitar" | "detalhes" | null;
 function formatarData(iso?: string | null): string {
   if (!iso) return "—";
   const data = new Date(iso);
+  
+  return data.toLocaleDateString("pt-BR")
+
+  /*
   if (Number.isNaN(data.getTime())) return "—";
   return `${data.toLocaleDateString("pt-BR")} ${data.toLocaleTimeString("pt-BR", {
     hour: "2-digit",
     minute: "2-digit",
   })}`;
+  */
 }
 
 // Helper para padronizar o extrato da contagem total independente da resposta

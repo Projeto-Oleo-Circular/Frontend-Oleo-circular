@@ -59,7 +59,7 @@ export interface RegisterCredentials {
   capacidadeBombona?: number;
   nivelAtualPct?: number;
   statusBombona?: string;
-  redesSociais?: string[]; // Array de strings no Swagger
+  redesSociais?: string[]; 
   site?: string | null;
   aceiteDivulgacao?: boolean;
   parceiroIndicadorId?: string | number | null;

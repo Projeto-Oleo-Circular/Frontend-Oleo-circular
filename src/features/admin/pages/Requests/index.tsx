@@ -33,13 +33,14 @@ function formatarData(iso: string | null): string {
   
   // Garante a formatação no fuso horário de Brasília
   const dataFormatada = data.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
+  /*
   const horaFormatada = data.toLocaleTimeString("pt-BR", {
     hour: "2-digit",
     minute: "2-digit",
     timeZone: "America/Sao_Paulo",
   });
-
-  return `${dataFormatada} ${horaFormatada}`;
+*/
+  return `${dataFormatada}`;
 }
 
 function formatarEndereco(ponto: SolicitacaoColeta["pontoColeta"]): string {
@@ -257,6 +258,7 @@ function Requests() {
                 setStatusFiltro(val as StatusSolicitacao | "");
               }}
             />
+          {/*
             <button
               onClick={() => {
                 // Lógica de exportação de relatório
@@ -265,6 +267,7 @@ function Requests() {
             >
               <span>Exportar relatório</span>
             </button>
+          */}
           </div>
         </div>
 
@@ -411,9 +414,9 @@ function Requests() {
 
               {modal.tipo === "agendar" && (
                 <label className="block mb-4">
-                  <span className="text-sm text-white-600 font-medium">Data e Hora do Agendamento</span>
+                  <span className="text-sm text-white-600 font-medium">Data do Agendamento</span>
                   <input
-                    type="datetime-local"
+                    type="date"
                     value={dataAgendamento}
                     onChange={(e) => setDataAgendamento(e.target.value)}
                     className="w-full border border-white-200 rounded-lg px-3 py-2 mt-1 text-sm focus:outline-none focus:border-green-primary"

@@ -75,7 +75,7 @@ function Home() {
                                 Seja bem-vindo(a)!
                             </p>
                         </div>
-
+                    {/*
                         <button
                             className="relative p-2.5 hover:bg-green-hover rounded-full transition-colors duration-200 cursor-pointer"
                             aria-label="Notificações"
@@ -87,6 +87,7 @@ function Home() {
                             />
                             <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-primary rounded-full border-2 border-green-primary" />
                         </button>
+                    */}
                     </div>
                 </div>
 
