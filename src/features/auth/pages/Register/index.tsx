@@ -76,7 +76,7 @@ function Register() {
   const [additionalData, setAdditionalData] = useState({
     tipoPessoa: "JURIDICA", // "JURIDICA" | "FISICA"
     tipoParceiro: "INSTITUCIONAL",
-    razaoSocial: "", // Razão Social formal (PJ) ou Nome Completo do documento (PF)
+    razaoSocial: "", 
     nome: "", 
     documento: "",
     redesSociais: "",
@@ -86,8 +86,11 @@ function Register() {
     responsavelLegal: "",
     responsavelLegalCpf: "",
 
-    // Indicador
+    // Indicador e Sobre o Projeto (CAMPOS ADICIONADOS AQUI)
     parceiroIndicadorId: "",
+    outroParceiro: "",
+    comoConheceu: "",
+    observacao: "",
 
     // Endereço
     cep: "",
@@ -187,12 +190,7 @@ function Register() {
     }
 
     const isJuridica = additionalData.tipoPessoa === "JURIDICA";
-
-    // Se Institucional/PJ: Nome da 1ª tela é o Nome Fantasia.
-    // Se Física: Nome da 1ª tela representa o nome de exibição/identificador pessoal.
     const nomeExibicaoInicial = formData.nome.trim();
-
-    // Razão Social ou Nome Registro Formal
     const razaoSocialOuFormal =
       additionalData.razaoSocial?.trim() || nomeExibicaoInicial;
 
@@ -202,16 +200,12 @@ function Register() {
         ? (profile.toUpperCase() as "GERADOR" | "INSTITUCIONAL")
         : "INSTITUCIONAL",
 
-      // Salva no banco o registro formal/jurídico
       razaoSocial: razaoSocialOuFormal,
-
-      // Salva no banco o Nome Fantasia (PJ) ou Nome Amigável (PF)
       nome: nomeExibicaoInicial,
 
       email: formData.email.trim(),
       senha: formData.senha,
       documento: additionalData.documento.replace(/\D/g, ""),
-
       telefone: formData.telefone.replace(/\D/g, ""),
 
       redesSociais: additionalData.redesSociais.trim()
@@ -222,9 +216,17 @@ function Register() {
 
       parceiroIndicadorId: additionalData.parceiroIndicadorId
         ? String(additionalData.parceiroIndicadorId)
-        : undefined,
+        : null,
+      outroParceiro: additionalData.outroParceiro
+        ? additionalData.outroParceiro.trim()
+        : null,
+      comoConheceu: additionalData.comoConheceu
+        ? additionalData.comoConheceu.trim()
+        : "",
+      observacao: additionalData.observacao
+        ? additionalData.observacao.trim()
+        : "",
 
-      // Se for PJ utiliza o responsável legal informado; se PF, o próprio nome formal
       responsavelLegal: isJuridica
         ? additionalData.responsavelLegal?.trim() || undefined
         : razaoSocialOuFormal,
