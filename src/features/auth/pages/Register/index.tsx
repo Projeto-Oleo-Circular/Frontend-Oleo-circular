@@ -83,7 +83,7 @@ function Register() {
     aceiteMarketing: false,
 
     // Responsável Legal
-    responsavelLegalNome: "",
+    responsavelLegal: "",
     responsavelLegalCpf: "",
 
     // Indicador
@@ -225,8 +225,8 @@ function Register() {
         : undefined,
 
       // Se for PJ utiliza o responsável legal informado; se PF, o próprio nome formal
-      responsavelLegalNome: isJuridica
-        ? additionalData.responsavelLegalNome?.trim() || undefined
+      responsavelLegal: isJuridica
+        ? additionalData.responsavelLegal?.trim() || undefined
         : razaoSocialOuFormal,
 
       responsavelLegalCpf: isJuridica

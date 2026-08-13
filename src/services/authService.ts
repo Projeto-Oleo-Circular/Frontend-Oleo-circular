@@ -45,7 +45,7 @@ export interface RegisterCredentials {
   telefone?: string;
   porte?: string;
   aceiteMarketing: boolean;
-  responsavelLegalNome?: string | null;
+  responsavelLegal?: string | null;
   responsavelLegalCpf?: string | null;
   cep: string;
   logradouro: string;
