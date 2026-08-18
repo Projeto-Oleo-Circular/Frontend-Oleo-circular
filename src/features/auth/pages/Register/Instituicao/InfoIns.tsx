@@ -75,10 +75,21 @@ function InfoIns({
         const carregarCategorias = async () => {
             try {
                 setLoadingCategorias(true);
-                const categorias = await authService.listarCategorias();
+                const todasCategorias = await authService.listarCategorias();
                 
+                    const categoriasPorPerfil: Record<string, number[]> = {
+                        institucional: [1, 2, 3, 4, 5],
+                        comunitario: [6, 7],
+                        solidario: [8],
+                    }
+
+                    const idsPermitidos = categoriasPorPerfil[profile || 'institucional'] || [];
+                    const categoriasFiltradas = todasCategorias.filter(categoria =>
+                        idsPermitidos.includes(categoria.value)
+                );
+
                 setEstabelecimentoOptions(
-                    categorias.map(c => ({
+                    categoriasFiltradas.map(c => ({
                         value: c.value.toString(),
                         label: c.label
                     }))

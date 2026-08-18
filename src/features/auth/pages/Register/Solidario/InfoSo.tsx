@@ -25,7 +25,7 @@ function InfoSo({
     userName = 'Usuário',
     onDataChange,
     initialData = {},
-    profile = 'institucional'
+    profile = 'solidario'
 }: Props) {
     const [estabelecimentoOptions, setEstabelecimentoOptions] = useState<{ value: string; label: string }[]>([])
     const [loadingCategorias, setLoadingCategorias] = useState(false)
@@ -71,25 +71,36 @@ function InfoSo({
     useEffect(() => {
         const carregarCategorias = async () => {
             try {
-                setLoadingCategorias(true)
-                const categorias = await authService.listarCategorias()
+                setLoadingCategorias(true);
+                const todasCategorias = await authService.listarCategorias();
                 
+                    const categoriasPorPerfil: Record<string, number[]> = {
+                        institucional: [1, 2, 3, 4, 5],
+                        comunitario: [6, 7],
+                        solidario: [8],
+                    }
+
+                    const idsPermitidos = categoriasPorPerfil[profile || 'solidario'] || [];
+                    const categoriasFiltradas = todasCategorias.filter(categoria =>
+                        idsPermitidos.includes(categoria.value)
+                );
+
                 setEstabelecimentoOptions(
-                    categorias.map(c => ({
+                    categoriasFiltradas.map(c => ({
                         value: c.value.toString(),
                         label: c.label
                     }))
-                )
+                );
             } catch (error) {
-                console.error('Erro ao carregar categorias:', error)
-                addToast('Erro ao carregar categorias', 'error')
+                console.error('Erro ao carregar categorias:', error);
+                addToast('Erro ao carregar categorias', 'error');
             } finally {
-                setLoadingCategorias(false)
+                setLoadingCategorias(false);
             }
-        }
+        };
 
-        carregarCategorias()
-    }, [profile])
+        carregarCategorias();
+    }, [profile]);
 
     const formatDocument = (value: string): string => {
         const cleaned = value.replace(/\D/g, '')

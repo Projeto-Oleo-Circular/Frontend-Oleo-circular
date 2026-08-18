@@ -168,12 +168,14 @@ export const authService = {
 
   async listarCategorias(): Promise<CategoriaOption[]> {
     return [
-      { value: 1, label: 'Restaurante industrial' },
-      { value: 2, label: 'Restaurante e lanchonete' },
+      { value: 1, label: 'Cozinha Industrial' },
+      { value: 2, label: 'Empresa / Indústria' },
       { value: 3, label: 'Escola / Universidade' },
       { value: 4, label: 'Hotel / Pousada' },
-      { value: 5, label: 'Empresa / Refeitório corporativo' },
+      { value: 5, label: 'Restaurante / Bar' },
       { value: 6, label: 'Condomínio / Casa residencial' },
+      { value: 7, label: 'Feira Livre / Eventos' },
+      { value: 8, label: 'Doador Avulso' },
     ];
   },
 
