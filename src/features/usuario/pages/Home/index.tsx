@@ -61,7 +61,7 @@ function Home() {
     }
 
     return (
-        <div className="flex flex-col h-full overflow-hidden bg-background">
+        <div className="relative flex flex-col h-full overflow-hidden bg-background">
             <HeaderApp userName={userName} />
 
             <main className="flex-1 overflow-y-auto">
@@ -91,7 +91,7 @@ function Home() {
                     </div>
                 </div>
 
-                <div className="px-4 sm:px-6 md:px-8 max-w-5xl mx-auto relative z-10 -mt-12 sm:-mt-16 flex flex-col gap-4 pb-8">
+                <div className="px-4 sm:px-6 md:px-8 max-w-5xl mx-auto relative z-10 -mt-12 sm:-mt-16 flex flex-col gap-4 pb-24">
                     <PontosColetaCard
                         pontos={pontos}
                         currentIndex={currentIndex}
@@ -116,6 +116,16 @@ function Home() {
                     </Button>
                 </div>
             </main>
+
+           <button
+                onClick={() => navigate("/register-point")}
+                className="fixed bottom-20 right-6 sm:bottom-24 sm:right-10 w-14 h-14 bg-[#31B0A5] hover:bg-[#289188] text-white rounded-full flex items-center justify-center shadow-xl transition-all duration-200 hover:scale-105 active:scale-95 z-50 cursor-pointer"
+                aria-label="Adicionar novo ponto de coleta"
+            >
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+                </svg>
+            </button>
         </div>
     )
 }
