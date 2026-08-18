@@ -149,16 +149,12 @@ function AboutProjectIns({
     const parceiroId =
       formData.partner && !isOther ? Number(formData.partner) : null;
     const outroParceiroNome = isOther ? formData.otherPartnerName.trim() : null;
-    let comoConheceuFinal = formData.howFound;
-    if (isOther && formData.otherPartnerName) {
-      comoConheceuFinal = `Parceiro indicado: ${formData.otherPartnerName.trim()}.${
-        formData.howFound ? ` | ${formData.howFound.trim()}` : ""
-      }`;
-    }
+
+    const comoConheceuFinal = formData.howFound.trim();
 
     onDataChange?.({
       comoConheceu: comoConheceuFinal,
-      observacao: formData.observation,
+      observacao: formData.observation.trim(),
       parceiroIndicadorId: parceiroId,
       outroParceiro: outroParceiroNome,
     });
