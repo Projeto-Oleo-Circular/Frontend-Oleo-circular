@@ -271,7 +271,7 @@ export default function LandingPage() {
             <ul className="space-y-3">
               <li>
                 <button
-                  onClick={() => navigate("/about")}
+                  onClick={() => navigate("/sobre")}
                   className="w-full flex items-center gap-3.5 p-2 rounded-2xl hover:bg-green-50 text-left transition-colors"
                 >
                   <div className="w-12 h-12 rounded-2xl bg-green-100 flex items-center justify-center shrink-0">
@@ -283,7 +283,7 @@ export default function LandingPage() {
 
               <li>
                 <button
-                  onClick={() => navigate("/privacy")}
+                  onClick={() => navigate("/privacidade")}
                   className="w-full flex items-center gap-3.5 p-2 rounded-2xl hover:bg-green-50 text-left transition-colors"
                 >
                   <div className="w-12 h-12 rounded-2xl bg-green-100 flex items-center justify-center shrink-0">
@@ -295,7 +295,7 @@ export default function LandingPage() {
 
               <li>
                 <button
-                  onClick={() => navigate("/terms")}
+                  onClick={() => navigate("/termos")}
                   className="w-full flex items-center gap-3.5 p-2 rounded-2xl hover:bg-green-50 bg-green-50/40 text-left transition-colors"
                 >
                   <div className="w-12 h-12 rounded-2xl bg-green-100 flex items-center justify-center shrink-0">
