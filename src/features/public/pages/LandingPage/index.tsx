@@ -5,6 +5,7 @@ import L from "leaflet"
 import HeaderPublic from "../../../../components/layout/HeaderPublic"
 import Button from "../../../../components/ui/Button"
 
+// Ícone customizado para o marcador no mapa
 const customIcon = new L.Icon({
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
   iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
@@ -14,6 +15,24 @@ const customIcon = new L.Icon({
   popupAnchor: [1, -34],
   shadowSize: [41, 41]
 })
+
+// 1. CONFIGURAÇÃO DAS CAMADAS DO MAPA (Adicionado aqui)
+type TileStyle = 'standard' | 'satellite' | 'dark'
+
+const TILE_LAYERS = {
+  standard: {
+    url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+  },
+  satellite: {
+    url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+  },
+  dark: {
+    url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+  }
+}
 
 interface PontoColeta {
   id: string | number
@@ -39,6 +58,10 @@ export default function LandingPage() {
   
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isAddPointModalOpen, setIsAddPointModalOpen] = useState(false)
+
+  // 2. ESTADOS PARA GERENCIAR AS CAMADAS (Adicionado aqui)
+  const [currentTile, setCurrentTile] = useState<TileStyle>('standard')
+  const [isLayerMenuOpen, setIsLayerMenuOpen] = useState(false)
 
   const [mapCenter, setMapCenter] = useState<[number, number]>([-15.2483, -40.2481])
   
@@ -154,9 +177,11 @@ export default function LandingPage() {
         >
           <MapController center={mapCenter} />
 
+          {/* 3. TILELAYER DINÂMICO (Atualizado aqui) */}
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            key={currentTile}
+            attribution={TILE_LAYERS[currentTile].attribution}
+            url={TILE_LAYERS[currentTile].url}
           />
 
           {pontos.map((ponto) => (
@@ -179,7 +204,7 @@ export default function LandingPage() {
           <button
             onClick={handleGeoLocation}
             type="button"
-            className="w-14 h-14 bg-white hover:bg-teal-50  rounded-full flex items-center justify-center shadow-lg border border-white-100 cursor-pointer active:scale-95 transition-transform"
+            className="w-14 h-14 bg-white hover:bg-teal-50 rounded-full flex items-center justify-center shadow-lg border border-white-100 cursor-pointer active:scale-95 transition-transform"
             title="Minha Localização"
           >
             <svg className="w-6 h-6 text-teal-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -188,17 +213,56 @@ export default function LandingPage() {
             </svg>
           </button>
 
-          <button
-            type="button"
-            className="w-14 h-14 bg-teal-primary hover:bg-teal-hover rounded-full flex items-center justify-center shadow-lg text-white cursor-pointer active:scale-95 transition-transform"
-            title="Camadas"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-            </svg>
-          </button>
+          <div className="relative">
+          {isLayerMenuOpen && (
+            <div className="absolute bottom-16 left-0 bg-white rounded-2xl shadow-xl p-2 border border-white-100 flex flex-col gap-1.5 w-44 animate-in fade-in slide-in-from-bottom-2 duration-150">
+              
+              <button
+                type="button"
+                onClick={() => { setCurrentTile('standard'); setIsLayerMenuOpen(false); }}
+                className={`flex items-center gap-2.5 p-1.5 rounded-xl text-left transition-colors ${
+                  currentTile === 'standard' ? 'bg-teal-50 text-teal-primary font-bold' : 'hover:bg-teal-100 text-black-200 font-medium'
+                }`}
+              >
+                <img 
+                  src="/assets/padrao.png" 
+                  alt="Mapa Padrão" 
+                  className="w-8 h-8 rounded-lg object-cover border border-black-100/10 shrink-0"
+                />
+                <span className="text-xs">Padrão</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => { setCurrentTile('satellite'); setIsLayerMenuOpen(false); }}
+                className={`flex items-center gap-2.5 p-1.5 rounded-xl text-left transition-colors ${
+                  currentTile === 'satellite' ? 'bg-teal-50 text-teal-primary font-bold' : 'hover:bg-teal-100 text-black-200 font-medium'
+                }`}
+              >
+                <img 
+                  src="/assets/satelite.png" 
+                  alt="Mapa Satélite" 
+                  className="w-8 h-8 rounded-lg object-cover border border-black-100/10 shrink-0"
+                />
+                <span className="text-xs">Satélite</span>
+              </button>
+
+            </div>
+          )}
+            <button
+              onClick={() => setIsLayerMenuOpen((prev) => !prev)}
+              type="button"
+              className="w-14 h-14 bg-teal-primary hover:bg-teal-hover rounded-full flex items-center justify-center shadow-lg text-white cursor-pointer active:scale-95 transition-transform"
+              title="Escolher Camada do Mapa"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+            </button>
+          </div>
         </div>
 
+        {/* Menu Flutuante Superior Direito */}
         {isMenuOpen && (
           <div className="absolute bottom-[160px] right-4 z-[1001] w-72 bg-white rounded-[28px] shadow-2xl p-6 border border-white-100 animate-in fade-in slide-in-from-bottom-3 duration-200">
             <span className="text-xs font-bold text-white-600 tracking-wider uppercase px-1 mb-4 block">
@@ -220,7 +284,7 @@ export default function LandingPage() {
               <li>
                 <button
                   onClick={() => navigate("/privacy")}
-                  className="w-full flex items-center gap-3.5 p-2 rounded-2xl hover:bg-green-50  text-left transition-colors"
+                  className="w-full flex items-center gap-3.5 p-2 rounded-2xl hover:bg-green-50 text-left transition-colors"
                 >
                   <div className="w-12 h-12 rounded-2xl bg-green-100 flex items-center justify-center shrink-0">
                     <img src="/assets/icons/icon-privacidade.svg" alt="Privacidade" className="w-6 h-6" />
@@ -244,6 +308,7 @@ export default function LandingPage() {
           </div>
         )}
 
+        {/* Controles Flutuantes Inferiores Direita */}
         <div className="absolute bottom-6 right-4 z-[1002] flex flex-col gap-3 items-end">
           <button
             onClick={() => setIsMenuOpen((prev) => !prev)}
@@ -268,6 +333,7 @@ export default function LandingPage() {
           </button>
         </div>
 
+        {/* Bottom Sheet Modal */}
         {isAddPointModalOpen && (
           <div className="fixed inset-0 z-[2000] flex items-end justify-center bg-black/40 backdrop-blur-[2px] animate-in fade-in duration-200">
             <div className="absolute inset-0" onClick={() => setIsAddPointModalOpen(false)} />
@@ -295,7 +361,7 @@ export default function LandingPage() {
               </div>
 
               <p className="text-sm text-black-200 mb-6 leading-relaxed">
-                Para adicionar novos pontos de coleta e ajudar as pessoas a destacarem o óleo corretamente, é necessário ter uma conta. É rápido e 100% gratuito!              
+                Para adicionar novos pontos de coleta e ajudar as pessoas a descartarem o óleo corretamente, é necessário ter uma conta. É rápido e 100% gratuito!
               </p>
 
               <div className="flex flex-col gap-3">
