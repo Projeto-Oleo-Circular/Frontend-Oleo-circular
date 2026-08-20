@@ -74,13 +74,13 @@ function Toast({ message, type, onClose, duration = 4000 }: ToastProps) {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg overflow-hidden w-full border border-gray-100 transition-all">
+    <div className="bg-white rounded-2xl shadow-lg overflow-hidden w-full border border-white-100 transition-all">
       <div className="flex items-center gap-3.5 px-4 py-3.5">
         {icons[type]}
-        <p className="text-gray-900 font-semibold text-sm flex-1">{message}</p>
+        <p className="text-white-600 font-semibold text-sm flex-1">{message}</p>
         <button 
           onClick={() => { setIsVisible(false); setTimeout(onClose, 300); }} 
-          className="flex-shrink-0 ml-2 text-gray-400 hover:text-gray-600 transition-colors"
+          className="flex-shrink-0 ml-2 text-white-400 hover:text-white-600 transition-colors"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -88,7 +88,7 @@ function Toast({ message, type, onClose, duration = 4000 }: ToastProps) {
         </button>
       </div>
 
-      <div className="h-1.5 bg-gray-100 w-full overflow-hidden">
+      <div className="h-1.5 bg-white-100 w-full overflow-hidden">
         <div
           className={`h-full ${progressColors[type]} transition-all duration-75 linear`}
           style={{ width: `${progress}%` }}

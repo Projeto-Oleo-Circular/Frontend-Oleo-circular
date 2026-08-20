@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useLocation } from "react-router-dom"
 import HeaderApp from "../../../../components/layout/HeaderApp"
 import Button from "../../../../components/ui/Button"
 import ProgressBar from "../../../../components/ui/ProgressBar"
@@ -11,31 +11,49 @@ interface CategoriaOpcao {
   src: string
 }
 
+// 1. Mapeamento exato das categorias divididas por Perfil
 const CATEGORIAS_POR_PERFIL: Record<string, CategoriaOpcao[]> = {
   INSTITUCIONAL: [
-    { id: 1, nome: "Restaurante / Lanchonete", src: "/assets/icons/icon-soup.svg" },
-    { id: 2, nome: "Cozinha Industrial", src: "/assets/icons/icon-cozinha.svg" },
-    { id: 3, nome: "Universidade / Escola", src: "/assets/icons/icon-boina.svg" },
-    { id: 4, nome: "Hospital / Unidade de Saúde",  src: "/assets/icons/icon-hospital2.svg" },
-    { id: 5, nome: "Hotel / Pousada", src: "/assets/icons/icon-hotel2.svg" },
-    { id: 6, nome: "Empresa / Refeitório Corporativo", src: "/assets/icons/icon-condominio-refeitorio.svg" },
-    { id: 7, nome: "Condomínio Residencial", src: "/assets/icons/icon-condominio2.svg" },
+    { id: 1, nome: "Cozinha Industrial", src: "/assets/icons/icon-cozinha.svg" },
+    { id: 2, nome: "Empresa / Indústria", src: "/assets/icons/icon-empresa.svg" },
+    { id: 3, nome: "Escola / Universidade", src: "/assets/icons/icon-boina.svg" },
+    { id: 4, nome: "Hotel / Pousada", src: "/assets/icons/icon-hotel2.svg" },
+    { id: 5, nome: "Restaurante / Bar", src: "/assets/icons/icon-soup.svg" },
   ],
   COMUNITARIO: [
-    { id: 8, nome: "Associação de Bairro", src: "/assets/icons/icon-soup.svg" },
-    { id: 9, nome: "Centro Comunitário", src: "/assets/icons/icon-soup.svg" },
-    { id: 10, nome: "Igreja / Templo", src: "/assets/icons/icon-soup.svg" },
-    { id: 11, nome: "Ponto de Coleta Comunitário", src: "/assets/icons/icon-soup.svg" },
+    { id: 6, nome: "Condomínio / Casa residencial", src: "/assets/icons/icon-condominio.svg" },
+    { id: 7, nome: "Feira Livre / Eventos", src: "/assets/icons/icon-soup.svg" },
   ],
   SOLIDARIO: [
-    { id: 12, nome: "ONG / OSC", src: "/assets/icons/icon-soup.svg" },
-    { id: 13, nome: "Projeto Social", src: "/assets/icons/icon-soup.svg" },
-    { id: 14, nome: "Instituição de Caridade", src: "/assets/icons/icon-soup.svg" },
+    { id: 8, nome: "Doador Avulso", src: "/assets/icons/icon-soup.svg" },
   ]
+}
+
+// 2. Normalizador flexível para converter respostas do backend/estado para a chave do objeto
+const normalizeProfileKey = (rawProfile?: string): string => {
+  if (!rawProfile) return "INSTITUCIONAL"
+
+  const formatted = rawProfile.toString().trim().toUpperCase()
+
+  // Se o backend/cadastro utilizar "GERADOR", mapeie aqui para a categoria correspondente (ex: SOLIDARIO ou COMUNITARIO)
+  if (formatted.includes("SOLIDAR") || formatted === "SOLIDARIO" || formatted === "SOLIDÁRIO") {
+    return "SOLIDARIO"
+  }
+  if (formatted.includes("COMUNITAR") || formatted === "COMUNITARIO" || formatted === "COMUNITÁRIO") {
+    return "COMUNITARIO"
+  }
+  if (formatted.includes("INSTITUCION") || formatted === "INSTITUCIONAL") {
+    return "INSTITUCIONAL"
+  }
+
+  // Fallback padrão
+  return "INSTITUCIONAL"
 }
 
 export default function RegisterPoint() {
   const navigate = useNavigate()
+  const location = useLocation()
+
   const [selectedCategoria, setSelectedCategoria] = useState<number | null>(null)
   const [userProfile, setUserProfile] = useState<string>("INSTITUCIONAL")
   const [userName, setUserName] = useState<string>("Usuário")
@@ -44,17 +62,26 @@ export default function RegisterPoint() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const userData = await authService.getUserData()
-        
-        // Perfil do parceiro
-        const tipo = userData?.tipoParceiro?.toUpperCase() || "INSTITUCIONAL"
-        setUserProfile(tipo)
+        // A) Resgata perfil passado via React Router State (útil durante a etapa de cadastro)
+        const stateProfile = location.state?.userProfile || location.state?.perfil || location.state?.tipoParceiro
 
-        // Nome do usuário
+        // B) Resgata dados armazenados ou via API
+        const userData = await authService.getUserData()
+        console.log("[RegisterPoint] Dados retornados pelo authService:", userData)
+
+        // C) Identifica o campo bruto do tipo do parceiro
+        const rawTipo = userData?.tipoParceiro || userData?.tipo || userData?.tipoPessoa || stateProfile
+        
+        // D) Normaliza a chave para corresponder ao CATEGORIAS_POR_PERFIL
+        const profileKey = normalizeProfileKey(rawTipo)
+        
+        console.log(`[RegisterPoint] Valor Bruto: "${rawTipo}" -> Perfil Mapeado: "${profileKey}"`)
+        setUserProfile(profileKey)
+
+        // E) Define o nome do usuário para o Header
         if (userData?.razaoSocial || userData?.nome) {
           const nomeCompleto = userData.razaoSocial || userData.nome || "Usuário"
-          const primeiroNome = nomeCompleto.split(" ")[0]
-          setUserName(primeiroNome)
+          setUserName(nomeCompleto.split(" ")[0])
         }
       } catch (error) {
         console.error("Erro ao carregar dados do usuário:", error)
@@ -62,14 +89,21 @@ export default function RegisterPoint() {
         setLoading(false)
       }
     }
-    fetchUser()
-  }, [])
 
+    fetchUser()
+  }, [location.state])
+
+  // Obtém a lista filtrada de acordo com o perfil identificado
   const categoriasDisponiveis = CATEGORIAS_POR_PERFIL[userProfile] || CATEGORIAS_POR_PERFIL.INSTITUCIONAL
 
   const handleAvançar = () => {
     if (!selectedCategoria) return
-    navigate("/register-point", { state: { categoriaId: selectedCategoria } })
+    navigate("/register-point-step2", { 
+      state: { 
+        categoriaId: selectedCategoria, 
+        userProfile 
+      } 
+    })
   }
 
   return (
@@ -81,6 +115,7 @@ export default function RegisterPoint() {
           <div className="flex items-center gap-3 mb-2">
             <button
               onClick={() => navigate(-1)}
+              type="button"
               className="w-10 h-10 rounded-full bg-green-400 text-white flex items-center justify-center shadow-md cursor-pointer hover:opacity-90 transition-opacity"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

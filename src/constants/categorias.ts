@@ -1,10 +1,12 @@
-export const CATEGORIA_PONTO_COLETA = {
-  1: 'Restaurante industrial',
-  2: 'Restaurante e lanchonete',
+export const CATEGORIA_PONTO_COLETA = { 
+  1: 'Cozinha Industrial',
+  2: 'Empresa / Indústria',
   3: 'Escola / Universidade',
   4: 'Hotel / Pousada',
-  5: 'Empresa / Refeitório corporativo',
-  6: 'Condomínio / Casa residencial',
+  5: 'Restaurante / Bar',
+  6: 'Condomínio / Casa residencia',
+  7: 'Feira Livre / Eventos',
+  8: 'Doador Avulso'
 } as const
 
 export type CategoriaId = keyof typeof CATEGORIA_PONTO_COLETA
