@@ -2,6 +2,7 @@ import { useState } from 'react';
 import HeaderCadastro from '../../../../../components/layout/HeaderCadastro';
 import ProgressBar from '../../../../../components/ui/ProgressBar';
 import Button from '../../../../../components/ui/Button';
+import { PERFIS_PARCEIRO as profiles } from '../../../../../constants/perfisParceiros';
 
 interface Props {
   onSelectProfile: (profile: string) => void;
@@ -9,47 +10,6 @@ interface Props {
   step: number;
   userName?: string;
 }
-
-const profiles = [
-  {
-    id: 'institucional',
-    icon: 'icon-parceiros.svg',
-    label: 'Parceiros',
-    title: 'Institucionais',
-    description: 'Organizações com alta capacidade de doação.',
-    totalSteps: 6,
-    tags: [
-      { label: 'Cozinha Industrial', icon: 'icon-CozinhaIndustrial.svg' },
-      { label: 'Empresa / Indústria', icon: 'icon-empresa.svg' },
-      { label: 'Escolas / Universidade', icon: 'icon-universidade.svg' },
-      { label: 'Hotel / Pousada', icon: 'icon-hotel.svg' },
-      { label: 'Restaurante / Bar', icon: 'icon-restaurante.svg' },
-    ],
-  },
-  {
-    id: 'comunitario',
-    icon: 'icon-parceiros.svg',
-    label: 'Parceiros',
-    title: 'Comunitários',
-    description: 'Locais com geração compartilhada entre várias pessoas.',
-    totalSteps: 5,
-    tags: [
-      { label: 'Condomínio', icon: 'icon-condominio.svg' },
-      { label: 'Feira Livre / Eventos', icon: 'icon-feira.svg' },
-    ],
-  },
-  {
-    id: 'solidario',
-    icon: 'icon-parceiros.svg',
-    label: 'Parceiros',
-    title: 'Solidários',
-    description: 'Pessoas e iniciativas que colaboram com pequenas quantidades.',
-    totalSteps: 5,
-    tags: [
-      { label: 'Doador Avulso', icon: 'icon-doadorAvulso.svg' },
-    ],
-  },
-];
 
 function StepProfile({ 
   onSelectProfile, 

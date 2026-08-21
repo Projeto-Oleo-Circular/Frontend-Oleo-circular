@@ -173,8 +173,8 @@ export const authService = {
       { value: 3, label: 'Escola / Universidade' },
       { value: 4, label: 'Hotel / Pousada' },
       { value: 5, label: 'Restaurante / Bar' },
-      { value: 6, label: 'Condomínio / Casa residencial' },
-      { value: 7, label: 'Feira Livre / Eventos' },
+      { value: 6, label: 'Condomínio' },
+      { value: 7, label: 'Feira Livre' },
       { value: 8, label: 'Doador Avulso' },
     ];
   },

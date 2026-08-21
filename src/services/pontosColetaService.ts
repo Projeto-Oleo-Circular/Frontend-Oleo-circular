@@ -22,6 +22,8 @@ export interface PontoColeta {
 }
 
 export interface CriarPontoColetaPayload {
+  nomePontoColeta: string;
+  categoria: number;
   cep: string;
   logradouro: string;
   numero: string;
@@ -29,7 +31,6 @@ export interface CriarPontoColetaPayload {
   cidade: string;
   estado?: string;
   complemento?: string | null;
-  categoriaId: number;
   expectativaGeracao: number;
   capacidadeBombona?: number;
   nivelAtualPct?: number;

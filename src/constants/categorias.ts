@@ -4,8 +4,8 @@ export const CATEGORIA_PONTO_COLETA = {
   3: 'Escola / Universidade',
   4: 'Hotel / Pousada',
   5: 'Restaurante / Bar',
-  6: 'Condomínio / Casa residencia',
-  7: 'Feira Livre / Eventos',
+  6: 'Condomínio',
+  7: 'Feira Livre',
   8: 'Doador Avulso'
 } as const
 
