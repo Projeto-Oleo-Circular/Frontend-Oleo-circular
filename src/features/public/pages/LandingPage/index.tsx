@@ -5,7 +5,6 @@ import L from "leaflet"
 import HeaderPublic from "../../../../components/layout/HeaderPublic"
 import Button from "../../../../components/ui/Button"
 
-// Ícone customizado para o marcador no mapa
 const customIcon = new L.Icon({
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
   iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
@@ -16,8 +15,7 @@ const customIcon = new L.Icon({
   shadowSize: [41, 41]
 })
 
-// 1. CONFIGURAÇÃO DAS CAMADAS DO MAPA (Adicionado aqui)
-type TileStyle = 'standard' | 'satellite' | 'dark'
+type TileStyle = 'standard' | 'satellite'
 
 const TILE_LAYERS = {
   standard: {
@@ -27,10 +25,6 @@ const TILE_LAYERS = {
   satellite: {
     url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
     attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
-  },
-  dark: {
-    url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
   }
 }
 
@@ -143,7 +137,6 @@ export default function LandingPage() {
       <HeaderPublic />
 
       <main className="flex-1 relative w-full h-full">
-        {/* Form de Busca Flutuante */}
         <form 
           onSubmit={handleSearchNominatim}
           className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] w-[90%] max-w-md"
@@ -168,7 +161,6 @@ export default function LandingPage() {
           </div>
         </form>
 
-        {/* Mapa do Leaflet */}
         <MapContainer
           center={mapCenter}
           zoom={15}
@@ -177,7 +169,6 @@ export default function LandingPage() {
         >
           <MapController center={mapCenter} />
 
-          {/* 3. TILELAYER DINÂMICO (Atualizado aqui) */}
           <TileLayer
             key={currentTile}
             attribution={TILE_LAYERS[currentTile].attribution}
@@ -262,7 +253,6 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* Menu Flutuante Superior Direito */}
         {isMenuOpen && (
           <div className="absolute bottom-[160px] right-4 z-[1001] w-72 bg-white rounded-[28px] shadow-2xl p-6 border border-white-100 animate-in fade-in slide-in-from-bottom-3 duration-200">
             <span className="text-xs font-bold text-white-600 tracking-wider uppercase px-1 mb-4 block">
@@ -308,7 +298,6 @@ export default function LandingPage() {
           </div>
         )}
 
-        {/* Controles Flutuantes Inferiores Direita */}
         <div className="absolute bottom-6 right-4 z-[1002] flex flex-col gap-3 items-end">
           <button
             onClick={() => setIsMenuOpen((prev) => !prev)}
@@ -333,7 +322,6 @@ export default function LandingPage() {
           </button>
         </div>
 
-        {/* Bottom Sheet Modal */}
         {isAddPointModalOpen && (
           <div className="fixed inset-0 z-[2000] flex items-end justify-center bg-black/40 backdrop-blur-[2px] animate-in fade-in duration-200">
             <div className="absolute inset-0" onClick={() => setIsAddPointModalOpen(false)} />
