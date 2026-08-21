@@ -54,10 +54,3 @@ export const PERFIS_PARCEIRO: PerfilParceiro[] = [
     ],
   },
 ];
-
-
-// Lista "achatada" com as 8 categorias, usada enquanto o filtro por perfil
-// está desativado (ver TODO em RegisterPoint/index.tsx).
-export const TODOS_ESTABELECIMENTOS: EstabelecimentoTag[] = PERFIS_PARCEIRO.flatMap(
-  (perfil) => perfil.tags
-);

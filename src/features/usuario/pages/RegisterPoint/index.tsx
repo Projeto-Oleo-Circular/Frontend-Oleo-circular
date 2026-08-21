@@ -1,15 +1,10 @@
-{/*
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { authService } from "../../../../services/authService"
-import { PERFIS_PARCEIRO, type EstabelecimentoTag } from "../../../../constants/perfisParceiros"
+import { EstabelecimentoTag, PERFIS_PARCEIRO } from "../../../../constants/perfisParceiros"
 import useToast from "../../../../hooks/useToast"
 import SelectCategory from "./SelectCategory"
 import IdentifyPoint from "./IdentifyPoint"
-
-// TODO(colega): reativar o filtro por perfil quando GET /parceiros/me passar
-// a devolver o campo de perfil do parceiro (tipoParceiro ou tipoPerfil).
-// Até lá, a tela de seleção mostra TODOS_ESTABELECIMENTOS sem filtro.
 
 function RegisterPoint() {
     const navigate = useNavigate()
@@ -24,7 +19,6 @@ function RegisterPoint() {
         const carregarPerfil = async () => {
             try {
                 const userData = await authService.getUserData()
-                // Assumindo que /parceiros/me retorna "tipoParceiro" (mesmo nome usado no cadastro)
                 const tipoParceiro = (userData?.tipoParceiro || "").toLowerCase()
                 setPerfilId(tipoParceiro || null)
             } catch (error) {
@@ -72,81 +66,10 @@ function RegisterPoint() {
     }
 
     if (step === 0) {
-        return <SelectCategory perfil={perfil} onSelect={handleSelectCategoria} onBack={handleVoltarHome} />
-    }
-
-    return <IdentifyPoint perfil={perfil} categoria={categoriaSelecionada!} onBack={handleVoltarCategoria} />
-}
-
-export default RegisterPoint
-
-*/}
-
-import { useState } from "react"
-import { useNavigate } from "react-router-dom"
-import { TODOS_ESTABELECIMENTOS, type EstabelecimentoTag } from "../../../../constants/perfisParceiros"
-import SelectCategory from "./SelectCategory"
-import IdentifyPoint from "./IdentifyPoint"
-
-// TODO(colega): reativar o filtro por perfil quando GET /parceiros/me passar
-// a devolver o campo de perfil do parceiro (tipoParceiro ou tipoPerfil).
-// Até lá, a tela de seleção mostra TODOS_ESTABELECIMENTOS sem filtro.
-//
-// Código antigo, pronto pra voltar assim que o campo existir:
-//
-// import { useEffect } from "react"
-// import { authService } from "../../../../services/authService"
-// import { PERFIS_PARCEIRO } from "../../../../constants/perfisParceiros"
-// import useToast from "../../../../hooks/useToast"
-//
-// const { addToast } = useToast()
-// const [loadingPerfil, setLoadingPerfil] = useState(true)
-// const [perfilId, setPerfilId] = useState<string | null>(null)
-//
-// useEffect(() => {
-//     const carregarPerfil = async () => {
-//         try {
-//             const userData = await authService.getUserData()
-//             // Campo ainda não existe na resposta real do /parceiros/me — confirmar nome exato com a colega
-//             const tipoParceiro = (userData?.tipoParceiro || userData?.tipoPerfil || "").toLowerCase()
-//             setPerfilId(tipoParceiro || null)
-//         } catch (error) {
-//             addToast("Não foi possível identificar seu perfil de parceiro", "error")
-//         } finally {
-//             setLoadingPerfil(false)
-//         }
-//     }
-//     carregarPerfil()
-// }, [addToast])
-//
-// const perfil = PERFIS_PARCEIRO.find((p) => p.id === perfilId)
-// (usar perfil.tags e perfil.totalSteps no lugar de TODOS_ESTABELECIMENTOS e TOTAL_STEPS)
-
-const TOTAL_STEPS = 2 // Passo 1: categoria, Passo 2: dados do ponto
-
-function RegisterPoint() {
-    const navigate = useNavigate()
-
-    const [step, setStep] = useState<0 | 1>(0)
-    const [categoriaSelecionada, setCategoriaSelecionada] = useState<EstabelecimentoTag | null>(null)
-
-    const handleSelectCategoria = (tag: EstabelecimentoTag) => {
-        setCategoriaSelecionada(tag)
-        setStep(1)
-    }
-
-    const handleVoltarCategoria = () => {
-        setCategoriaSelecionada(null)
-        setStep(0)
-    }
-
-    const handleVoltarHome = () => navigate("/home")
-
-    if (step === 0) {
         return (
             <SelectCategory
-                tags={TODOS_ESTABELECIMENTOS}
-                totalSteps={TOTAL_STEPS}
+                tags={perfil.tags}
+                totalSteps={perfil.totalSteps}
                 onSelect={handleSelectCategoria}
                 onBack={handleVoltarHome}
             />
@@ -156,7 +79,7 @@ function RegisterPoint() {
     return (
         <IdentifyPoint
             categoria={categoriaSelecionada!}
-            totalSteps={TOTAL_STEPS}
+            totalSteps={perfil.totalSteps}
             onBack={handleVoltarCategoria}
         />
     )

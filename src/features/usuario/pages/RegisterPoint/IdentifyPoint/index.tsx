@@ -8,7 +8,7 @@ import Input from "../../../../../components/ui/Input"
 import useToast from "../../../../../hooks/useToast"
 import { authService } from "../../../../../services/authService"
 import { pontosColetaService, type CriarPontoColetaPayload } from "../../../../../services/pontosColetaService"
-import type { PerfilParceiro, EstabelecimentoTag } from "../../../../../constants/perfisParceiros"
+import type { EstabelecimentoTag } from "../../../../../constants/perfisParceiros"
 
 
 const customIcon = new L.Icon({
@@ -159,30 +159,6 @@ function IdentifyPoint({ categoria, totalSteps, onBack }: Props) {
             console.error("Erro ao geocodificar endereço:", error)
         } finally {
             setBuscandoEndereco(false)
-        }
-    }
-
-    const handleCepBlur = async () => {
-        const cepLimpo = form.cep.replace(/\D/g, "")
-        if (cepLimpo.length !== 8) return
-
-        try {
-            const endereco = await authService.buscarCep(cepLimpo)
-            const novoForm = {
-                ...form,
-                logradouro: endereco.logradouro || form.logradouro,
-                bairro: endereco.bairro || form.bairro,
-                cidade: endereco.cidade || form.cidade,
-                estado: endereco.estado || form.estado,
-            }
-            setForm(novoForm)
-
-            const queryEndereco = `${novoForm.logradouro}, ${novoForm.cidade}`
-            if (novoForm.logradouro && novoForm.cidade) {
-                geocodificarEndereco(queryEndereco)
-            }
-        } catch (error) {
-            addToast("Não foi possível encontrar o endereço para este CEP", "error")
         }
     }
 
