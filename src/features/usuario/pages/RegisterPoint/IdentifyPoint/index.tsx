@@ -5,6 +5,7 @@ import L from "leaflet"
 import HeaderApp from "../../../../../components/layout/HeaderApp"
 import Button from "../../../../../components/ui/Button"
 import Input from "../../../../../components/ui/Input"
+import Dropdown from "../../../../../components/ui/Dropdown"
 import useToast from "../../../../../hooks/useToast"
 import { authService } from "../../../../../services/authService"
 import { pontosColetaService, type CriarPontoColetaPayload } from "../../../../../services/pontosColetaService"
@@ -29,14 +30,14 @@ interface Props {
 }
 
 const OPCOES_VOLUME = [
-    { label: "0", value: 0 },
-    { label: "20 L", value: 20 },
-    { label: "50 L", value: 50 },
-    { label: "100 L", value: 100 },
-    { label: "1000 L", value: 1000 },
+    { label: "0", value: "0" },
+    { label: "20 L", value: "20" },
+    { label: "50 L", value: "50" },
+    { label: "100 L", value: "100" },
+    { label: "1000 L", value: "1000" },
 ]
 
-const CENTRO_PADRAO: [number, number] = [-15.2483, -40.2481] // mesmo default da LandingPage
+const CENTRO_PADRAO: [number, number] = [-15.2483, -40.2481]
 
 function MapCenterController({ center }: { center: [number, number] }) {
     const map = useMap()
@@ -69,16 +70,23 @@ function DraggableMarker({
 }
 
 function IdentifyPoint({ categoria, totalSteps, onBack }: Props) {
-    // ...
-    // única mudança no JSX: trocar todas as ocorrências de `perfil.totalSteps` por `totalSteps`
-    // ex: style={{ width: `${(2 / totalSteps) * 100}%` }}
-    // e: <p className="text-xs text-white-500 text-center">Passo 2 de {totalSteps}</p>
     const navigate = useNavigate()
     const { addToast } = useToast()
     const [loading, setLoading] = useState(false)
     const [buscandoEndereco, setBuscandoEndereco] = useState(false)
 
     const [form, setForm] = useState({
+        nome: "",
+        cep: "",
+        logradouro: "",
+        numero: "",
+        bairro: "",
+        cidade: "",
+        estado: "",
+        expectativaGeracao: "",
+    })
+
+    const [fieldErrors, setFieldErrors] = useState({
         nome: "",
         cep: "",
         logradouro: "",
@@ -103,6 +111,10 @@ function IdentifyPoint({ categoria, totalSteps, onBack }: Props) {
     const handleChange = async (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
 
+    if (fieldErrors[name as keyof typeof fieldErrors]) {
+        setFieldErrors(prev => ({ ...prev, [name]: "" }))
+    }
+
     if (name === "cep") {
         const formatted = formatCep(value)
         setForm((prev) => ({ ...prev, cep: formatted }))
@@ -122,24 +134,34 @@ function IdentifyPoint({ categoria, totalSteps, onBack }: Props) {
                 }
                 setForm(novoForm)
 
-                if (novoForm.logradouro && novoForm.cidade) {
-                    geocodificarEndereco(`${novoForm.logradouro}, ${novoForm.cidade}`)
+                setFieldErrors(prev => ({
+                        ...prev,
+                        cep: "",
+                        logradouro: "",
+                        bairro: "",
+                        cidade: "",
+                        estado: ""
+                    }))
+
+                    if (novoForm.logradouro && novoForm.cidade) {
+                        geocodificarEndereco(`${novoForm.logradouro}, ${novoForm.cidade}`)
+                    }
+                } catch (error) {
+                    setFieldErrors(prev => ({ ...prev, cep: "CEP não encontrado" }))
+                } finally {
+                    setBuscandoEndereco(false)
                 }
-            } catch (error) {
-                addToast("CEP não encontrado", "error")
-            } finally {
-                setBuscandoEndereco(false)
             }
+            return
         }
-        return
+        setForm((prev) => ({ ...prev, [name]: value }))
     }
 
-    setForm((prev) => ({ ...prev, [name]: value }))
-}
-
-    const handleSelectChange = (e: ChangeEvent<HTMLSelectElement>) => {
-        const { name, value } = e.target
-        setForm((prev) => ({ ...prev, [name]: value }))
+    const handleVolumeChange = (value: string) => {
+        setForm((prev) => ({ ...prev, expectativaGeracao: value }))
+        if (fieldErrors.expectativaGeracao) {
+            setFieldErrors((prev) => ({ ...prev, expectativaGeracao: "" }))
+        }
     }
 
     const geocodificarEndereco = async (query: string) => {
@@ -162,9 +184,64 @@ function IdentifyPoint({ categoria, totalSteps, onBack }: Props) {
         }
     }
 
+    const validateForm = (): boolean => {
+        let hasError = false
+        const errors = {
+            nome: "",
+            cep: "",
+            logradouro: "",
+            numero: "",
+            bairro: "",
+            cidade: "",
+            estado: "",
+            expectativaGeracao: "",
+        }
+
+        if (!form.nome.trim()) {
+            errors.nome = "Nome do estabelecimento é obrigatório"
+            hasError = true
+        }
+
+        const cleanedCep = form.cep.replace(/\D/g, "")
+        if (!cleanedCep) {
+            errors.cep = "CEP é obrigatório"
+            hasError = true
+        } else if (cleanedCep.length !== 8) {
+            errors.cep = "CEP deve conter 8 dígitos"
+            hasError = true
+        }
+
+        if (!form.logradouro.trim()) {
+            errors.logradouro = "Rua é obrigatória"
+            hasError = true
+        }
+
+        if (!form.numero.trim()) {
+            errors.numero = "Número é obrigatório"
+            hasError = true
+        }
+
+        if (!form.bairro.trim()) {
+            errors.bairro = "Bairro é obrigatório"
+            hasError = true
+        }
+
+        if (!form.cidade.trim()) {
+            errors.cidade = "Cidade é obrigatória"
+            hasError = true
+        }
+
+        if (!form.expectativaGeracao) {
+            errors.expectativaGeracao = "Selecione uma expectativa de geração"
+            hasError = true
+        }
+
+        setFieldErrors(errors)
+        return !hasError
+    }
+
     const handleSubmit = async () => {
-        if (!form.nome || !form.cep || !form.logradouro || !form.numero || !form.bairro || !form.cidade || !form.expectativaGeracao) {
-            addToast("Preencha todos os campos obrigatórios", "error")
+        if (!validateForm()) {
             return
         }
 
@@ -205,7 +282,7 @@ function IdentifyPoint({ categoria, totalSteps, onBack }: Props) {
                     <div className="flex items-center gap-4 pt-2">
                         <button
                             onClick={onBack}
-                            className="w-10 h-10 bg-green-primary text-white rounded-full flex items-center justify-center shadow-md shrink-0"
+                            className="w-10 h-10 bg-green-400 text-white rounded-full flex items-center justify-center shadow-md shrink-0"
                         >
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <polyline points="15 18 9 12 15 6"></polyline>
@@ -230,42 +307,144 @@ function IdentifyPoint({ categoria, totalSteps, onBack }: Props) {
                         </p>
                     </div>
 
-                    <div className="flex flex-col gap-3">
-                        <p className="text-xs font-extrabold text-white-500 tracking-widest">
+                    <div className="w-full">
+                        <p className="text-xs font-bold text-white-500 tracking-widest pb-3">
                             IDENTIFICAÇÃO DO PONTO
                         </p>
 
-                        <Input type="text" placeholder="Nome do estabelecimento" name="nome" value={form.nome} onChange={handleChange} />
-                        <Input type="text" placeholder="CEP" name="cep" value={form.cep} onChange={handleChange} />
-                        <Input type="text" placeholder="Rua" name="logradouro" value={form.logradouro} onChange={handleChange} />
-                        <Input type="text" placeholder="Número" name="numero" value={form.numero} onChange={handleChange} />
-                        <Input type="text" placeholder="Bairro" name="bairro" value={form.bairro} onChange={handleChange} />
-                        <Input type="text" placeholder="Cidade" name="cidade" value={form.cidade} onChange={handleChange} />
-
-                        <select
-                            name="expectativaGeracao"
-                            value={form.expectativaGeracao}
-                            onChange={handleSelectChange}
-                            className="w-full px-4 py-3 rounded-xl border border-white-200 bg-white text-black-primary"
-                        >
-                            <option value="">Selecione um volume</option>
-                            {OPCOES_VOLUME.map((opt) => (
-                                <option key={opt.value} value={opt.value}>{opt.label}</option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div className="flex flex-col gap-3 mt-2">
-                        <div className="flex items-center justify-between">
-                            <p className="text-xs font-extrabold text-white-500 tracking-widest">
-                                LOCALIZAÇÃO
-                            </p>
-                            {buscandoEndereco && (
-                                <span className="text-xs text-white-500">Buscando...</span>
+                        <div className="mb-3">
+                            <Dropdown
+                                placeholder="Expectativa de geração (L)"
+                                options={OPCOES_VOLUME}
+                                value={form.expectativaGeracao}
+                                onChange={handleVolumeChange}
+                            />
+                            {fieldErrors.expectativaGeracao && (
+                                <p className="text-red-500 text-xs mt-1 font-medium pl-2">
+                                    {fieldErrors.expectativaGeracao}
+                                </p>
                             )}
                         </div>
 
-                        <div className="w-full h-56 rounded-x1 overflow-hidden border border-white-200">
+                        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+                            <Input 
+                                type="text"
+                                icon="icon-razaoSocial"
+                                placeholder="Nome do estabelecimento"
+                                name="nome"
+                                value={form.nome}
+                                onChange={handleChange}
+                                noBorder
+                                error={fieldErrors.nome}
+                            />
+                            <hr className="border-white-100" />
+
+                            <Input
+                                type="text" 
+                                icon="icon-CEP"
+                                placeholder={buscandoEndereco ? "Buscando CEP..." : "CEP"}                                
+                                name="cep" 
+                                value={form.cep} 
+                                onChange={handleChange}
+                                noBorder
+                                error={fieldErrors.cep}
+                                disabled={buscandoEndereco}
+                            />
+                            <hr className="border-white-100" />
+
+                            <Input 
+                                type="text"
+                                icon="icon-estado"
+                                placeholder="Estado"
+                                name="estado"
+                                value={form.estado}
+                                onChange={handleChange}
+                                noBorder
+                                error={fieldErrors.estado} 
+                                disabled={buscandoEndereco}
+                            />
+                            <hr className="border-white-100" />
+
+                            <Input
+                                type="text"
+                                icon="icon-city"
+                                placeholder="Cidade"
+                                name="cidade"
+                                value={form.cidade}
+                                onChange={handleChange}
+                                noBorder
+                                error={fieldErrors.cidade}
+                                disabled={buscandoEndereco}
+                            />
+                            <hr className="border-white-100" />
+
+                            <Input
+                                type="text"
+                                icon="icon-rua"
+                                placeholder="Rua"
+                                name="logradouro"
+                                value={form.logradouro}
+                                onChange={handleChange}
+                                noBorder
+                                error={fieldErrors.logradouro}
+                                disabled={buscandoEndereco}
+                            />
+
+                            <hr className="border-white-100" />
+
+                            <Input
+                                type="text"
+                                icon="icon-bairro"
+                                placeholder="Bairro"
+                                name="bairro"
+                                value={form.bairro}
+                                onChange={handleChange}
+                                noBorder
+                                error={fieldErrors.bairro}
+                                disabled={buscandoEndereco}
+                            />
+
+                            <hr className="border-white-100" />
+
+                            <Input
+                                type="text"
+                                icon="icon-number"
+                                placeholder="Número"
+                                name="numero"
+                                value={form.numero}
+                                onChange={handleChange}
+                                noBorder
+                                error={fieldErrors.numero}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mt-2">
+                        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+                            <div className="flex items-center gap-2">
+                                <img 
+                                    src="/assets/icons/icon-local.svg" 
+                                    alt="Localização" 
+                                    className="w-5 h-5" 
+                                />
+                                <span className="text-xs font-bold text-slate-600 tracking-wider">
+                                    LOCALIZAÇÃO
+                                </span>
+                            </div>
+
+                            <div className="flex items-center gap-1 text-slate-400 text-xs font-medium">
+                                <img 
+                                    src="/assets/icons/icon-longLat.svg" 
+                                    alt="Coordenadas" 
+                                    className="w-4 h-4 opacity-60" 
+                                />
+                                <span>
+                                    {posicao[0].toFixed(5)}, {posicao[1].toFixed(5)}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="w-full h-64">
                             <MapContainer
                                 center={posicao}
                                 zoom={posicaoDefinida ? 16 : 12}
@@ -280,16 +459,33 @@ function IdentifyPoint({ categoria, totalSteps, onBack }: Props) {
                                 <DraggableMarker position={posicao} onChange={setPosicao} />
                             </MapContainer>
                         </div>
-                        <p className="text-xs text-white-500">
-                            Arraste o marcador para ajustar a posição exata
-                        </p>
+
+                        <div className="flex items-center gap-2 px-4 py-3 border-t border-slate-100 bg-white">
+                            <span className="text-base leading-none">💡</span>
+                            <p className="text-xs font-medium text-slate-600">
+                                Arraste o marcador azul para ajustar a posição exata
+                            </p>
+                        </div>
                     </div>
 
-                    <div className="flex flex-col gap-3 mt-2">
-                        <Button onClick={handleSubmit} loading={loading} variant="primary" fullWidth>
-                            Avançar
+                    <div className="flex flex-col gap-3">
+                        <Button
+                            type="button"
+                            onClick={handleSubmit}
+                            variant="primary"
+                            fullWidth
+                            disabled={loading}
+                        >
+                            {loading ? "Cadastrando..." : "Avançar"}
                         </Button>
-                        <Button onClick={onBack} variant="secondary" fullWidth disabled={loading}>
+
+                        <Button
+                            type="button"
+                            onClick={onBack}
+                            variant="secondary"
+                            fullWidth
+                            disabled={loading}
+                        >
                             Voltar
                         </Button>
                     </div>

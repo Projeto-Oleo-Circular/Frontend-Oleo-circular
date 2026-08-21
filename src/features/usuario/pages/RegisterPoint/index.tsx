@@ -55,7 +55,7 @@ function RegisterPoint() {
     if (!perfil) {
         return (
             <div className="flex flex-col h-full items-center justify-center bg-background gap-4 p-6 text-center">
-                <p className="text-black-primary font-medium">
+                <p className="text-black-100 font-medium">
                     Não conseguimos identificar o seu perfil de parceiro.
                 </p>
                 <button onClick={handleVoltarHome} className="text-green-primary font-bold underline">

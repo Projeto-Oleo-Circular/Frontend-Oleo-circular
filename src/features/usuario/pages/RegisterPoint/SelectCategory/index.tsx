@@ -64,7 +64,7 @@ function SelectCategory({ tags, totalSteps, onSelect, onBack }: Props) {
                                 }`}
                             >
                                 <img src={`/assets/icons/${tag.icon}`} alt={tag.label} className="w-7 h-7" />
-                                <span className="text-sm font-medium text-black-primary">{tag.label}</span>
+                                <span className="text-sm font-medium text-black-100">{tag.label}</span>
                             </button>
                         ))}
                     </div>
