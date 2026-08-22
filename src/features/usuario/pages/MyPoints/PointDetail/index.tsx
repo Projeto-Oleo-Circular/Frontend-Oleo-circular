@@ -390,7 +390,7 @@ function PointDetail() {
                         </span>
                     </div>
 
-                    <div className="mb-3">
+                    <div>
                         <div className={!editando ? "pointer-events-none opacity-60" : ""}>
                             <Dropdown
                                 placeholder="Expectativa de geração (L)"
