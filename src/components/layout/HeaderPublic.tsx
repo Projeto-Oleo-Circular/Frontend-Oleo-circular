@@ -49,7 +49,6 @@ function HeaderPublic({ loading = false }: HeaderPublicProps) {
                     </>
                 ) : (
                     <>
-                        {/* Se estiver no Admin, exibe apenas a opção para ir para o Parceiro */}
                         {isAdminArea ? (
                             <Button
                                 type="button"
@@ -62,7 +61,6 @@ function HeaderPublic({ loading = false }: HeaderPublicProps) {
                                 Área do Parceiro
                             </Button>
                         ) : (
-                            /* Se estiver no Parceiro, exibe apenas a opção para ir para o Admin */
                             <Button
                                 type="button"
                                 onClick={() => navigate('/admin/login')}

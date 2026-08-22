@@ -54,3 +54,11 @@ export const PERFIS_PARCEIRO: PerfilParceiro[] = [
     ],
   },
 ];
+
+export function getCategoriaIdPorLabel(label: string): number | null {
+  for (const perfil of PERFIS_PARCEIRO) {
+    const tag = perfil.tags.find((t) => t.label === label);
+    if (tag) return tag.categoriaId;
+  }
+  return null;
+}

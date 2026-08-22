@@ -72,4 +72,18 @@ export const pontosColetaService = {
         const { data } = await api.put<PontoColeta>(`/pontos-coleta/${id}`, dados);
         return data;
     },
+
+    async buscarPontoPorId(id: number): Promise<PontoColeta> {
+        const { data } = await api.get<PontoColeta>(`/pontos-coleta/${id}`);
+        return data;
+    },
+
+    /**
+     * DELETE /pontos-coleta/:id
+     * ⚠️ Suposição por convenção REST — confirmar com a colega se a rota existe
+     * de verdade em pontoColeta.routes antes de usar em produção.
+     */
+    async excluirPontoColeta(id: number): Promise<void> {
+        await api.delete(`/pontos-coleta/${id}`);
+    },
 };

@@ -22,7 +22,6 @@ const customIcon = new L.Icon({
     shadowSize: [41, 41],
 })
 
-
 interface Props {
     categoria: EstabelecimentoTag
     totalSteps: number
@@ -419,20 +418,20 @@ function IdentifyPoint({ categoria, totalSteps, onBack }: Props) {
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mt-2">
-                        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+                    <div className="bg-white rounded-2xl shadow-sm border border-white-200 overflow-hidden mt-2">
+                        <div className="flex items-center justify-between px-4 py-3 border-b border-white-100">
                             <div className="flex items-center gap-2">
                                 <img 
                                     src="/assets/icons/icon-local.svg" 
                                     alt="Localização" 
                                     className="w-5 h-5" 
                                 />
-                                <span className="text-xs font-bold text-slate-600 tracking-wider">
+                                <span className="text-xs font-bold text-white-600 tracking-wider">
                                     LOCALIZAÇÃO
                                 </span>
                             </div>
 
-                            <div className="flex items-center gap-1 text-slate-400 text-xs font-medium">
+                            <div className="flex items-center gap-1 text-white-400 text-xs font-medium">
                                 <img 
                                     src="/assets/icons/icon-longLat.svg" 
                                     alt="Coordenadas" 
@@ -460,9 +459,9 @@ function IdentifyPoint({ categoria, totalSteps, onBack }: Props) {
                             </MapContainer>
                         </div>
 
-                        <div className="flex items-center gap-2 px-4 py-3 border-t border-slate-100 bg-white">
+                        <div className="flex items-center gap-2 px-4 py-3 border-t border-white-100 bg-white">
                             <span className="text-base leading-none">💡</span>
-                            <p className="text-xs font-medium text-slate-600">
+                            <p className="text-xs font-medium text-white-600">
                                 Arraste o marcador azul para ajustar a posição exata
                             </p>
                         </div>

@@ -25,6 +25,8 @@ import MyPoints from './features/usuario/pages/MyPoints'
 import RegisterPoint from './features/usuario/pages/RegisterPoint'
 import Profile from './features/usuario/pages/Profile'
 import InformarNivelBombona from './features/usuario/pages/InformarNivelBombona'
+import PointDetail from './features/usuario/pages/MyPoints/PointDetail'
+
 
 import { AdminProtectedRoute } from './components/AdminProtectedRoute'
 import AdminLayout from './components/layout/AdminLayout'
@@ -57,6 +59,7 @@ function App() {
         <Route path="/map" element={<Map />} />
         <Route path="/my-requests" element={<MyRequests />} />
         <Route path="/my-points" element={<MyPoints />} />
+        <Route path="/my-points/:id" element={<PointDetail />} />
         <Route path="/report-barrel" element={<ReportBarrel />} />
         <Route path="/observations" element={<Observations />} />
         <Route path="/confirm-request" element={<ConfirmRequest />} />
