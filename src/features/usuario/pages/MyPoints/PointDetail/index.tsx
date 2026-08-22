@@ -581,8 +581,8 @@ function PointDetail() {
 
                         <div className="relative z-10 flex flex-col gap-4 pt-2">
                             <div>
-                                <h3 className="text-xl font-bold text-green-700 mb-2">Excluir Ponto</h3>
-                                <p className="text-sm text-black-200 leading-relaxed">
+                                <h3 className="text-xl font-bold text-green-primary mb-2">Excluir Ponto</h3>
+                                <p className="text-sm text-white-600 leading-relaxed">
                                     Tem certeza que deseja excluir este ponto de coleta?
                                 </p>
                             </div>
