@@ -74,6 +74,7 @@ function IdentifyPoint({ categoria, totalSteps, onBack }: Props) {
     const { addToast } = useToast()
     const [loading, setLoading] = useState(false)
     const [buscandoEndereco, setBuscandoEndereco] = useState(false)
+    const [showSuccessModal, setShowSuccessModal] = useState(false)
 
     const [form, setForm] = useState({
         nome: "",
@@ -255,7 +256,7 @@ function IdentifyPoint({ categoria, totalSteps, onBack }: Props) {
             cidade: form.cidade.trim(),
             estado: form.estado.trim() || undefined,
             expectativaGeracao: Number(form.expectativaGeracao),
-            // latitude: posicao[0],
+            //latitude: posicao[0],
             //longitude: posicao[1],
             // ^ ativa quando o back-end aceitar esses campos
         }       
@@ -263,8 +264,7 @@ function IdentifyPoint({ categoria, totalSteps, onBack }: Props) {
         try {
             setLoading(true)
             await pontosColetaService.criarPontoColeta(payload)
-            addToast("Ponto de coleta enviado para aprovação!", "success")
-            navigate("/my-points")
+            setShowSuccessModal(true)
         } catch (error: any) {
             addToast(error.response?.data?.message || "Erro ao cadastrar ponto de coleta", "error")
         } finally {
@@ -273,10 +273,10 @@ function IdentifyPoint({ categoria, totalSteps, onBack }: Props) {
     }
 
     return (
-        <div className="flex flex-col h-full overflow-hidden bg-background">
+        <div className="flex flex-col h-full overflow-hidden bg-background relative">
             <HeaderApp />
 
-            <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
+            <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 relative z-0">
                 <div className="w-full max-w-md mx-auto flex flex-col gap-6 pb-8">
 
                     <div className="flex items-center gap-4 pt-2">
@@ -449,11 +449,11 @@ function IdentifyPoint({ categoria, totalSteps, onBack }: Props) {
                                 center={posicao}
                                 zoom={posicaoDefinida ? 16 : 12}
                                 zoomControl={false}
+                                attributionControl={false}
                                 className="w-full h-full z-0"
                             >
                                 <MapCenterController center={posicao} />
                                 <TileLayer
-                                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                 />
                                 <DraggableMarker position={posicao} onChange={setPosicao} />
@@ -476,7 +476,7 @@ function IdentifyPoint({ categoria, totalSteps, onBack }: Props) {
                             fullWidth
                             disabled={loading}
                         >
-                            {loading ? "Cadastrando..." : "Avançar"}
+                            {loading ? "Cadastrando..." : "Confirmar"}
                         </Button>
 
                         <Button
@@ -491,6 +491,51 @@ function IdentifyPoint({ categoria, totalSteps, onBack }: Props) {
                     </div>
                 </div>
             </main>
+
+            {showSuccessModal && (
+                <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 p-6 backdrop-blur-sm animate-fade-in">
+                    <div className="bg-white rounded-3xl w-full max-w-sm p-6 relative overflow-hidden shadow-2xl animate-fade-in-up">
+                        
+                        <img 
+                            src="/assets/fundo-popUp-superior.svg" 
+                            alt="" 
+                            className="absolute -top-10 -right-10 w-40 h-40 object-contain pointer-events-none opacity-90"
+                        />
+                        <img 
+                            src="/assets/fundo-popUp-inferior.svg" 
+                            alt="" 
+                            className="absolute -bottom-10 -left-10 w-40 h-40 object-contain pointer-events-none opacity-90"
+                        />
+
+                        <div className="relative z-10 flex flex-col items-center text-center pt-4">
+                            
+                            <div className="w-16 h-16 flex items-center justify-center mb-4">
+                                <img 
+                                    src="/assets/icons/icon-relogio.svg" 
+                                    alt="Relógio" 
+                                    className="w-10 h-10 object-contain" 
+                                />
+                            </div>
+
+                            <h3 className="text-xl font-bold text-green-700 mb-2">
+                                Solicitação enviada!
+                            </h3>
+                            
+                            <p className="text-sm text-green-primary leading-relaxed mb-6 px-2">
+                                Aguarde a aprovação da <strong>Equipe Óleo Circular</strong> para o cadastro do ponto de coleta. Você receberá um e-mail em breve com a confirmação.
+                            </p>
+
+                            <Button
+                                onClick={() => navigate("/my-points")}
+                                variant="primary"
+                                fullWidth
+                            >
+                                Ir para os meus pontos
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

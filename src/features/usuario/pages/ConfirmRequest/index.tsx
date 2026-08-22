@@ -29,7 +29,6 @@ function ConfirmRequest() {
     })
 
     useEffect(() => {
-        // Recebe os dados repassados pelas telas anteriores
         const state = location.state as { 
             pontoId?: number
             nivel?: number
@@ -75,23 +74,19 @@ function ConfirmRequest() {
         setLoading(true)
 
         try {
-            // Calcula o volume aproximado em Litros
             const volumeCalculado = Math.round((data.capacidade * data.nivel) / 100) || data.capacidade
 
-            // Envio para a API
             await solicitacaoColetaService.criarSolicitacao({
                 pontoColetaId: Number(data.pontoId),
                 volumeInformado: volumeCalculado,
                 observacoes: data.observacao.trim() ? data.observacao.trim() : undefined
             })
 
-            // Exibe modal de confirmação
             setShowSuccessModal(true)
 
         } catch (error: any) {
             console.error("Erro ao enviar solicitação:", error)
 
-            // Captura a mensagem retornada pelo Back-end (Ex: "Este ponto de coleta já possui uma solicitação...")
             const backendMessage = error.response?.data?.message || "Erro ao confirmar solicitação. Tente novamente."
             
             addToast(backendMessage, "error")
@@ -107,7 +102,6 @@ function ConfirmRequest() {
             <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 relative z-0">
                 <div className="w-full max-w-md mx-auto flex flex-col gap-6 pb-8">
                     
-                    {/* Header */}
                     <div className="flex items-center gap-4 pt-2">
                          <button 
                             onClick={() => navigate(-1)} 
@@ -120,13 +114,10 @@ function ConfirmRequest() {
                         <h1 className="text-xl font-bold text-green-primary">Confirmar Solicitação</h1>
                     </div>
 
-                    {/* Título */}
                     <h2 className="text-lg font-bold text-black-primary">Revise os dados da sua solicitação</h2>
 
-                    {/* Card de Dados */}
                     <div className="bg-white rounded-xl shadow-sm border border-white-200 divide-y divide-white-200 overflow-hidden">
                         
-                        {/* Nível da bombona */}
                         <div className="p-4 flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <img src="/assets/icons/icon-bombona.svg" alt="Bombona" className="w-7 h-7 object-contain" />
@@ -140,7 +131,6 @@ function ConfirmRequest() {
                             </div>
                         </div>
 
-                        {/* Capacidade */}
                         <div className="p-4 flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <img src="/assets/icons/icon-capacitor.svg" alt="Capacidade" className="w-7 h-7 object-contain" />
@@ -149,7 +139,6 @@ function ConfirmRequest() {
                             <span className="font-bold text-black-primary">{data.capacidade} Litros</span>
                         </div>
 
-                        {/* Endereço */}
                         <div className="p-4 flex flex-col gap-1">
                             <div className="flex items-center gap-3">
                                 <img src="/assets/icons/icon-local.svg" alt="Localização" className="w-7 h-7 object-contain" />
@@ -158,7 +147,6 @@ function ConfirmRequest() {
                             <p className="text-sm text-white-600 pl-10">{data.endereco}</p>
                         </div>
 
-                        {/* Observações */}
                         <div className="p-4 flex flex-col gap-1">
                             <div className="flex items-center gap-3">
                                 <img src="/assets/icons/icon-observations.svg" alt="Observações" className="w-7 h-7 object-contain" />
@@ -170,7 +158,6 @@ function ConfirmRequest() {
                         </div>
                     </div>
 
-                    {/* Alerta Informativo */}
                     <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 flex items-start gap-3">
                         <div className="mt-0.5 shrink-0 text-black-primary">
                             <img src="/assets/icons/icon-info.svg" alt="Alerta" className="w-5 h-5 object-contain" />
@@ -180,7 +167,6 @@ function ConfirmRequest() {
                         </p>
                     </div>
 
-                    {/* Botões de Ação */}
                     <div className="flex flex-col gap-3 mt-2">
                         <Button
                             onClick={handleConfirmarSolicitacao}
@@ -203,7 +189,6 @@ function ConfirmRequest() {
                 </div>
             </main>
 
-            {/* MODAL DE SUCESSO */}
             {showSuccessModal && (
                 <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 p-6 backdrop-blur-sm animate-fade-in">
                     <div className="bg-white rounded-3xl w-full max-w-sm p-6 relative overflow-hidden shadow-2xl animate-fade-in-up">

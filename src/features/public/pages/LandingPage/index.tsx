@@ -53,7 +53,6 @@ export default function LandingPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isAddPointModalOpen, setIsAddPointModalOpen] = useState(false)
 
-  // 2. ESTADOS PARA GERENCIAR AS CAMADAS (Adicionado aqui)
   const [currentTile, setCurrentTile] = useState<TileStyle>('standard')
   const [isLayerMenuOpen, setIsLayerMenuOpen] = useState(false)
 
