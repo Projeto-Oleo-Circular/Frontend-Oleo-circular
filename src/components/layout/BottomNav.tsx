@@ -7,7 +7,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
     { to: "/home", label: "Início", iconSrc: "/assets/icons/home.svg" },
-    { to: "/map", label: "Mapa", iconSrc: "/assets/icons/map.svg" },
+    //{ to: "/map", label: "Mapa", iconSrc: "/assets/icons/map.svg" },
     { to: "/my-requests", label: "Coletas", iconSrc: "/assets/icons/caminhao.svg"},
     { to: "/my-points", label: "Pontos", iconSrc: "/assets/icons/icon-pontos.svg" },
     { to: "/profile", label: "Perfil", iconSrc: "/assets/icons/profile.svg" },
