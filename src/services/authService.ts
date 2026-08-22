@@ -33,7 +33,6 @@ interface ResetPasswordCredentials {
   confirmarSenha?: string;
 }
 
-// ADICIONADO 'export' E AJUSTADOS OS TIPOS SEGUNDO O SWAGGER
 export interface RegisterCredentials {
   tipoPessoa: 'FISICA' | 'JURIDICA' | string;
   tipoParceiro?: 'GERADOR' | 'INSTITUCIONAL' | string;
@@ -89,10 +88,25 @@ export interface ParceiroIndicador {
   ativo: boolean;
   criadoEm: string;
 }
-
 export interface CategoriaOption {
   value: number;
   label: string;
+}
+
+export interface DisponibilidadeResponse {
+  emailDisponivel: boolean | null;
+  documentoDisponivel: boolean | null;
+}
+
+export interface AtualizarPerfilPayload {
+  nome?: string;
+  email?: string;
+  telefone?: string;
+}
+
+export interface AlterarSenhaPayload {
+  senhaAtual: string;
+  novaSenha: string;
 }
 
 export interface DisponibilidadeResponse {
@@ -206,5 +220,25 @@ export const authService = {
 
   isAuthenticated(): boolean {
     return !!localStorage.getItem('token');
+  },
+
+  // ⚠️ Suposições
+  async atualizarPerfil(payload: AtualizarPerfilPayload) {
+    const response = await api.put('/parceiros/me', payload);
+    return response.data;
+  },
+
+  async alterarSenha(payload: AlterarSenhaPayload) {
+    const response = await api.put('/parceiros/alterar-senha', payload);
+    return response.data;
+  },
+
+  async uploadFoto(file: File): Promise<{ fotoUrl: string }> {
+    const formData = new FormData();
+    formData.append('foto', file);
+    const response = await api.post('/parceiros/foto', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
   },
 };
