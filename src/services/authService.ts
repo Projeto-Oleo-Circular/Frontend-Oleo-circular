@@ -232,13 +232,4 @@ export const authService = {
     const response = await api.put('/parceiros/alterar-senha', payload);
     return response.data;
   },
-
-  async uploadFoto(file: File): Promise<{ fotoUrl: string }> {
-    const formData = new FormData();
-    formData.append('foto', file);
-    const response = await api.post('/parceiros/foto', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
-    return response.data;
-  },
 };

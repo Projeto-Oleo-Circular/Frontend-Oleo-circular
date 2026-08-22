@@ -6,9 +6,6 @@ import Input from "../../../../components/ui/Input"
 import useToast from "../../../../hooks/useToast"
 import { authService } from "../../../../services/authService"
 
-const TAMANHO_MAX_FOTO = 5 * 1024 * 1024 // 5MB — confirmar com a colega
-const TIPOS_ACEITOS = ["image/jpeg", "image/png", "image/webp"] // confirmar com a colega
-
 const MESES = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"]
 
 function formatarDesde(dataIso: string): string {
@@ -19,17 +16,14 @@ function formatarDesde(dataIso: string): string {
 function Profile() {
     const navigate = useNavigate()
     const { addToast } = useToast()
-    const fileInputRef = useRef<HTMLInputElement>(null)
 
     const [loading, setLoading] = useState(true)
     const [salvando, setSalvando] = useState(false)
-    const [enviandoFoto, setEnviandoFoto] = useState(false)
     const [editando, setEditando] = useState(false)
     const [modalSaidaAberta, setModalSaidaAberta] = useState(false)
     const [saindo, setSaindo] = useState(false)
 
     const [userData, setUserData] = useState<any>(null)
-    const [fotoUrl, setFotoUrl] = useState<string | undefined>(undefined)
 
     const [form, setForm] = useState({
         nome: "",
@@ -47,7 +41,6 @@ function Profile() {
             try {
                 const data = await authService.getUserData()
                 setUserData(data)
-                setFotoUrl(data?.fotoUrl) // ⚠️ nome do campo é suposição — confirmar
                 setForm((prev) => ({
                     ...prev,
                     nome: data?.razaoSocial || data?.nome || "",
@@ -66,39 +59,6 @@ function Profile() {
     const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target
         setForm((prev) => ({ ...prev, [name]: value }))
-    }
-
-    const handleEscolherFoto = () => {
-        fileInputRef.current?.click()
-    }
-
-    const handleFotoChange = async (e: ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0]
-        if (!file) return
-
-        if (!TIPOS_ACEITOS.includes(file.type)) {
-            addToast("Formato inválido. Use JPG, PNG ou WEBP.", "error")
-            e.target.value = ""
-            return
-        }
-
-        if (file.size > TAMANHO_MAX_FOTO) {
-            addToast("Imagem muito grande. O tamanho máximo é 5MB.", "error")
-            e.target.value = ""
-            return
-        }
-
-        try {
-            setEnviandoFoto(true)
-            const resultado = await authService.uploadFoto(file)
-            setFotoUrl(resultado.fotoUrl)
-            addToast("Foto atualizada com sucesso!", "success")
-        } catch (error: any) {
-            addToast(error.response?.data?.message || "Erro ao enviar a foto", "error")
-        } finally {
-            setEnviandoFoto(false)
-            e.target.value = ""
-        }
     }
 
     const handleSalvar = async () => {
@@ -164,7 +124,7 @@ function Profile() {
 
     return (
         <div className="flex flex-col h-full overflow-hidden bg-background relative">
-            <HeaderApp userName={nomeExibicao} userAvatar={fotoUrl} />
+            <HeaderApp userName={nomeExibicao} />
 
             <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
                 <div className="w-full max-w-md mx-auto flex flex-col gap-6 pb-8">
@@ -184,44 +144,8 @@ function Profile() {
                     </div>
 
                     <div className="flex flex-col items-center gap-3">
-                        <div className="relative">
-                            {fotoUrl ? (
-                                <img
-                                    src={fotoUrl}
-                                    alt={nomeExibicao}
-                                    className="w-28 h-28 rounded-full object-cover border-4 border-white shadow-md"
-                                />
-                            ) : (
-                                <div className="w-28 h-28 rounded-full bg-green-primary text-white flex items-center justify-center text-4xl font-bold border-4 border-white shadow-md">
-                                    {getInitials(nomeExibicao)}
-                                </div>
-                            )}
-
-                            {editando && (
-                                <button
-                                    onClick={handleEscolherFoto}
-                                    disabled={enviandoFoto}
-                                    className="absolute bottom-0 right-0 w-9 h-9 bg-green-primary text-white rounded-full flex items-center justify-center shadow-md border-2 border-white disabled:opacity-60"
-                                    aria-label="Alterar foto"
-                                >
-                                    {enviandoFoto ? (
-                                        <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                                    ) : (
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                                            <circle cx="12" cy="13" r="3" strokeWidth={2} />
-                                        </svg>
-                                    )}
-                                </button>
-                            )}
-
-                            <input
-                                ref={fileInputRef}
-                                type="file"
-                                accept={TIPOS_ACEITOS.join(",")}
-                                onChange={handleFotoChange}
-                                className="hidden"
-                            />
+                        <div className="w-28 h-28 rounded-full bg-green-primary text-white flex items-center justify-center text-4xl font-bold border-4 border-white shadow-md">
+                            {getInitials(nomeExibicao)}
                         </div>
 
                         {!editando && (
