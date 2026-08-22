@@ -109,12 +109,13 @@ function MyPoints() {
                     {!loading && pontosFiltrados.length === 0 && (
                         <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
                             <div className="w-20 h-20 rounded-full bg-white-200 flex items-center justify-center">
-                                <svg className="w-8 h-8 text-white-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 21c-4.5-4.5-7-8.25-7-11.5A7 7 0 0112 2a7 7 0 017 7.5c0 3.25-2.5 7-7 11.5z" />
-                                    <circle cx="12" cy="9.5" r="2.5" strokeWidth={2} />
-                                </svg>
+                                <img
+                                    src="/assets/icons/icon-gota.svg"
+                                    alt="Ponto não encontrado"
+                                    className="w-10 h-10 object-contain"
+                                />
                             </div>
-                            <p className="text-sm text-white-500 max-w-[220px]">
+                            <p className="text-sm text-white-600 max-w-[220px]">
                                 Não foi possível localizar o seu ponto de coleta. Tente novamente.
                             </p>
                         </div>
