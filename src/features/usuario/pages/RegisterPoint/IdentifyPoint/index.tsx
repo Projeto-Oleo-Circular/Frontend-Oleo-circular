@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent } from "react"
+import { useState, type ChangeEvent, type FocusEvent } from "react"
 import { useNavigate } from "react-router-dom"
 import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from "react-leaflet"
 import L from "leaflet"
@@ -10,7 +10,6 @@ import useToast from "../../../../../hooks/useToast"
 import { authService } from "../../../../../services/authService"
 import { pontosColetaService, type CriarPontoColetaPayload } from "../../../../../services/pontosColetaService"
 import type { EstabelecimentoTag } from "../../../../../constants/perfisParceiros"
-
 
 const customIcon = new L.Icon({
     iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
@@ -37,6 +36,22 @@ const OPCOES_VOLUME = [
 ]
 
 const CENTRO_PADRAO: [number, number] = [-15.2483, -40.2481]
+
+const ESTADOS_MAP: Record<string, string> = {
+    "Acre": "AC", "Alagoas": "AL", "Amapá": "AP", "Amazonas": "AM", "Bahia": "BA",
+    "Ceará": "CE", "Distrito Federal": "DF", "Espírito Santo": "ES", "Goiás": "GO",
+    "Maranhão": "MA", "Mato Grosso": "MT", "Mato Grosso do Sul": "MS", "Minas Gerais": "MG",
+    "Pará": "PA", "Paraíba": "PB", "Paraná": "PR", "Pernambuco": "PE", "Piauí": "PI",
+    "Rio de Janeiro": "RJ", "Rio Grande do Norte": "RN", "Rio Grande do Sul": "RS",
+    "Rondônia": "RO", "Roraima": "RR", "Santa Catarina": "SC", "São Paulo": "SP",
+    "Sergipe": "SE", "Tocantins": "TO"
+}
+
+function normalizarUF(estado?: string): string {
+    if (!estado) return ""
+    if (estado.length === 2) return estado.toUpperCase()
+    return ESTADOS_MAP[estado] || estado.slice(0, 2).toUpperCase()
+}
 
 function MapCenterController({ center }: { center: [number, number] }) {
     const map = useMap()
@@ -108,33 +123,92 @@ function IdentifyPoint({ categoria, totalSteps, onBack }: Props) {
         return cleaned
     }
 
-    const handleChange = async (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-
-    if (fieldErrors[name as keyof typeof fieldErrors]) {
-        setFieldErrors(prev => ({ ...prev, [name]: "" }))
+    const geocodificarCoordenadas = async (lat: number, lng: number) => {
+        setBuscandoEndereco(true)
+        try {
+            const response = await fetch(
+                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`,
+                { headers: { "User-Agent": "OleoCircularApp/1.0" } }
+            )
+            const data = await response.json()
+            if (data && data.address) {
+                const addr = data.address
+                setForm((prev) => ({
+                    ...prev,
+                    logradouro: addr.road || addr.pedestrian || prev.logradouro,
+                    bairro: addr.suburb || addr.neighbourhood || prev.bairro,
+                    cidade: addr.city || addr.town || addr.village || prev.cidade,
+                    estado: normalizarUF(addr.state) || prev.estado,
+                    cep: addr.postcode ? formatCep(addr.postcode) : prev.cep,
+                }))
+            }
+        } catch (error) {
+            console.error("Erro ao converter coordenadas em endereço:", error)
+        } finally {
+            setBuscandoEndereco(false)
+        }
     }
 
-    if (name === "cep") {
-        const formatted = formatCep(value)
-        setForm((prev) => ({ ...prev, cep: formatted }))
+    const handlePosicaoChange = (novaPosicao: [number, number]) => {
+        setPosicao(novaPosicao)
+        geocodificarCoordenadas(novaPosicao[0], novaPosicao[1])
+    }
 
-        const cepLimpo = value.replace(/\D/g, "")
-        if (cepLimpo.length === 8) {
-            setBuscandoEndereco(true)
-            try {
-                const endereco = await authService.buscarCep(cepLimpo)
-                const novoForm = {
-                    ...form,
-                    cep: formatted,
-                    logradouro: endereco.logradouro || form.logradouro,
-                    bairro: endereco.bairro || form.bairro,
-                    cidade: endereco.cidade || form.cidade,
-                    estado: endereco.estado || form.estado,
-                }
-                setForm(novoForm)
+    const geocodificarEndereco = async (query: string) => {
+        if (!query.trim()) return
+        setBuscandoEndereco(true)
+        try {
+            const response = await fetch(
+                `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`,
+                { headers: { "User-Agent": "OleoCircularApp/1.0" } }
+            )
+            const data = await response.json()
+            if (data && data.length > 0) {
+                const { lat, lon } = data[0]
+                setPosicao([parseFloat(lat), parseFloat(lon)])
+                setPosicaoDefinida(true)
+            }
+        } catch (error) {
+            console.error("Erro ao geocodificar endereço:", error)
+        } finally {
+            setBuscandoEndereco(false)
+        }
+    }
 
-                setFieldErrors(prev => ({
+    const handleInputBlur = () => {
+        const { logradouro, cidade, estado } = form
+        if (logradouro && cidade) {
+            geocodificarEndereco(`${logradouro}, ${cidade} ${estado}`.trim())
+        }
+    }
+
+    const handleChange = async (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target
+
+        if (fieldErrors[name as keyof typeof fieldErrors]) {
+            setFieldErrors(prev => ({ ...prev, [name]: "" }))
+        }
+
+        if (name === "cep") {
+            const formatted = formatCep(value)
+            setForm((prev) => ({ ...prev, cep: formatted }))
+
+            const cepLimpo = value.replace(/\D/g, "")
+            if (cepLimpo.length === 8) {
+                setBuscandoEndereco(true)
+                try {
+                    const endereco = await authService.buscarCep(cepLimpo)
+                    const novoForm = {
+                        ...form,
+                        cep: formatted,
+                        logradouro: endereco.logradouro || form.logradouro,
+                        bairro: endereco.bairro || form.bairro,
+                        cidade: endereco.cidade || form.cidade,
+                        estado: normalizarUF(endereco.estado) || form.estado,
+                    }
+                    setForm(novoForm)
+
+                    setFieldErrors(prev => ({
                         ...prev,
                         cep: "",
                         logradouro: "",
@@ -161,26 +235,6 @@ function IdentifyPoint({ categoria, totalSteps, onBack }: Props) {
         setForm((prev) => ({ ...prev, expectativaGeracao: value }))
         if (fieldErrors.expectativaGeracao) {
             setFieldErrors((prev) => ({ ...prev, expectativaGeracao: "" }))
-        }
-    }
-
-    const geocodificarEndereco = async (query: string) => {
-        setBuscandoEndereco(true)
-        try {
-            const response = await fetch(
-                `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`,
-                { headers: { "User-Agent": "OleoCircularApp/1.0" } }
-            )
-            const data = await response.json()
-            if (data && data.length > 0) {
-                const { lat, lon } = data[0]
-                setPosicao([parseFloat(lat), parseFloat(lon)])
-                setPosicaoDefinida(true)
-            }
-        } catch (error) {
-            console.error("Erro ao geocodificar endereço:", error)
-        } finally {
-            setBuscandoEndereco(false)
         }
     }
 
@@ -245,20 +299,22 @@ function IdentifyPoint({ categoria, totalSteps, onBack }: Props) {
             return
         }
 
+        const categoriaNum = Number(categoria?.categoriaId ?? categoria)
+
         const payload: CriarPontoColetaPayload = {
             nomePontoColeta: form.nome.trim(),
-            categoria: categoria.categoriaId,
+            categoria: categoriaNum,
             cep: form.cep.replace(/\D/g, ""),
             logradouro: form.logradouro.trim(),
             numero: form.numero.trim(),
             bairro: form.bairro.trim(),
             cidade: form.cidade.trim(),
-            estado: form.estado.trim() || undefined,
-            expectativaGeracao: Number(form.expectativaGeracao),
-            //latitude: posicao[0],
-            //longitude: posicao[1],
-            // ^ ativa quando o back-end aceitar esses campos
-        }       
+            estado: normalizarUF(form.estado.trim()) || undefined,
+            expectativaGeracao: Number(form.expectativaGeracao) || 0,
+            capacidadeBombona: Number(form.expectativaGeracao) || 50, // ou o valor padrão definido no seu sistema
+            nivelAtualPct: 0,
+            statusBombona: "VAZIA"
+        }      
 
         try {
             setLoading(true)
@@ -341,10 +397,11 @@ function IdentifyPoint({ categoria, totalSteps, onBack }: Props) {
                             <Input
                                 type="text" 
                                 icon="icon-CEP"
-                                placeholder={buscandoEndereco ? "Buscando CEP..." : "CEP"}                                
+                                placeholder={buscandoEndereco ? "Buscando CEP..." : "CEP"}                               
                                 name="cep" 
                                 value={form.cep} 
                                 onChange={handleChange}
+                                onBlur={handleInputBlur}
                                 noBorder
                                 error={fieldErrors.cep}
                                 disabled={buscandoEndereco}
@@ -358,6 +415,7 @@ function IdentifyPoint({ categoria, totalSteps, onBack }: Props) {
                                 name="estado"
                                 value={form.estado}
                                 onChange={handleChange}
+                                onBlur={handleInputBlur}
                                 noBorder
                                 error={fieldErrors.estado} 
                                 disabled={buscandoEndereco}
@@ -371,6 +429,7 @@ function IdentifyPoint({ categoria, totalSteps, onBack }: Props) {
                                 name="cidade"
                                 value={form.cidade}
                                 onChange={handleChange}
+                                onBlur={handleInputBlur}
                                 noBorder
                                 error={fieldErrors.cidade}
                                 disabled={buscandoEndereco}
@@ -384,6 +443,7 @@ function IdentifyPoint({ categoria, totalSteps, onBack }: Props) {
                                 name="logradouro"
                                 value={form.logradouro}
                                 onChange={handleChange}
+                                onBlur={handleInputBlur}
                                 noBorder
                                 error={fieldErrors.logradouro}
                                 disabled={buscandoEndereco}
@@ -398,6 +458,7 @@ function IdentifyPoint({ categoria, totalSteps, onBack }: Props) {
                                 name="bairro"
                                 value={form.bairro}
                                 onChange={handleChange}
+                                onBlur={handleInputBlur}
                                 noBorder
                                 error={fieldErrors.bairro}
                                 disabled={buscandoEndereco}
@@ -455,7 +516,7 @@ function IdentifyPoint({ categoria, totalSteps, onBack }: Props) {
                                 <TileLayer
                                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                 />
-                                <DraggableMarker position={posicao} onChange={setPosicao} />
+                                <DraggableMarker position={posicao} onChange={handlePosicaoChange} />
                             </MapContainer>
                         </div>
 
