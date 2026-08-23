@@ -1,4 +1,4 @@
-import { useState, ChangeEvent } from 'react'
+import { useState, ChangeEvent, FocusEvent } from 'react'
 
 function Input({
   type = 'text',
@@ -11,7 +11,8 @@ function Input({
   noBorder = false,
   name,
   disabled,
-  className = ''
+  className = '',
+  onBlur
 }: {
   type?: string
   placeholder?: string
@@ -24,6 +25,7 @@ function Input({
   name?: string
   disabled?: boolean
   className?: string
+  onBlur?: (e: FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => void
 }) {
   const [showPassword, setShowPassword] = useState(false)
 
@@ -47,6 +49,7 @@ function Input({
           placeholder={placeholder}
           value={value}
           onChange={handleTextareaChange}
+          onBlur={onBlur}
           disabled={disabled}
           className={`w-full px-4 py-4 rounded-xl outline-none text-sm bg-white text-black-200 resize-none h-28 ${borderClass} ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
         />
@@ -73,6 +76,7 @@ function Input({
           placeholder={placeholder}
           value={value || ''}
           onChange={handleChange}
+          onBlur={onBlur}
           name={name}
           disabled={disabled}
           className="flex-1 outline-none text-sm bg-transparent text-black-200 disabled:cursor-not-allowed placeholder:text-black-100"

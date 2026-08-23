@@ -39,6 +39,22 @@ function MapCenterController({ center }: { center: [number, number] }) {
     return null
 }
 
+const ESTADOS_MAP: Record<string, string> = {
+    "Acre": "AC", "Alagoas": "AL", "Amapá": "AP", "Amazonas": "AM", "Bahia": "BA",
+    "Ceará": "CE", "Distrito Federal": "DF", "Espírito Santo": "ES", "Goiás": "GO",
+    "Maranhão": "MA", "Mato Grosso": "MT", "Mato Grosso do Sul": "MS", "Minas Gerais": "MG",
+    "Pará": "PA", "Paraíba": "PB", "Paraná": "PR", "Pernambuco": "PE", "Piauí": "PI",
+    "Rio de Janeiro": "RJ", "Rio Grande do Norte": "RN", "Rio Grande do Sul": "RS",
+    "Rondônia": "RO", "Roraima": "RR", "Santa Catarina": "SC", "São Paulo": "SP",
+    "Sergipe": "SE", "Tocantins": "TO"
+}
+
+function normalizarUF(estado?: string): string {
+    if (!estado) return ""
+    if (estado.length === 2) return estado.toUpperCase()
+    return ESTADOS_MAP[estado] || estado.slice(0, 2).toUpperCase()
+}
+
 function DraggableMarker({
     position,
     onChange,
@@ -196,25 +212,70 @@ function PointDetail() {
         }
     }
 
-    const geocodificarEndereco = async (query: string) => {
-        setBuscandoEndereco(true)
-        try {
-            const response = await fetch(
-                `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`,
-                { headers: { "User-Agent": "OleoCircularApp/1.0" } }
-            )
-            const data = await response.json()
-            if (data && data.length > 0) {
-                const { lat, lon } = data[0]
-                setPosicao([parseFloat(lat), parseFloat(lon)])
-                setPosicaoDefinida(true)
-            }
-        } catch (error) {
-            console.error("Erro ao geocodificar endereço:", error)
-        } finally {
-            setBuscandoEndereco(false)
+    const geocodificarCoordenadas = async (lat: number, lng: number) => {
+    setBuscandoEndereco(true)
+    try {
+        const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`,
+            { headers: { "User-Agent": "OleoCircularApp/1.0" } }
+        )
+        const data = await response.json()
+        if (data && data.address) {
+            const addr = data.address
+            setForm((prev) => ({
+                ...prev,
+                logradouro: addr.road || addr.pedestrian || prev.logradouro,
+                bairro: addr.suburb || addr.neighbourhood || prev.bairro,
+                cidade: addr.city || addr.town || addr.village || prev.cidade,
+                estado: normalizarUF(addr.state) || prev.estado,
+                cep: addr.postcode ? formatCep(addr.postcode) : prev.cep,
+            }))
         }
+    } catch (error) {
+        console.error("Erro ao converter coordenadas em endereço:", error)
+    } finally {
+        setBuscandoEndereco(false)
     }
+}
+
+        // 2. Handler para a mudança do pino no mapa
+        const handlePosicaoChange = (novaPosicao: [number, number]) => {
+            setPosicao(novaPosicao)
+            if (editando) {
+                geocodificarCoordenadas(novaPosicao[0], novaPosicao[1])
+            }
+        }
+
+        // 3. Atualize a função geocodificarEndereco (Endereço -> Coordenadas)
+        const geocodificarEndereco = async (query: string) => {
+            if (!query.trim()) return
+            setBuscandoEndereco(true)
+            try {
+                const response = await fetch(
+                    `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`,
+                    { headers: { "User-Agent": "OleoCircularApp/1.0" } }
+                )
+                const data = await response.json()
+                if (data && data.length > 0) {
+                    const { lat, lon } = data[0]
+                    setPosicao([parseFloat(lat), parseFloat(lon)])
+                    setPosicaoDefinida(true)
+                }
+            } catch (error) {
+                console.error("Erro ao geocodificar endereço:", error)
+            } finally {
+                setBuscandoEndereco(false)
+            }
+        }
+
+        // 4. Dispare a busca no mapa em campos de texto chave ao perder o foco (onBlur)
+        const handleInputBlur = () => {
+            if (!editando) return
+            const { logradouro, cidade, estado } = form
+            if (logradouro && cidade) {
+                geocodificarEndereco(`${logradouro}, ${cidade} ${estado}`.trim())
+            }
+        }
 
     const validateForm = (): boolean => {
         let hasError = false
@@ -288,7 +349,7 @@ function PointDetail() {
                 numero: form.numero.trim(),
                 bairro: form.bairro.trim(),
                 cidade: form.cidade.trim(),
-                estado: form.estado.trim(),
+                estado: normalizarUF(form.estado.trim()),
                 expectativaGeracao: Number(form.expectativaGeracao),
                 //latitude: posicao[0],
                 //longitude: posicao[1],
@@ -426,6 +487,7 @@ function PointDetail() {
                             name="cep"
                             value={form.cep}
                             onChange={handleChange}
+                            onBlur={handleInputBlur}
                             noBorder
                             disabled={!editando || buscandoEndereco}
                             error={fieldErrors.cep}
@@ -450,6 +512,7 @@ function PointDetail() {
                             name="cidade"
                             value={form.cidade}
                             onChange={handleChange}
+                            onBlur={handleInputBlur}
                             noBorder
                             disabled={!editando || buscandoEndereco}
                             error={fieldErrors.cidade}
@@ -462,6 +525,7 @@ function PointDetail() {
                             name="logradouro"
                             value={form.logradouro}
                             onChange={handleChange}
+                            onBlur={handleInputBlur}
                             noBorder
                             disabled={!editando || buscandoEndereco}
                             error={fieldErrors.logradouro}
@@ -474,6 +538,7 @@ function PointDetail() {
                             name="bairro"
                             value={form.bairro}
                             onChange={handleChange}
+                            onBlur={handleInputBlur}
                             noBorder
                             disabled={!editando || buscandoEndereco}
                             error={fieldErrors.bairro}
@@ -529,7 +594,7 @@ function PointDetail() {
                                 <TileLayer
                                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                 />
-                                <DraggableMarker position={posicao} onChange={setPosicao} />
+                                <DraggableMarker position={posicao} onChange={handlePosicaoChange} />
                             </MapContainer>
                         </div>
                     
