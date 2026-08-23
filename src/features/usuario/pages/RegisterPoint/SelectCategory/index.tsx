@@ -53,22 +53,25 @@ function SelectCategory({ tags, totalSteps, onSelect, onBack }: Props) {
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
-                        {tags.map((tag) => (
-                            <button
-                                key={tag.categoriaId}
-                                onClick={() => setSelecionado(tag)}
-                                className={`flex flex-col items-start gap-3 p-4 bg-white rounded-xl border-2 shadow-card transition-all duration-200 text-left ${
-                                    selecionado?.categoriaId === tag.categoriaId
-                                        ? "border-green-primary ring-2 ring-green-200"
-                                        : "border-transparent hover:border-green-200"
-                                }`}
-                            >
-                                <img src={`/assets/icons/${tag.icon}`} alt={tag.label} className="w-7 h-7" />
-                                <span className="text-sm font-medium text-black-100">{tag.label}</span>
-                            </button>
-                        ))}
-                    </div>
+                        {tags.map((tag) => {
+                            const selecionada = selecionado?.categoriaId === tag.categoriaId
 
+                            return (
+                                <button
+                                    key={tag.categoriaId}
+                                    onClick={() => setSelecionado(tag)}
+                                    className={`flex flex-col items-start gap-3 p-4 rounded-xl border-2 shadow-card transition-all duration-200 text-left ${
+                                        selecionada
+                                            ? "border-green-primary ring-2 ring-green-200"
+                                            : "border-transparent hover:border-green-200"
+                                    }`}
+                                >
+                                    <img src={`/assets/icons/${tag.icon}`} alt={tag.label} className="w-8 h-8" />
+                                    <span className="text-sm font-semibold text-black-100">{tag.label}</span>
+                                </button>
+                            )
+                        })}
+                    </div>
                     <div className="flex flex-col gap-3 mt-2">
                         <Button onClick={handleAvancar} disabled={!selecionado} variant="primary" fullWidth>
                             Avançar

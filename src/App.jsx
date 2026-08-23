@@ -21,6 +21,7 @@ import ReportBarrel from './features/usuario/pages/ReportBarrel'
 import Observations from './features/usuario/pages/Observations'
 import ConfirmRequest from './features/usuario/pages/ConfirmRequest'
 import MyRequests from './features/usuario/pages/MyRequests'
+import RequestDetail from './features/usuario/pages/MyRequests/RequestDetail'
 import MyPoints from './features/usuario/pages/MyPoints'
 import RegisterPoint from './features/usuario/pages/RegisterPoint'
 import Profile from './features/usuario/pages/Profile'
@@ -58,6 +59,7 @@ function App() {
         <Route path="/home" element={<Home />} />
         <Route path="/map" element={<Map />} />
         <Route path="/my-requests" element={<MyRequests />} />
+        <Route path="/my-requests/:id" element={<RequestDetail />} />
         <Route path="/my-points" element={<MyPoints />} />
         <Route path="/my-points/:id" element={<PointDetail />} />
         <Route path="/report-barrel" element={<ReportBarrel />} />

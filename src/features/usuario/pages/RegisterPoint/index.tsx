@@ -14,6 +14,7 @@ function RegisterPoint() {
     const [perfilId, setPerfilId] = useState<string | null>(null)
     const [step, setStep] = useState<0 | 1>(0)
     const [categoriaSelecionada, setCategoriaSelecionada] = useState<EstabelecimentoTag | null>(null)
+    const TOTAL_STEPS_NOVO_PONTO = 2
 
     useEffect(() => {
         const carregarPerfil = async () => {
@@ -69,7 +70,7 @@ function RegisterPoint() {
         return (
             <SelectCategory
                 tags={perfil.tags}
-                totalSteps={perfil.totalSteps}
+                totalSteps={TOTAL_STEPS_NOVO_PONTO}
                 onSelect={handleSelectCategoria}
                 onBack={handleVoltarHome}
             />
@@ -79,7 +80,7 @@ function RegisterPoint() {
     return (
         <IdentifyPoint
             categoria={categoriaSelecionada!}
-            totalSteps={perfil.totalSteps}
+            totalSteps={TOTAL_STEPS_NOVO_PONTO}
             onBack={handleVoltarCategoria}
         />
     )
