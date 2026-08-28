@@ -99,6 +99,7 @@ function IdentifyPoint({ categoria, totalSteps, onBack }: Props) {
         cidade: "",
         estado: "",
         expectativaGeracao: "",
+        complemento: "",
     })
 
     const [fieldErrors, setFieldErrors] = useState({
@@ -110,6 +111,7 @@ function IdentifyPoint({ categoria, totalSteps, onBack }: Props) {
         cidade: "",
         estado: "",
         expectativaGeracao: "",
+        complemento: "",
     })
 
     const [posicao, setPosicao] = useState<[number, number]>(CENTRO_PADRAO)
@@ -249,6 +251,7 @@ function IdentifyPoint({ categoria, totalSteps, onBack }: Props) {
             cidade: "",
             estado: "",
             expectativaGeracao: "",
+            complemento: "",
         }
 
         if (!form.nome.trim()) {
@@ -270,10 +273,6 @@ function IdentifyPoint({ categoria, totalSteps, onBack }: Props) {
             hasError = true
         }
 
-        if (!form.numero.trim()) {
-            errors.numero = "Número é obrigatório"
-            hasError = true
-        }
 
         if (!form.bairro.trim()) {
             errors.bairro = "Bairro é obrigatório"
@@ -306,14 +305,15 @@ function IdentifyPoint({ categoria, totalSteps, onBack }: Props) {
             categoria: categoriaNum,
             cep: form.cep.replace(/\D/g, ""),
             logradouro: form.logradouro.trim(),
-            numero: form.numero.trim(),
+            numero: form.numero.trim() || "S/N",
             bairro: form.bairro.trim(),
             cidade: form.cidade.trim(),
             estado: normalizarUF(form.estado.trim()) || undefined,
             expectativaGeracao: Number(form.expectativaGeracao) || 0,
             capacidadeBombona: Number(form.expectativaGeracao) || 50, // ou o valor padrão definido no seu sistema
             nivelAtualPct: 0,
-            statusBombona: "VAZIA"
+            statusBombona: "VAZIA",
+            complemento: form.complemento?.trim() || ""
         }      
 
         try {
@@ -475,6 +475,18 @@ function IdentifyPoint({ categoria, totalSteps, onBack }: Props) {
                                 onChange={handleChange}
                                 noBorder
                                 error={fieldErrors.numero}
+                            />
+
+                            <hr className="border-white-100" />
+                            <Input
+                                type="text"
+                                icon="icon-complemento"
+                                placeholder="Complemento (opcional)"
+                                name="complemento"
+                                value={form.complemento || ""}
+                                onChange={handleChange}
+                                noBorder
+                                error={fieldErrors.complemento}
                             />
                         </div>
                     </div>

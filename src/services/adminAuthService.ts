@@ -5,6 +5,7 @@ export interface AdminUser {
     nome: string;
     email: string;
     nivelAcesso?: string;
+    ultimoAcesso: string;
 }
 
 interface AdminLoginCredentials {

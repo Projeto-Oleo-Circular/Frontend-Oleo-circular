@@ -65,6 +65,8 @@ export interface RegisterCredentials {
   outroParceiro?: string | null; 
   comoConheceu?: string;
   observacao?: string;
+  longitude?:number;
+  latitude?: number;
 }
 
 interface RegisterResponse {

@@ -105,7 +105,7 @@ function MyRequests() {
                         </svg>
                         <input
                             type="text"
-                            placeholder="Buscar por nome, endereço..."
+                            placeholder="Buscar por nome ou endereço..."
                             value={busca}
                             onChange={(e) => { setBusca(e.target.value); setPagina(1) }}
                             className="flex-1 outline-none text-sm bg-transparent text-black-100 placeholder:text-black-100"

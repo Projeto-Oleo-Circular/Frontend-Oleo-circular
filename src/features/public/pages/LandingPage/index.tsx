@@ -152,7 +152,7 @@ export default function LandingPage() {
             </button>
             <input
               type="text"
-              placeholder="Buscar por nome, endereço..."
+              placeholder="Buscar por nome ou endereço..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-transparent text-sm text-white-600 outline-none placeholder-black-100"

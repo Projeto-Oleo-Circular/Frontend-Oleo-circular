@@ -1,29 +1,27 @@
 import { useNavigate } from "react-router-dom";
 import HeaderCadastro from "../../../../components/layout/HeaderCadastro";
 import Input from "../../../../components/ui/Input";
-import { useState, ChangeEvent } from "react";
+import { useState, type ChangeEvent } from "react";
 import StepProfile from "./StepProfile";
 import useToast from "../../../../hooks/useToast";
 import {
   authService,
-  RegisterCredentials,
+  type RegisterCredentials,
 } from "../../../../services/authService";
 
-import InfoIns from "./Instituicao/InfoIns";
 import ComunicacaoIns from "./Instituicao/ComunicacaoIns";
 import VolumeIns from "./Instituicao/VolumeIns";
 import AboutProjectIns from "./Instituicao/AboutProjectIns";
 import FeedbackIns from "./Instituicao/FeedbackIns";
 
-import InfoCt from "./Comunitario/InfoCt";
 import VolumeCt from "./Comunitario/VolumeCt";
 import AboutProjectCt from "./Comunitario/AboutProjectCt";
 import FeedbackCt from "./Comunitario/FeedbackCt";
 
-import InfoSo from "./Solidario/InfoSo";
 import VolumeSo from "./Solidario/VolumeSo";
 import AboutProjectSo from "./Solidario/AboutProjectSo";
 import FeedbackSo from "./Solidario/FeedbackSo";
+import InfoParceiro from "../../../../components/ui/InfoParceiro";
 
 import Checkbox from "../../../../components/ui/Checkbox";
 import Button from "../../../../components/ui/Button";
@@ -100,7 +98,8 @@ function Register() {
     cidade: "",
     estado: "",
     complemento: "",
-
+    latitude: 0,
+    longitude: 0,
     // Métricas
     expectativaGeracao: 0,
     capacidadeBombona: 0,
@@ -242,6 +241,8 @@ function Register() {
       cidade: additionalData.cidade.trim(),
       estado: additionalData.estado.trim(),
       complemento: additionalData.complemento?.trim() || undefined,
+      latitude: additionalData ? additionalData.latitude : 0,
+      longitude:additionalData ? additionalData.longitude: 0,
 
       expectativaGeracao:
         Number(
@@ -353,13 +354,19 @@ function Register() {
   };
 
   const handleStepDataChange = (data: any) => {
-    if (data.expectativaGeracao !== undefined) {
-      data.capacidadeBombona = data.expectativaGeracao;
-    }
-    if (data.categoriaId !== undefined) {
-      data.categoria = data.categoriaId;
-    }
-    setAdditionalData((prev) => ({ ...prev, ...data }));
+    setAdditionalData((prev) => {
+      const normalizedData = { ...data };
+
+      if (data.expectativaGeracao !== undefined) {
+        normalizedData.capacidadeBombona = data.expectativaGeracao;
+      }
+
+      if (data.categoriaId !== undefined) {
+        normalizedData.categoria = Number(data.categoriaId);
+      }
+
+      return { ...prev, ...normalizedData };
+    });
   };
 
   const getFirstName = (fullName: string): string => {
@@ -383,46 +390,20 @@ function Register() {
         );
 
       case "info":
-        if (profile === "institucional")
-          return (
-            <InfoIns
-              onNext={onNext}
-              onBack={onBack}
-              step={displayStep}
-              totalSteps={totalSteps}
-              userName={userName}
-              onDataChange={handleStepDataChange}
-              initialData={additionalData}
-              profile={profile}
-            />
-          );
-        if (profile === "comunitario")
-          return (
-            <InfoCt
-              onNext={onNext}
-              onBack={onBack}
-              step={displayStep}
-              totalSteps={totalSteps}
-              userName={userName}
-              onDataChange={handleStepDataChange}
-              initialData={additionalData}
-              profile={profile}
-            />
-          );
-        if (profile === "solidario")
-          return (
-            <InfoSo
-              onNext={onNext}
-              onBack={onBack}
-              step={displayStep}
-              totalSteps={totalSteps}
-              userName={userName}
-              onDataChange={handleStepDataChange}
-              initialData={additionalData}
-              profile={profile}
-            />
-          );
-        return null;
+        if (!profile) return null;
+
+        return (
+          <InfoParceiro
+            onNext={onNext}
+            onBack={onBack}
+            step={displayStep}
+            totalSteps={totalSteps}
+            userName={userName}
+            onDataChange={handleStepDataChange}
+            initialData={additionalData}
+            profile={profile}
+          />
+        );
 
       case "comunicacao":
         return (

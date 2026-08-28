@@ -85,7 +85,7 @@ function MyPoints() {
                             </svg>
                             <input
                                 type="text"
-                                placeholder="Buscar por nome, endereço..."
+                                placeholder="Buscar por nome ou endereço..."
                                 value={busca}
                                 onChange={(e) => handleBuscaChange(e.target.value)}
                                 className="flex-1 outline-none text-sm bg-transparent text-black-200 placeholder:text-black-100"
