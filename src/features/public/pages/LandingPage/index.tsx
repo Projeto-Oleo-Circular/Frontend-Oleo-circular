@@ -320,56 +320,63 @@ export default function LandingPage() {
 
         {isAddPointModalOpen && (
           <div className="fixed inset-0 z-[2000] flex items-end justify-center bg-black/40 backdrop-blur-[2px] animate-in fade-in duration-200">
+            {/* Backdrop para fechar ao clicar fora */}
             <div className="absolute inset-0" onClick={() => setIsAddPointModalOpen(false)} />
 
-            <div className="relative w-full bg-white rounded-t-[32px] sm:rounded-[32px] px-6 sm:px-8 pt-4 sm:pt-8 pb-8 shadow-2xl z-10 animate-in slide-in-from-bottom sm:zoom-in-95 duration-300 max-w-4xl mx-auto">
+            {/* Card Bottom Sheet: 100% de largura, colado na base e arredondado apenas no topo */}
+            <div className="relative w-full max-w-none bg-white rounded-t-[32px] sm:rounded-t-[36px] rounded-b-none px-6 sm:px-12 md:px-16 pt-5 sm:pt-8 pb-8 shadow-2xl z-10 animate-in slide-in-from-bottom duration-300">
               
+              {/* Puxador decorativo */}
               <div 
                 onClick={() => setIsAddPointModalOpen(false)}
-                className="w-12 h-1.5 bg-white-300 rounded-full mx-auto mb-5 sm:hidden cursor-pointer hover:bg-white-400 transition-colors"
+                className="w-12 h-1.5 bg-white-300 rounded-full mx-auto mb-6 cursor-pointer hover:bg-white-400 transition-colors"
                 title="Fechar"
               />
 
-              <div className="flex items-center gap-4 mb-4 sm:mb-5">
-                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-green-100 flex items-center justify-center shrink-0">
-                  <img src="/assets/icons/ponto-de-coleta.svg" alt="Ícone Ponto" className="w-6 h-6 sm:w-7 sm:h-7" />
+              {/* Conteúdo interno centralizado/limitado para legibilidade em telas muito largas */}
+              <div className="max-w-3xl mx-auto">
+                <div className="flex items-center gap-4 mb-4 sm:mb-5">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-green-100 flex items-center justify-center shrink-0">
+                    <img src="/assets/icons/ponto-de-coleta.svg" alt="Ícone Ponto" className="w-6 h-6 sm:w-7 sm:h-7" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl sm:text-2xl font-bold text-black-primary leading-tight">
+                      Faça parte do mapa!
+                    </h2>
+                    <p className="text-xs sm:text-sm text-black-200 mt-0.5">
+                      Junte-se à nossa comunidade.
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="text-xl sm:text-2xl font-bold text-black-primary leading-tight">
-                    Faça parte do mapa!
-                  </h2>
-                  <p className="text-xs sm:text-sm text-black-200 mt-0.5">
-                    Junte-se à nossa comunidade.
-                  </p>
+
+                <p className="text-xs sm:text-sm text-black-200 mb-6 leading-relaxed">
+                  Para adicionar novos pontos de coleta e ajudar as pessoas a descartarem o óleo corretamente, é necessário ter uma conta. É rápido e 100% gratuito!
+                </p>
+
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button
+                    variant="primary"
+                    size="md"
+                    onClick={() => navigate("/register")}
+                    fullWidth
+                  >
+                    Criar Conta
+                  </Button>
+
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    onClick={() => navigate("/login")}
+                    fullWidth
+                  >
+                    Entrar na minha conta
+                  </Button>
                 </div>
-              </div>
-
-              <p className="text-xs sm:text-sm text-black-200 mb-6 leading-relaxed">
-                Para adicionar novos pontos de coleta e ajudar as pessoas a descartarem o óleo corretamente, é necessário ter uma conta. É rápido e 100% gratuito!
-              </p>
-
-              <div className="flex flex-col gap-3">
-                <Button
-                  variant="primary"
-                  size="md"
-                  onClick={() => navigate("/register")}
-                >
-                  Criar Conta
-                </Button>
-
-                <Button
-                  variant="secondary"
-                  size="md"
-                  onClick={() => navigate("/login")}
-                >
-                  Entrar na minha conta
-                </Button>
               </div>
 
             </div>
           </div>
         )}
-
       </main>
     </div>
   )
