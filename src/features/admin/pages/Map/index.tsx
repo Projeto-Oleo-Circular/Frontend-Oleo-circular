@@ -462,7 +462,7 @@ function MapPage() {
               className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
                 modoFiltro === "todos"
                   ? "bg-green-primary text-white"
-                  : "text-gray-600 hover:bg-gray-100"
+                  : "text-white-600 hover:bg-white-100"
               }`}
             >
               Todos
@@ -473,7 +473,7 @@ function MapPage() {
               className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
                 modoFiltro === "apenas-pontos"
                   ? "bg-green-primary text-white"
-                  : "text-gray-600 hover:bg-gray-100"
+                  : "text-white-600 hover:bg-white-100"
               }`}
             >
               Pontos
@@ -484,7 +484,7 @@ function MapPage() {
               className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
                 modoFiltro === "apenas-solicitacoes"
                   ? "bg-green-primary text-white"
-                  : "text-gray-600 hover:bg-gray-100"
+                  : "text-white-600 hover:bg-white-100"
               }`}
             >
               Solicitações
@@ -499,7 +499,7 @@ function MapPage() {
               className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors flex items-center gap-1 ${
                 camada === "mapa"
                   ? "bg-green-primary text-white"
-                  : "text-gray-600 hover:bg-gray-100"
+                  : "text-white-600 hover:bg-white-100"
               }`}
             >
               <Layers className="w-3.5 h-3.5" />
@@ -511,7 +511,7 @@ function MapPage() {
               className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors flex items-center gap-1 ${
                 camada === "satelite"
                   ? "bg-green-primary text-white"
-                  : "text-gray-600 hover:bg-gray-100"
+                  : "text-white-600 hover:bg-white-100"
               }`}
             >
               <Layers className="w-3.5 h-3.5" />
@@ -610,16 +610,16 @@ function MapPage() {
                             // Exibe status da primeira solicitação (ou lista)
                             ponto.solicitacoes.length > 0 ? (
                               <div className="mt-1">
-                                <span className="text-xs text-gray-500">Status da solicitação:</span>
+                                <span className="text-xs text-white-500">Status da solicitação:</span>
                                 <StatusBadge status={ponto.solicitacoes[0].status} />
                                 {ponto.solicitacoes.length > 1 && (
-                                  <span className="text-xs text-gray-400 ml-1">
+                                  <span className="text-xs text-white-400 ml-1">
                                     +{ponto.solicitacoes.length - 1} outras
                                   </span>
                                 )}
                               </div>
                             ) : (
-                              <p className="text-xs text-gray-400 mt-1">Sem solicitação</p>
+                              <p className="text-xs text-white-400 mt-1">Sem solicitação</p>
                             )
                           ) : (
                             // Exibe status do ponto
@@ -635,19 +635,19 @@ function MapPage() {
 
                           {/* Lista de solicitações (apenas no modo todos) */}
                           {modoFiltro === "todos" && ponto.solicitacoes.length > 0 && (
-                            <div className="mt-2 pt-2 border-t border-gray-200">
-                              <p className="text-xs font-bold text-gray-600">
+                            <div className="mt-2 pt-2 border-t border-white-200">
+                              <p className="text-xs font-bold text-white-600">
                                 Solicitações ({ponto.solicitacoes.length})
                               </p>
                               <ul className="mt-1 space-y-1 max-h-24 overflow-y-auto">
                                 {ponto.solicitacoes.slice(0, 3).map((sol) => (
-                                  <li key={sol.id} className="text-xs bg-gray-50 p-1 rounded flex justify-between items-center">
+                                  <li key={sol.id} className="text-xs bg-white-50 p-1 rounded flex justify-between items-center">
                                     <span>#{sol.id}</span>
                                     <StatusBadge status={sol.status} />
                                   </li>
                                 ))}
                                 {ponto.solicitacoes.length > 3 && (
-                                  <li className="text-xs text-gray-400 text-center">
+                                  <li className="text-xs text-white-400 text-center">
                                     +{ponto.solicitacoes.length - 3} outras
                                   </li>
                                 )}
@@ -691,7 +691,7 @@ function MapPage() {
                     <span className="w-3 h-3 rounded-full bg-blue-500" /> Com solicitação
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="w-3 h-3 rounded-full bg-gray-400" /> Sem solicitação
+                    <span className="w-3 h-3 rounded-full bg-white-400" /> Sem solicitação
                   </div>
                 </>
               ) : (
@@ -716,7 +716,7 @@ function MapPage() {
           {/* LISTA LATERAL */}
           <div className="lg:w-96 flex flex-col gap-4">
             <div className="bg-white rounded-xl shadow-sm p-4 max-h-96 overflow-y-auto">
-              <h2 className="font-bold text-gray-700 mb-2">
+              <h2 className="font-bold text-white-700 mb-2">
                 Pontos encontrados ({pontosFiltrados.length})
               </h2>
               <ul className="space-y-2">
@@ -728,13 +728,13 @@ function MapPage() {
                     <li
                       key={ponto.id}
                       className={`flex justify-between items-center p-2 rounded transition-colors ${
-                        selecionado ? "bg-green-50 border border-green-200" : "hover:bg-gray-50"
+                        selecionado ? "bg-green-50 border border-green-200" : "hover:bg-white-50"
                       } cursor-pointer`}
                       onClick={() => togglePontoSelecionado(ponto)}
                     >
                       <div className="min-w-0">
                         <p className="font-medium text-sm truncate">{ponto.nomePontoColeta}</p>
-                        <p className="text-xs text-gray-500 truncate">
+                        <p className="text-xs text-white-500 truncate">
                           {`${ponto.logradouro}, ${ponto.numero} - ${ponto.bairro}, ${ponto.cidade}`}
                         </p>
                         <div className="flex flex-wrap items-center gap-2 mt-1">
@@ -743,7 +743,7 @@ function MapPage() {
                             ponto.solicitacoes.length > 0 ? (
                               <StatusBadge status={ponto.solicitacoes[0].status} />
                             ) : (
-                              <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                              <span className="text-xs bg-white-100 text-white-600 px-2 py-0.5 rounded-full">
                                 Sem solicitação
                               </span>
                             )
@@ -780,7 +780,7 @@ function MapPage() {
                   );
                 })}
                 {!pontosFiltrados.length && (
-                  <li className="text-center text-gray-500 text-sm py-4">
+                  <li className="text-center text-white-500 text-sm py-4">
                     Nenhum ponto encontrado
                   </li>
                 )}
@@ -788,7 +788,7 @@ function MapPage() {
             </div>
 
             <div className="bg-white rounded-xl shadow-sm p-4">
-              <h2 className="font-bold text-gray-700 mb-2">
+              <h2 className="font-bold text-white-700 mb-2">
                 Pontos na rota ({selectedPontos.length})
               </h2>
               {selectedPontos.length ? (
@@ -810,7 +810,7 @@ function MapPage() {
                   ))}
                 </ul>
               ) : (
-                <p className="text-sm text-gray-400 mb-4">
+                <p className="text-sm text-white-400 mb-4">
                   Clique em um ponto para adicioná-lo à rota.
                 </p>
               )}
@@ -854,7 +854,7 @@ function MapPage() {
             <button
               type="button"
               onClick={() => setModalRotaAberta(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+              className="absolute top-4 right-4 text-white-400 hover:text-white-600"
             >
               <X className="w-6 h-6" />
             </button>
@@ -863,20 +863,20 @@ function MapPage() {
               Resumo da Rota
             </h2>
             <div className="grid grid-cols-2 gap-4 mb-6">
-              <div className="bg-gray-50 rounded-lg p-3">
-                <span className="text-sm text-gray-500">Distância total</span>
-                <p className="text-xl font-bold text-gray-800">
+              <div className="bg-white-50 rounded-lg p-3">
+                <span className="text-sm text-white-500">Distância total</span>
+                <p className="text-xl font-bold text-white-800">
                   {rota.distanciaKm.toFixed(2)} km
                 </p>
               </div>
-              <div className="bg-gray-50 rounded-lg p-3">
-                <span className="text-sm text-gray-500">Tempo estimado</span>
-                <p className="text-xl font-bold text-gray-800">
+              <div className="bg-white-50 rounded-lg p-3">
+                <span className="text-sm text-white-500">Tempo estimado</span>
+                <p className="text-xl font-bold text-white-800">
                   {Math.round(rota.duracaoMin)} min
                 </p>
               </div>
             </div>
-            <h3 className="font-semibold text-gray-700 mb-2">
+            <h3 className="font-semibold text-white-700 mb-2">
               Ordem de passagem ({rota.pontosOrdenados.length} pontos)
             </h3>
             <ol className="space-y-3 mb-6">
@@ -886,8 +886,8 @@ function MapPage() {
                     {index + 1}
                   </span>
                   <div>
-                    <p className="font-medium text-gray-800">{ponto.nomePontoColeta}</p>
-                    <p className="text-sm text-gray-500">
+                    <p className="font-medium text-white-800">{ponto.nomePontoColeta}</p>
+                    <p className="text-sm text-white-500">
                       {`${ponto.logradouro}, ${ponto.numero} - ${ponto.bairro}, ${ponto.cidade}${ponto.estado ? ` - ${ponto.estado}` : ""}`}
                     </p>
                   </div>

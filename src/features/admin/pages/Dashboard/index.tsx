@@ -217,12 +217,12 @@ interface StatCardProps {
 function StatCard({ icon, title, value, pct, compareLabel, color, hexColor }: StatCardProps) {
   const isUp = pct >= 0;
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+    <div className="bg-white rounded-xl border border-white-200 shadow-sm p-5">
       <div className={`flex items-center gap-2 text-sm font-semibold ${color}`}>
         {icon}
         <span className="uppercase tracking-wide">{title}</span>
       </div>
-      <div className="mt-2 text-2xl font-bold text-gray-900">{value}</div>
+      <div className="mt-2 text-2xl font-bold text-white-900">{value}</div>
       <div className="mt-1 flex items-center gap-1 text-xs">
         {isUp ? (
           <ArrowUp className="w-3.5 h-3.5 text-green-600" />
@@ -232,7 +232,7 @@ function StatCard({ icon, title, value, pct, compareLabel, color, hexColor }: St
         <span className={isUp ? "text-green-600" : "text-red-600"}>
           {Math.abs(pct)}%
         </span>
-        <span className="text-gray-400">{compareLabel}</span>
+        <span className="text-white-400">{compareLabel}</span>
       </div>
       <Sparkline color={hexColor} />
     </div>
@@ -463,14 +463,14 @@ function MapSection({ solicitacoes }: { solicitacoes: SolicitacaoColeta[] }) {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-white-200 overflow-hidden">
       <div className="p-4 border-b border-white-100 flex flex-wrap items-center gap-3">
-        <h2 className="font-bold text-gray-700">Mapa de Pontos de Coleta</h2>
+        <h2 className="font-bold text-white-700">Mapa de Pontos de Coleta</h2>
         <div className="flex flex-wrap items-center gap-2 ml-auto">
           {/* Filtros */}
-          <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+          <div className="flex gap-1 bg-white-100 rounded-lg p-1">
             <button
               onClick={() => setModoFiltro("todos")}
               className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                modoFiltro === "todos" ? "bg-green-primary text-white" : "text-gray-600 hover:bg-gray-200"
+                modoFiltro === "todos" ? "bg-green-primary text-white" : "text-white-600 hover:bg-white-200"
               }`}
             >
               Todos
@@ -478,7 +478,7 @@ function MapSection({ solicitacoes }: { solicitacoes: SolicitacaoColeta[] }) {
             <button
               onClick={() => setModoFiltro("apenas-pontos")}
               className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                modoFiltro === "apenas-pontos" ? "bg-green-primary text-white" : "text-gray-600 hover:bg-gray-200"
+                modoFiltro === "apenas-pontos" ? "bg-green-primary text-white" : "text-white-600 hover:bg-white-200"
               }`}
             >
               Pontos
@@ -486,18 +486,18 @@ function MapSection({ solicitacoes }: { solicitacoes: SolicitacaoColeta[] }) {
             <button
               onClick={() => setModoFiltro("apenas-solicitacoes")}
               className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                modoFiltro === "apenas-solicitacoes" ? "bg-green-primary text-white" : "text-gray-600 hover:bg-gray-200"
+                modoFiltro === "apenas-solicitacoes" ? "bg-green-primary text-white" : "text-white-600 hover:bg-white-200"
               }`}
             >
               Solicitações
             </button>
           </div>
           {/* Camadas */}
-          <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+          <div className="flex gap-1 bg-white-100 rounded-lg p-1">
             <button
               onClick={() => setCamada("mapa")}
               className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors flex items-center gap-1 ${
-                camada === "mapa" ? "bg-green-primary text-white" : "text-gray-600 hover:bg-gray-200"
+                camada === "mapa" ? "bg-green-primary text-white" : "text-white-600 hover:bg-white-200"
               }`}
             >
               <Layers className="w-3.5 h-3.5" /> Mapa
@@ -505,7 +505,7 @@ function MapSection({ solicitacoes }: { solicitacoes: SolicitacaoColeta[] }) {
             <button
               onClick={() => setCamada("satelite")}
               className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors flex items-center gap-1 ${
-                camada === "satelite" ? "bg-green-primary text-white" : "text-gray-600 hover:bg-gray-200"
+                camada === "satelite" ? "bg-green-primary text-white" : "text-white-600 hover:bg-white-200"
               }`}
             >
               <Layers className="w-3.5 h-3.5" /> Satélite
@@ -549,7 +549,7 @@ function MapSection({ solicitacoes }: { solicitacoes: SolicitacaoColeta[] }) {
           </Button>
         </div>
 
-        <div className="h-[400px] rounded-xl overflow-hidden bg-gray-100">
+        <div className="h-[400px] rounded-xl overflow-hidden bg-white-100">
           {carregandoPontos ? (
             <div className="flex items-center justify-center h-full">
               <div className="w-8 h-8 border-4 border-green-primary border-t-transparent rounded-full animate-spin" />
@@ -595,11 +595,11 @@ function MapSection({ solicitacoes }: { solicitacoes: SolicitacaoColeta[] }) {
                         {modoFiltro === "apenas-solicitacoes" ? (
                           ponto.solicitacoes.length > 0 ? (
                             <div>
-                              <span className="text-xs text-gray-500">Status:</span>
+                              <span className="text-xs text-white-500">Status:</span>
                               <StatusBadge status={ponto.solicitacoes[0].status} />
                             </div>
                           ) : (
-                            <p className="text-xs text-gray-400">Sem solicitação</p>
+                            <p className="text-xs text-white-400">Sem solicitação</p>
                           )
                         ) : (
                           <p>
@@ -879,27 +879,27 @@ function Dashboard() {
         <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Solicitações de Coleta */}
           <div className="bg-white rounded-xl shadow-sm border border-white-200 p-4">
-            <h2 className="font-bold text-gray-700 mb-3">Solicitações de Coleta</h2>
+            <h2 className="font-bold text-white-700 mb-3">Solicitações de Coleta</h2>
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-orange-50 rounded-lg p-3 border-l-4 border-orange-500">
                 <p className="text-xs text-orange-600 font-medium">Pendentes</p>
-                <p className="text-2xl font-bold text-gray-800">{stats.contagemStatus.AGUARDANDO}</p>
-                <p className="text-xs text-gray-500">Aguardando agendamento</p>
+                <p className="text-2xl font-bold text-white-800">{stats.contagemStatus.AGUARDANDO}</p>
+                <p className="text-xs text-white-500">Aguardando agendamento</p>
               </div>
               <div className="bg-blue-50 rounded-lg p-3 border-l-4 border-blue-500">
                 <p className="text-xs text-blue-600 font-medium">Agendadas</p>
-                <p className="text-2xl font-bold text-gray-800">{stats.contagemStatus.AGENDADA}</p>
-                <p className="text-xs text-gray-500">Próximos 3 dias</p>
+                <p className="text-2xl font-bold text-white-800">{stats.contagemStatus.AGENDADA}</p>
+                <p className="text-xs text-white-500">Próximos 3 dias</p>
               </div>
               <div className="bg-violet-50 rounded-lg p-3 border-l-4 border-violet-500">
                 <p className="text-xs text-violet-600 font-medium">Em Rota</p>
-                <p className="text-2xl font-bold text-gray-800">{stats.contagemStatus.EM_ROTA}</p>
-                <p className="text-xs text-gray-500">Coletas em andamento</p>
+                <p className="text-2xl font-bold text-white-800">{stats.contagemStatus.EM_ROTA}</p>
+                <p className="text-xs text-white-500">Coletas em andamento</p>
               </div>
               <div className="bg-green-50 rounded-lg p-3 border-l-4 border-green-500">
                 <p className="text-xs text-green-600 font-medium">Concluídas</p>
-                <p className="text-2xl font-bold text-gray-800">{stats.contagemStatus.CONCLUIDA}</p>
-                <p className="text-xs text-gray-500">Esta semana</p>
+                <p className="text-2xl font-bold text-white-800">{stats.contagemStatus.CONCLUIDA}</p>
+                <p className="text-xs text-white-500">Esta semana</p>
               </div>
             </div>
             <button
@@ -912,16 +912,16 @@ function Dashboard() {
 
           {/* Previsão de Coleta */}
           <div className="bg-white rounded-xl shadow-sm border border-white-200 p-4">
-            <h2 className="font-bold text-gray-700 mb-2">Previsão de Coleta</h2>
+            <h2 className="font-bold text-white-700 mb-2">Previsão de Coleta</h2>
             <p className="text-2xl font-bold text-green-primary">{formatLitros(stats.previsao.total)}</p>
-            <p className="text-xs text-gray-500">Próximos 7 dias</p>
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-xs text-white-500">Próximos 7 dias</p>
+            <p className="text-xs text-white-400 mt-1">
               Baseado nas solicitações {stats.previsao.detalhes.map(d => d.status.toLowerCase()).join(' e ')}
             </p>
             <div className="mt-4 space-y-2">
               {stats.previsao.detalhes.map((item) => (
-                <div key={item.status} className="flex justify-between text-sm border-b border-gray-100 pb-1">
-                  <span className="text-gray-600">{item.status}</span>
+                <div key={item.status} className="flex justify-between text-sm border-b border-white-100 pb-1">
+                  <span className="text-white-600">{item.status}</span>
                   <span className="font-semibold">{formatLitros(item.volume)} ({item.count} solicitações)</span>
                 </div>
               ))}
@@ -939,12 +939,12 @@ function Dashboard() {
           {/* Óleo Coletado (Histórico) - COM FILTRO E MÉTRICAS */}
           <div className="bg-white rounded-xl shadow-sm border border-white-200 p-4">
             <div className="flex flex-wrap items-center justify-between mb-3">
-              <h2 className="font-bold text-gray-700">Óleo Coletado (Histórico)</h2>
-              <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+              <h2 className="font-bold text-white-700">Óleo Coletado (Histórico)</h2>
+              <div className="flex gap-1 bg-white-100 rounded-lg p-1">
                 <button
                   onClick={() => setPeriodoHistorico(1)}
                   className={`px-2 py-1 text-xs font-medium rounded-md transition-colors ${
-                    periodoHistorico === 1 ? "bg-green-primary text-white" : "text-gray-600 hover:bg-gray-200"
+                    periodoHistorico === 1 ? "bg-green-primary text-white" : "text-white-600 hover:bg-white-200"
                   }`}
                 >
                   1M
@@ -952,7 +952,7 @@ function Dashboard() {
                 <button
                   onClick={() => setPeriodoHistorico(3)}
                   className={`px-2 py-1 text-xs font-medium rounded-md transition-colors ${
-                    periodoHistorico === 3 ? "bg-green-primary text-white" : "text-gray-600 hover:bg-gray-200"
+                    periodoHistorico === 3 ? "bg-green-primary text-white" : "text-white-600 hover:bg-white-200"
                   }`}
                 >
                   3M
@@ -960,7 +960,7 @@ function Dashboard() {
                 <button
                   onClick={() => setPeriodoHistorico(6)}
                   className={`px-2 py-1 text-xs font-medium rounded-md transition-colors ${
-                    periodoHistorico === 6 ? "bg-green-primary text-white" : "text-gray-600 hover:bg-gray-200"
+                    periodoHistorico === 6 ? "bg-green-primary text-white" : "text-white-600 hover:bg-white-200"
                   }`}
                 >
                   6M
@@ -968,7 +968,7 @@ function Dashboard() {
                 <button
                   onClick={() => setPeriodoHistorico(12)}
                   className={`px-2 py-1 text-xs font-medium rounded-md transition-colors ${
-                    periodoHistorico === 12 ? "bg-green-primary text-white" : "text-gray-600 hover:bg-gray-200"
+                    periodoHistorico === 12 ? "bg-green-primary text-white" : "text-white-600 hover:bg-white-200"
                   }`}
                 >
                   12M
@@ -989,16 +989,16 @@ function Dashboard() {
             </div>
 
             {/* Legenda com métricas */}
-            <div className="mt-3 flex flex-wrap items-center justify-between text-sm border-t border-gray-100 pt-3">
+            <div className="mt-3 flex flex-wrap items-center justify-between text-sm border-t border-white-100 pt-3">
               <div className="flex items-center gap-4">
-                <span className="text-gray-600">Total do período:</span>
-                <span className="font-bold text-gray-900">{formatLitros(metricasHistorico.total)}</span>
+                <span className="text-white-600">Total do período:</span>
+                <span className="font-bold text-white-900">{formatLitros(metricasHistorico.total)}</span>
               </div>
               <div className="flex items-center gap-4">
-                <span className="text-gray-600">Média mensal:</span>
-                <span className="font-bold text-gray-900">{formatLitros(metricasHistorico.media)}</span>
+                <span className="text-white-600">Média mensal:</span>
+                <span className="font-bold text-white-900">{formatLitros(metricasHistorico.media)}</span>
               </div>
-              <span className="text-xs text-gray-400">
+              <span className="text-xs text-white-400">
                 {dadosHistoricoFiltrados.length} {dadosHistoricoFiltrados.length === 1 ? "mês" : "meses"}
               </span>
             </div>
@@ -1006,7 +1006,7 @@ function Dashboard() {
 
           {/* Destinação do Óleo */}
           <div className="bg-white rounded-xl shadow-sm border border-white-200 p-4">
-            <h2 className="font-bold text-gray-700 mb-2">Destinação do Óleo</h2>
+            <h2 className="font-bold text-white-700 mb-2">Destinação do Óleo</h2>
             <div className="h-52">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
