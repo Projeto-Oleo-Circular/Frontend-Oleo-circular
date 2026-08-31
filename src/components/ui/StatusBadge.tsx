@@ -2,8 +2,8 @@ import type { StatusSolicitacao } from "../../services/AdminSolicitacaoService";
 // ============================================================ // STATUS DE SOLICITAÇÃO // ============================================================ 
 const STATUS_SOLICITACAO_CONFIG: Record< StatusSolicitacao, { label: string; className: string; } > = {
      AGUARDANDO: { label: "Aguardando", className: "bg-orange-100 text-orange-600", },
-     AGENDADA: { label: "Agendada", className: "bg-blue-100 text-blue-600", }, EM_ROTA: { label: "Em Rota", className: "bg-violet-100 text-violet-600", }, 
-     CONCLUIDA: { label: "Concluída", className: "bg-green-100 text-green-700", }, }; 
+     AGENDADA: { label: "Agendada", className: "bg-blue-100 text-blue-600", }, EM_ROTA: { label: "Em Rota", className: "bg-violet-100 text-violet-primary", }, 
+     CONCLUIDA: { label: "Concluída", className: "bg-green-100 text-green-600", }, }; 
 // ============================================================ // STATUS DE APROVAÇÃO - PONTO DE COLETA // ============================================================ 
 export type StatusAprovacaoPonto = | "PENDENTE" | "APROVADO" | "REJEITADO";
 const STATUS_APROVACAO_PONTO_CONFIG: Record< StatusAprovacaoPonto, { label: string; className: string; } > = { 

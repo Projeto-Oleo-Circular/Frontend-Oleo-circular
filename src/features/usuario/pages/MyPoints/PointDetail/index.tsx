@@ -1,4 +1,4 @@
-import { useState, useEffect, type ChangeEvent } from "react"
+import { useState, useEffect, useRef, type ChangeEvent } from "react"
 import { useNavigate, useParams, useLocation } from "react-router-dom"
 import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from "react-leaflet"
 import L from "leaflet"
@@ -79,6 +79,11 @@ function DraggableMarker({
     )
 }
 
+function buildQuery(form: { logradouro: string; numero: string; bairro: string; cidade: string; estado: string }): string {
+    const ruaComNumero = form.numero ? `${form.logradouro}, ${form.numero}` : form.logradouro
+    return [ruaComNumero, form.bairro, form.cidade, form.estado].filter(Boolean).join(", ")
+}
+
 function PointDetail() {
     const { id } = useParams<{ id: string }>()
     const navigate = useNavigate()
@@ -93,6 +98,9 @@ function PointDetail() {
     const [editando, setEditando] = useState(false)
     const [modalExclusaoAberta, setModalExclusaoAberta] = useState(false)
     const [excluindo, setExcluindo] = useState(false)
+
+    const lastQueryRef = useRef<string>("")
+    const debounceTimerRef = useRef<number | null>(null)
 
     const [form, setForm] = useState({
         nome: "",
@@ -144,9 +152,9 @@ function PointDetail() {
         carregar()
 
         const state = location.state as { editar?: boolean; abrirExclusao?: boolean } | null
-        if (state?.editar) setEditando(true)
-        if (state?.abrirExclusao) setModalExclusaoAberta(true)
-    }, [id])
+            if (state?.editar) setEditando(true)
+            if (state?.abrirExclusao) setModalExclusaoAberta(true)
+        }, [id])
 
     const formatCep = (value: string): string => {
         const cleaned = value.replace(/\D/g, "").slice(0, 8)
@@ -189,10 +197,6 @@ function PointDetail() {
                         cidade: "",
                         estado: "",
                     }))
-
-                    if (novoForm.logradouro && novoForm.cidade) {
-                        geocodificarEndereco(`${novoForm.logradouro}, ${novoForm.cidade}`)
-                    }
                 } catch (error) {
                     setFieldErrors((prev) => ({ ...prev, cep: "CEP não encontrado" }))
                 } finally {
@@ -213,69 +217,81 @@ function PointDetail() {
     }
 
     const geocodificarCoordenadas = async (lat: number, lng: number) => {
-    setBuscandoEndereco(true)
-    try {
-        const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`,
-            { headers: { "User-Agent": "OleoCircularApp/1.0" } }
-        )
-        const data = await response.json()
-        if (data && data.address) {
-            const addr = data.address
-            setForm((prev) => ({
-                ...prev,
-                logradouro: addr.road || addr.pedestrian || prev.logradouro,
-                bairro: addr.suburb || addr.neighbourhood || prev.bairro,
-                cidade: addr.city || addr.town || addr.village || prev.cidade,
-                estado: normalizarUF(addr.state) || prev.estado,
-                cep: addr.postcode ? formatCep(addr.postcode) : prev.cep,
-            }))
-        }
-    } catch (error) {
-        console.error("Erro ao converter coordenadas em endereço:", error)
-    } finally {
-        setBuscandoEndereco(false)
-    }
-}
+        // Marca a posição atual como já sincronizada antes de atualizar o form,
+        // pra o useEffect de digitação não disparar de novo pro mesmo endereço
+        setBuscandoEndereco(true)
+        try {
+            const response = await fetch(
+                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`,
+                { headers: { "User-Agent": "OleoCircularApp/1.0" } }
+            )
+            const data = await response.json()
+            if (data && data.address) {
+                const addr = data.address
+                const novoEndereco = {
+                    logradouro: addr.road || addr.pedestrian || form.logradouro,
+                    numero: form.numero,
+                    bairro: addr.suburb || addr.neighbourhood || form.bairro,
+                    cidade: addr.city || addr.town || addr.village || form.cidade,
+                    estado: normalizarUF(addr.state) || form.estado,
+                }
+                lastQueryRef.current = buildQuery(novoEndereco)
 
-        // 2. Handler para a mudança do pino no mapa
+                setForm((prev) => ({
+                    ...prev,
+                    ...novoEndereco,
+                    cep: addr.postcode ? formatCep(addr.postcode) : prev.cep,
+                }))
+            }
+        } catch (error) {
+            console.error("Erro ao converter coordenadas em endereço:", error)
+        } finally {
+            setBuscandoEndereco(false)
+        }
+    }
+
         const handlePosicaoChange = (novaPosicao: [number, number]) => {
             setPosicao(novaPosicao)
+            setPosicaoDefinida(true)
             if (editando) {
                 geocodificarCoordenadas(novaPosicao[0], novaPosicao[1])
             }
         }
 
-        // 3. Atualize a função geocodificarEndereco (Endereço -> Coordenadas)
-        const geocodificarEndereco = async (query: string) => {
-            if (!query.trim()) return
-            setBuscandoEndereco(true)
-            try {
-                const response = await fetch(
-                    `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`,
-                    { headers: { "User-Agent": "OleoCircularApp/1.0" } }
-                )
-                const data = await response.json()
-                if (data && data.length > 0) {
-                    const { lat, lon } = data[0]
-                    setPosicao([parseFloat(lat), parseFloat(lon)])
-                    setPosicaoDefinida(true)
-                }
-            } catch (error) {
-                console.error("Erro ao geocodificar endereço:", error)
-            } finally {
-                setBuscandoEndereco(false)
-            }
-        }
-
-        // 4. Dispare a busca no mapa em campos de texto chave ao perder o foco (onBlur)
-        const handleInputBlur = () => {
+        useEffect(() => {
             if (!editando) return
-            const { logradouro, cidade, estado } = form
-            if (logradouro && cidade) {
-                geocodificarEndereco(`${logradouro}, ${cidade} ${estado}`.trim())
+            if (!form.logradouro || !form.cidade || !form.estado) return
+
+            const query = buildQuery(form)
+            if (!query || query === lastQueryRef.current) return
+
+            if (debounceTimerRef.current) window.clearTimeout(debounceTimerRef.current)
+
+            debounceTimerRef.current = window.setTimeout(async () => {
+                setBuscandoEndereco(true)
+                try {
+                    const response = await fetch(
+                        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`,
+                        { headers: { "User-Agent": "OleoCircularApp/1.0" } }
+                    )
+                    const data = await response.json()
+                    if (data && data.length > 0) {
+                        lastQueryRef.current = query
+                        setPosicao([parseFloat(data[0].lat), parseFloat(data[0].lon)])
+                        setPosicaoDefinida(true)
+                    }
+                } catch (error) {
+                    console.error("Erro ao geocodificar endereço digitado:", error)
+                } finally {
+                    setBuscandoEndereco(false)
+                }
+            }, 800)
+
+            return () => {
+                if (debounceTimerRef.current) window.clearTimeout(debounceTimerRef.current)
             }
-        }
+    }, [editando, form.logradouro, form.numero, form.bairro, form.cidade, form.estado])
+
 
     const validateForm = (): boolean => {
         let hasError = false
@@ -351,9 +367,7 @@ function PointDetail() {
                 cidade: form.cidade.trim(),
                 estado: normalizarUF(form.estado.trim()),
                 expectativaGeracao: Number(form.expectativaGeracao),
-                //latitude: posicao[0],
-                //longitude: posicao[1],
-                // ^ ativa quando o back-end aceitar esses campos
+                
             })
             setPonto(atualizado)
             setEditando(false)
@@ -376,9 +390,7 @@ function PointDetail() {
             cidade: ponto.cidade || "",
             estado: ponto.estado || "",
             expectativaGeracao: String(ponto.expectativaGeracao || ""),
-            //latitude: posicao[0],
-            //longitude: posicao[1],
-            // ^ ativa quando o back-end aceitar esses campos
+            
         })
         setFieldErrors({
             nome: "",
@@ -487,7 +499,6 @@ function PointDetail() {
                             name="cep"
                             value={form.cep}
                             onChange={handleChange}
-                            onBlur={handleInputBlur}
                             noBorder
                             disabled={!editando || buscandoEndereco}
                             error={fieldErrors.cep}
@@ -512,7 +523,6 @@ function PointDetail() {
                             name="cidade"
                             value={form.cidade}
                             onChange={handleChange}
-                            onBlur={handleInputBlur}
                             noBorder
                             disabled={!editando || buscandoEndereco}
                             error={fieldErrors.cidade}
@@ -525,7 +535,6 @@ function PointDetail() {
                             name="logradouro"
                             value={form.logradouro}
                             onChange={handleChange}
-                            onBlur={handleInputBlur}
                             noBorder
                             disabled={!editando || buscandoEndereco}
                             error={fieldErrors.logradouro}
@@ -538,7 +547,6 @@ function PointDetail() {
                             name="bairro"
                             value={form.bairro}
                             onChange={handleChange}
-                            onBlur={handleInputBlur}
                             noBorder
                             disabled={!editando || buscandoEndereco}
                             error={fieldErrors.bairro}

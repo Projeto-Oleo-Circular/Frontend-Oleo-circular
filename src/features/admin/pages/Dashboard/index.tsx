@@ -635,7 +635,7 @@ function MapSection({ solicitacoes }: { solicitacoes: SolicitacaoColeta[] }) {
           </div>
           {modoFiltro === "apenas-solicitacoes" && (
             <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-gray-400" /> Sem solicitação
+              <span className="w-3 h-3 rounded-full bg-white-400" /> Sem solicitação
             </div>
           )}
         </div>
