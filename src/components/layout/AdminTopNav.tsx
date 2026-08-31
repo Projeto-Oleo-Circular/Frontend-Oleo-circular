@@ -8,7 +8,6 @@ const NAV_ITEMS = [
   { to: "/admin/map", label: "Mapa", iconSrc: "/assets/icons/map.svg" },
   { to: "/admin/my-points", label: "Pontos", iconSrc: "/assets/icons/icon-pontos.svg" },
   { to: "/admin/partners-approval", label: "Parceiros", iconSrc: "/assets/icons/profile.svg" },
-
 ];
 
 function AdminTopNav() {
@@ -108,13 +107,8 @@ function AdminTopNav() {
 
         <div className="relative" ref={menuRef}>
           <button
-            onClick={() => {
-              if (window.innerWidth < 768) {
-                handleProfile();
-              } else {
-                setIsMenuOpen(!isMenuOpen);
-              }
-            }}
+            // ALTERAÇÃO: Removida a verificação de tela. Agora sempre abre o menu (pop-up).
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="focus:outline-none focus:ring-2 focus:ring-green-primary rounded-full transition-all duration-200 hover:ring-2 hover:ring-green-primary cursor-pointer"
             aria-label="Menu do usuário"
           >
@@ -124,7 +118,8 @@ function AdminTopNav() {
           </button>
 
           {isMenuOpen && (
-            <div className="hidden md:block absolute right-0 mt-2 w-48 bg-white-primary rounded-xl shadow-lg border border-white-100 py-1 z-[100] animate-slide-down">
+            // ALTERAÇÃO: Removido o "hidden md:block" para que o pop-up apareça também no celular
+            <div className="absolute right-0 mt-2 w-48 bg-white-primary rounded-xl shadow-lg border border-white-100 py-1 z-[100] animate-slide-down">
               <button
                 onClick={handleProfile}
                 className="w-full flex items-center gap-3 px-4 py-3 text-sm text-black-200 hover:bg-green-100 hover:text-green-primary transition-colors duration-150 cursor-pointer"

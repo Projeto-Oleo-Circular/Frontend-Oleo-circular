@@ -1,6 +1,6 @@
 import { useState, useEffect, type ChangeEvent } from "react"
 import { useNavigate } from "react-router-dom"
-import HeaderApp from "../../../../components/layout/HeaderApp"
+import AdminTopNav from "../../../../components/layout/AdminTopNav"
 import Button from "../../../../components/ui/Button"
 import Input from "../../../../components/ui/Input"
 import useToast from "../../../../hooks/useToast"
@@ -127,7 +127,7 @@ function Profile() {
 
     return (
         <div className="flex flex-col h-full overflow-hidden bg-background relative">
-            <HeaderApp userName={nomeExibicao} />
+            <AdminTopNav />
 
             <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
                 <div className="w-full max-w-md mx-auto flex flex-col gap-6 pb-8">
