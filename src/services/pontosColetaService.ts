@@ -22,19 +22,21 @@ export interface PontoColeta {
 }
 
 export interface CriarPontoColetaPayload {
-  nomePontoColeta: string;
-  categoria: number;
-  cep: string;
-  logradouro: string;
-  numero: string;
-  bairro: string;
-  cidade: string;
-  estado?: string;
-  complemento?: string | null;
-  expectativaGeracao: number;
-  capacidadeBombona?: number;
-  nivelAtualPct?: number;
-  statusBombona?: string;
+    nomePontoColeta: string;
+    categoria: number;
+    cep: string;
+    logradouro: string;
+    numero: string;
+    bairro: string;
+    cidade: string;
+    estado?: string;
+    complemento?: string | null;
+    expectativaGeracao: number;
+    capacidadeBombona?: number;
+    nivelAtualPct?: number;
+    statusBombona?: string;
+    latitude?: string;
+    longitude?: string;
 }
 
 export interface AtualizarNivelBombonaRequest {
@@ -79,11 +81,10 @@ export const pontosColetaService = {
     },
 
     /**
-     * DELETE /pontos-coleta/:id
-     * ⚠️ Suposição por convenção REST — confirmar com a colega se a rota existe
-     * de verdade em pontoColeta.routes antes de usar em produção.
+     * DELETE /parceiros/pontos-coleta/:id
+     * Exclui um ponto de coleta pertencente ao parceiro autenticado
      */
     async excluirPontoColeta(id: number): Promise<void> {
-        await api.delete(`/pontos-coleta/${id}`);
+        await api.delete(`/parceiros/pontos-coleta/${id}`);
     },
 };

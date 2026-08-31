@@ -300,7 +300,9 @@ function IdentifyPoint({ categoria, totalSteps, onBack }: Props) {
             capacidadeBombona: Number(form.expectativaGeracao) || 50,
             nivelAtualPct: 0,
             statusBombona: "VAZIA",
-            complemento: form.complemento?.trim() || ""
+            complemento: form.complemento?.trim() || "",
+            latitude: String(posicao[0]),
+            longitude: String(posicao[1])
         }
 
         try {
