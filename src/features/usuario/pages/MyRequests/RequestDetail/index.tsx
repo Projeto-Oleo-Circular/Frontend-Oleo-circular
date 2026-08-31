@@ -28,7 +28,6 @@ function RequestDetail() {
     const { addToast } = useToast()
 
     const [solicitacao, setSolicitacao] = useState<any>(null)
-    // const [contato, setContato] = useState<{ telefone?: string; email?: string }>({})
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
@@ -38,13 +37,6 @@ function RequestDetail() {
                     solicitacaoColetaService.listarSolicitacoes(),
                     authService.getUserData().catch(() => null),
                 ])
-
-//                 if (userData) {
-//                     setContato({ 
-//                         telefone: userData.telefone || "-", 
-//                         email: userData.email || "-" 
-//                     })
-// }
 
                 const encontrada = todas.find((s: any) => String(s.id) === id)
                 if (!encontrada) {
@@ -98,20 +90,19 @@ function RequestDetail() {
                     </div>
 
                     <div className={`rounded-2xl p-5 flex flex-col items-center text-center gap-2 ${status.bg}`}>
-                        <h2 className="text-lg font-bold text-black-primary">
+                        <h2 className={`text-lg font-bold ${status.text}`}>
                             {getNomePonto(solicitacao.pontoColeta)}
                         </h2>
                         <p className={`text-xs flex items-center gap-1 ${status.text}`}>
                             {getEnderecoPonto(solicitacao.pontoColeta)}
                         </p>
-                        <span className={`inline-flex items-center gap-1 text-xs font-bold px-3 py-1 rounded-full bg-white-primary ${status.text}`}>
+                        <span className={`inline-flex items-center gap-1 text-xs font-bold px-3 py-1 rounded-full ${status.badgeBg} ${status.text}`}>
                             {status.label}
                         </span>
                     </div>
 
                     <div className="bg-white rounded-xl shadow-sm overflow-hidden">
                         
-                        {/* # lembrar de colocar os nomes da labels n da pra identidficar as informações quando chegam nos litros de oleo */}
                         <Input
                             type="text" 
                             placeholder="Tipo de estabelecimento" 
@@ -177,24 +168,6 @@ function RequestDetail() {
                             onChange={() => {}}
                             noBorder />
                         <hr className="border-white-100" />
-{/* nem sei da onde vc ta puzando email e contato e nem sei se precisa pra essa tela */}
-                        {/* <Input
-                            type="text"
-                            placeholder="Telefone"
-                            value={contato.telefone || "-"}
-                            disabled
-                            onChange={() => {}}
-                            noBorder />
-                        <hr className="border-white-100" />
-
-                        <Input
-                            type="text"
-                            placeholder="E-mail"
-                            value={contato.email || "-"}
-                            disabled
-                            onChange={() => {}}
-                            noBorder />
-                        <hr className="border-white-100" /> */}
 
                         <Input
                             type="text"
@@ -224,7 +197,13 @@ function RequestDetail() {
                         {solicitacao.observacoes && (
                             <>
                                 <hr className="border-white-100" />
-                                <Input as="textarea" placeholder="Observações" value={solicitacao.observacoes} disabled onChange={() => {}} />
+                                <Input as="textarea" 
+                                placeholder="Observações" 
+                                value={solicitacao.observacoes} 
+                                disabled 
+                                onChange={() => {}} 
+                                noBorder
+                                />
                             </>
                         )}
                     </div>

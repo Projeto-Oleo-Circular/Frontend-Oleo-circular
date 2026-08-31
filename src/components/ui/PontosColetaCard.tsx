@@ -70,8 +70,8 @@ function PontosColetaCard({ pontos, currentIndex, onAnterior, onProximo, loading
                     aria-label="Ponto de coleta anterior"
                     className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${
                         currentIndex === 0
-                            ? "bg-white-500 text-white-400 cursor-not-allowed"
-                            : "bg-white-100 text-white-600 hover:bg-white-200"
+                            ? "bg-white-300 text-white-primary cursor-not-allowed"
+                            : "bg-green-primary text-white-primary hover:bg-green-hover"
                     }`}
                 >
                     <img src="/assets/icons/arrow-left.svg" alt="Anterior" className="w-5 h-5" />
@@ -88,7 +88,7 @@ function PontosColetaCard({ pontos, currentIndex, onAnterior, onProximo, loading
                     aria-label="Próximo ponto de coleta"
                     className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${
                         currentIndex === total - 1
-                            ? "bg-white-500 text-white-400 cursor-not-allowed"
+                            ? "bg-white-300 text-white-400 cursor-not-allowed"
                             : "bg-green-primary text-white hover:bg-green-hover"
                     }`}
                 >
