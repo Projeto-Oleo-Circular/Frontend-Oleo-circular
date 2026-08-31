@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useLocation } from "react-router-dom"
 import HeaderApp from "../../../../components/layout/HeaderApp"
 import Button from "../../../../components/ui/Button"
 import { authService } from "../../../../services/authService"
@@ -29,6 +29,7 @@ function InformarNivelBombona() {
     const [loading, setLoading] = useState(false)
     const [loadingPontos, setLoadingPontos] = useState(true)
     const [pontoSelecionado, setPontoSelecionado] = useState<PontoColeta | null>(null)
+    const location = useLocation()
 
     useEffect(() => {
         const carregarDadosUsuario = async () => {
@@ -51,20 +52,26 @@ function InformarNivelBombona() {
             try {
                 const data = await pontosColetaService.listarMeusPontos()
                 if (data.length > 0) {
-                    setPontoSelecionado(data[0])
-                    if (data[0].nivelAtualPct) {
-                        setNivelSelecionado(data[0].nivelAtualPct)
+
+                    const pontoPassado = location.state?.ponto;
+                    const pontoCorreto = pontoPassado 
+                        ? data.find(p => p.id === pontoPassado.id) || data[0]
+                        : data[0];
+
+                    setPontoSelecionado(pontoCorreto)
+                    if (pontoCorreto.nivelAtualPct !== undefined && pontoCorreto.nivelAtualPct !== null) {
+                            setNivelSelecionado(pontoCorreto.nivelAtualPct)
+                        }
                     }
+                } catch (error) {
+                    console.error("Erro ao carregar pontos de coleta:", error)
+                    addToast("Erro ao carregar dados da bombona", "error")
+                } finally {
+                    setLoadingPontos(false)
                 }
-            } catch (error) {
-                console.error("Erro ao carregar pontos de coleta:", error)
-                addToast("Erro ao carregar dados da bombona", "error")
-            } finally {
-                setLoadingPontos(false)
             }
-        }
         carregarPontos()
-    }, [])
+    }, [location.state, addToast])
 
     const handleNivelSelect = (value: number) => {
         setNivelSelecionado(value)
@@ -89,7 +96,7 @@ const handleSalvar = async () => {
         });
 
         addToast("Nível da bombona atualizado com sucesso!", "success");
-        navigate("/home");
+        navigate("/home", { state: { updatedPontoId: pontoSelecionado.id } });
     } catch (error) {
         console.error("Erro ao salvar nível:", error);
         addToast("Erro ao atualizar o nível da bombona", "error");
@@ -217,7 +224,7 @@ const handleSalvar = async () => {
                         </Button>
 
                         <Button
-                            onClick={() => navigate("/home")}
+                            onClick={() => navigate("/home", { state: { updatedPontoId: pontoSelecionado.id } })}
                             variant="secondary"
                             fullWidth
                         >

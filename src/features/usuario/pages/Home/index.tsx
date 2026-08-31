@@ -42,13 +42,22 @@ function Home() {
             try {
                 const data = await pontosColetaService.listarMeusPontos()
                 setPontos(data)
+                
+                const updatedPontoId = location.state?.updatedPontoId;
+                if (updatedPontoId) {
+                    const index = data.findIndex(p => p.id === updatedPontoId);
+                    if (index !== -1) {
+                        setCurrentIndex(index);
+                    }
+                }
             } catch (error) {
+                console.error("Erro ao carregar pontos:", error)
             } finally {
                 setLoadingPontos(false)
             }
         }
         carregarPontos()
-    }, [])
+    }, [location.state])
 
     const pontoAtual = pontos[currentIndex]
 

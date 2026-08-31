@@ -17,10 +17,9 @@ function ToastContainer({ toasts = [], onClose }: Props) {
   if (toasts.length === 0) return null;
 
   return createPortal(
-    // Posiciona no topo e centraliza horizontalmente
     <div className="fixed top-5 left-0 right-0 z-[9999] pointer-events-none flex flex-col items-center gap-3 px-4">
       <div className="w-full max-w-sm sm:max-w-md flex flex-col gap-3">
-        {toasts.map((toast) => (
+        {toasts.slice(0, 1).map((toast) => (
           <div key={toast.id} className="pointer-events-auto w-full">
             <Toast
               message={toast.message}

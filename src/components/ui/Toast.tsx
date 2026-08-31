@@ -7,7 +7,7 @@ export interface ToastProps {
   duration?: number
 }
 
-function Toast({ message, type, onClose, duration = 4000 }: ToastProps) {
+function Toast({ message, type, onClose, duration = 3000 }: ToastProps) {
   const [progress, setProgress] = useState(100)
   const [isVisible, setIsVisible] = useState(true)
 

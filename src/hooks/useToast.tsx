@@ -40,7 +40,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const duration =
         typeof optionsOrMessage === "object" && optionsOrMessage.duration
           ? optionsOrMessage.duration
-          : 4000;
+          : 3000;
 
       setToasts((prev) => [...prev, { id, message, type, duration }]);
     },

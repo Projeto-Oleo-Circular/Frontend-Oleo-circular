@@ -28,11 +28,10 @@ function BombonaCard({ ponto, loading }: BombonaCardProps) {
     const nivelAtual = ponto.nivelAtualPct ?? 0
     const temNivelInformado = nivelAtual > 0 || ponto.statusBombona !== "VAZIA"
 
-    // Simular data da última atualização (depois virá da API)
     const dataUltimaAtualizacao = ponto.atualizadoEm ? new Date(ponto.atualizadoEm).toLocaleDateString() : "—"
 
     const handleInformarNivel = () => {
-        navigate("/informar-nivel")
+        navigate("/informar-nivel", { state: { ponto }})
     }
 
     return (
