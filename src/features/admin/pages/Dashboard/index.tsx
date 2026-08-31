@@ -4,18 +4,9 @@ import {
   BarChart3,
   Users,
   MapPin,
-  ArrowUp,
-  ArrowDown,
-  Leaf,
-  Droplet,
-  Award,
   Layers,
   Search,
   ExternalLink,
-  Clock,
-  CalendarCheck,
-  Truck,
-  CheckCircle2,
 } from "lucide-react";
 import {
   MapContainer,
@@ -45,6 +36,7 @@ import Button from "../../../../components/ui/Button";
 import Input from "../../../../components/ui/Input";
 import StatusBadge from "../../../../components/ui/StatusBadge";
 import useToast from "../../../../hooks/useToast";
+import SummaryCard from "../../../../components/ui/SummaryCard";
 import {
   adminSolicitacoesService,
   type SolicitacaoColeta,
@@ -59,7 +51,7 @@ import {
 } from "../../../../services/adminPontosService";
 import Footer from "../../../../components/layout/Footer";
 
-// ---------- HELPERS DE DATA ----------
+
 function startOfDay(d: Date) {
   const x = new Date(d);
   x.setHours(0, 0, 0, 0);
@@ -103,7 +95,6 @@ function formatLitros(v: number) {
   return `${v.toLocaleString("pt-BR")} L`;
 }
 
-// ---------- BUSCAS ----------
 async function fetchTodasConcluidas(): Promise<SolicitacaoColeta[]> {
   const limit = 200;
   let page = 1;
@@ -188,58 +179,6 @@ async function fetchTotalPontosAprovados(): Promise<number> {
   return resp.total;
 }
 
-// ---------- SPARKLINE ----------
-function Sparkline({ color }: { color: string }) {
-  return (
-    <svg viewBox="0 0 200 40" className="w-full h-10 mt-3" preserveAspectRatio="none">
-      <path
-        d="M0,28 C15,20 30,32 45,24 C60,16 75,30 90,22 C105,14 120,26 135,18 C150,10 165,24 180,16 C190,12 195,14 200,10"
-        fill="none"
-        stroke={color}
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-      <circle cx="0" cy="28" r="3" fill={color} />
-    </svg>
-  );
-}
-
-interface StatCardProps {
-  icon: React.ReactNode;
-  title: string;
-  value: string;
-  pct: number;
-  compareLabel: string;
-  color: string;
-  hexColor: string;
-}
-
-function StatCard({ icon, title, value, pct, compareLabel, color, hexColor }: StatCardProps) {
-  const isUp = pct >= 0;
-  return (
-    <div className="bg-white rounded-xl border border-white-200 shadow-sm p-5">
-      <div className={`flex items-center gap-2 text-sm font-semibold ${color}`}>
-        {icon}
-        <span className="uppercase tracking-wide">{title}</span>
-      </div>
-      <div className="mt-2 text-2xl font-bold text-white-900">{value}</div>
-      <div className="mt-1 flex items-center gap-1 text-xs">
-        {isUp ? (
-          <ArrowUp className="w-3.5 h-3.5 text-green-600" />
-        ) : (
-          <ArrowDown className="w-3.5 h-3.5 text-red-600" />
-        )}
-        <span className={isUp ? "text-green-600" : "text-red-600"}>
-          {Math.abs(pct)}%
-        </span>
-        <span className="text-white-400">{compareLabel}</span>
-      </div>
-      <Sparkline color={hexColor} />
-    </div>
-  );
-}
-
-// ---------- COMPONENTE DO MAPA (versão simplificada, sem rota) ----------
 interface ParceiroAdmin {
   id: number;
   razaoSocial: string;
@@ -265,12 +204,6 @@ const numeroValido = (valor: unknown): number | null => {
   if (valor === null || valor === undefined || valor === "") return null;
   const numero = Number(String(valor).replace(",", "."));
   return Number.isFinite(numero) ? numero : null;
-};
-
-const normalizarStatus = (valor: unknown): StatusAprovacao => {
-  const status = String(valor || "PENDENTE").toUpperCase();
-  if (status === "APROVADO" || status === "REJEITADO") return status;
-  return "PENDENTE";
 };
 
 const BRASIL_BOUNDS = { latMin: -34, latMax: 6, lngMin: -75, lngMax: -28 };
@@ -463,49 +396,58 @@ function MapSection({ solicitacoes }: { solicitacoes: SolicitacaoColeta[] }) {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-white-200 overflow-hidden">
       <div className="p-4 border-b border-white-100 flex flex-wrap items-center gap-3">
-        <h2 className="font-bold text-white-700">Mapa de Pontos de Coleta</h2>
+        <h2 className="font-bold text-black-primary">Mapa de Pontos de Coleta</h2>
         <div className="flex flex-wrap items-center gap-2 ml-auto">
-          {/* Filtros */}
           <div className="flex gap-1 bg-white-100 rounded-lg p-1">
             <button
               onClick={() => setModoFiltro("todos")}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                modoFiltro === "todos" ? "bg-green-primary text-white" : "text-white-600 hover:bg-white-200"
+              className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${
+                modoFiltro === "todos" 
+                  ? "bg-green-400 text-white-primary shadow-sm" 
+                  : "text-white-600 hover:bg-white-200 hover:text-black-200"
               }`}
             >
               Todos
             </button>
             <button
               onClick={() => setModoFiltro("apenas-pontos")}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                modoFiltro === "apenas-pontos" ? "bg-green-primary text-white" : "text-white-600 hover:bg-white-200"
+              className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${
+                modoFiltro === "apenas-pontos" 
+                  ? "bg-green-400 text-white-primary shadow-sm" 
+                  : "text-white-600 hover:bg-white-200 hover:text-black-200"
               }`}
             >
               Pontos
             </button>
             <button
               onClick={() => setModoFiltro("apenas-solicitacoes")}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                modoFiltro === "apenas-solicitacoes" ? "bg-green-primary text-white" : "text-white-600 hover:bg-white-200"
+              className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${
+                modoFiltro === "apenas-solicitacoes" 
+                  ? "bg-green-400 text-white-primary shadow-sm" 
+                  : "text-white-600 hover:bg-white-200 hover:text-black-200"
               }`}
             >
               Solicitações
             </button>
           </div>
-          {/* Camadas */}
+
           <div className="flex gap-1 bg-white-100 rounded-lg p-1">
             <button
               onClick={() => setCamada("mapa")}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors flex items-center gap-1 ${
-                camada === "mapa" ? "bg-green-primary text-white" : "text-white-600 hover:bg-white-200"
+              className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors flex items-center gap-1.5 ${
+                camada === "mapa" 
+                  ? "bg-green-400 text-white-primary shadow-sm" 
+                  : "text-white-600 hover:bg-white-200 hover:text-black-200"
               }`}
             >
               <Layers className="w-3.5 h-3.5" /> Mapa
             </button>
             <button
               onClick={() => setCamada("satelite")}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors flex items-center gap-1 ${
-                camada === "satelite" ? "bg-green-primary text-white" : "text-white-600 hover:bg-white-200"
+              className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors flex items-center gap-1.5 ${
+                camada === "satelite" 
+                  ? "bg-green-400 text-white-primary shadow-sm" 
+                  : "text-white-600 hover:bg-white-200 hover:text-black-200"
               }`}
             >
               <Layers className="w-3.5 h-3.5" /> Satélite
@@ -515,7 +457,6 @@ function MapSection({ solicitacoes }: { solicitacoes: SolicitacaoColeta[] }) {
       </div>
 
       <div className="p-4">
-        {/* Barra de pesquisa (80%) + Botões (10% cada) */}
         <div className="flex items-center gap-2 mb-4">
           <div className="flex-[8] relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white-400 w-4 h-4" />
@@ -530,15 +471,14 @@ function MapSection({ solicitacoes }: { solicitacoes: SolicitacaoColeta[] }) {
           <Button
             onClick={() => navigate("/admin/map")}
             variant="secondary"
-            className="flex-[1] flex items-center justify-center gap-1"
+            className="flex-[1] flex items-center justify-center"
           >
-            <ExternalLink className="w-4 h-4" />
             <span className="hidden sm:inline">Ver mapa</span>
           </Button>
           <Button
             onClick={carregarPontos}
             disabled={carregandoPontos}
-            variant="secondary"
+            variant="terciary"
             className="flex-[1] flex items-center justify-center"
           >
             {carregandoPontos ? (
@@ -619,7 +559,6 @@ function MapSection({ solicitacoes }: { solicitacoes: SolicitacaoColeta[] }) {
           )}
         </div>
 
-        {/* Legenda */}
         <div className="flex flex-wrap gap-4 mt-3 text-xs">
           <div className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-green-500" /> Aprovado
@@ -644,7 +583,6 @@ function MapSection({ solicitacoes }: { solicitacoes: SolicitacaoColeta[] }) {
   );
 }
 
-// ---------- DASHBOARD PRINCIPAL ----------
 interface DashboardStats {
   volumeSemana: number;
   volumeSemanaPct: number;
@@ -668,8 +606,7 @@ function Dashboard() {
   const [erro, setErro] = useState<string | null>(null);
   const [todasSolicitacoes, setTodasSolicitacoes] = useState<SolicitacaoColeta[]>([]);
   
-  // Estado do filtro de período para o histórico
-  const [periodoHistorico, setPeriodoHistorico] = useState<number>(12); // meses
+  const [periodoHistorico, setPeriodoHistorico] = useState<number>(12);
 
   useEffect(() => {
     async function carregar() {
@@ -709,7 +646,6 @@ function Dashboard() {
         const volumeAno = sumVolumeColetado(concluidas, anoAtualInicio, anoAtualFim);
         const volumeAnoAnt = sumVolumeColetado(concluidas, anoAnteriorInicio, anoAnteriorFim);
 
-        // Histórico mensal (últimos 12 meses)
         const meses = [
           "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez",
           "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
@@ -763,14 +699,12 @@ function Dashboard() {
 
   const COLORS = ["#4CAF50", "#2196F3", "#FF9800", "#F44336"];
 
-  // Dados do histórico filtrados pelo período selecionado
   const dadosHistoricoFiltrados = useMemo(() => {
     if (!stats) return [];
     const { historicoMensal } = stats;
     return historicoMensal.slice(-periodoHistorico);
   }, [stats, periodoHistorico]);
 
-  // Métricas do período filtrado
   const metricasHistorico = useMemo(() => {
     const dados = dadosHistoricoFiltrados;
     if (dados.length === 0) return { total: 0, media: 0 };
@@ -778,6 +712,20 @@ function Dashboard() {
     const media = total / dados.length;
     return { total, media };
   }, [dadosHistoricoFiltrados]);
+
+  const sparklineSemana = useMemo(() => {
+    if (!todasSolicitacoes.length) return [0, 0, 0, 0, 0, 0, 0];
+    return Array.from({ length: 7 }).map((_, i) => {
+      const diaInicio = daysAgo(6 - i);
+      const diaFim = daysAgo(5 - i);
+      return sumVolumeColetado(todasSolicitacoes, diaInicio, diaFim);
+    });
+  }, [todasSolicitacoes]);
+
+  const sparklineMensal = useMemo(() => {
+    if (!stats) return [];
+    return stats.historicoMensal.map((h) => h.volume);
+  }, [stats]);
 
   if (loading || !stats) {
     return (
@@ -798,12 +746,11 @@ function Dashboard() {
       <AdminTopNav />
 
       <main className="w-full max-w-[1440px] mx-auto p-6 flex-1">
-        {/* Cabeçalho */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-green-primary mt-2">Dashboard</h1>
             <p className="text-sm sm:text-base text-white-500">
-              Visão geral do sistema de coleta de óleo de cozinha usado.
+              Visão geral do sistema de coleta de óleo de cozinha usado
             </p>
           </div>
           <div className="flex flex-col items-end gap-2">
@@ -818,66 +765,64 @@ function Dashboard() {
           <div className="mb-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md p-3">{erro}</div>
         )}
 
-        {/* CARDS SUPERIORES */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <StatCard
-            icon={<Calendar className="w-4 h-4" />}
-            title="Óleo coletado - Semana"
+          <SummaryCard
+            label="ÓLEO COLETADO - SEMANA"
             value={formatLitros(stats.volumeSemana)}
-            pct={stats.volumeSemanaPct}
-            compareLabel="vs semana anterior"
-            color="text-emerald-600"
-            hexColor="#059669"
+            subtext={`${stats.volumeSemanaPct >= 0 ? `+${stats.volumeSemanaPct}%` : `${stats.volumeSemanaPct}%`} vs semana anterior`}
+            labelColor="text-green-primary"
+            iconBgColor="bg-green-100"
+            icon={<img src="/assets/icons/icon-calendar-week.svg" className="w-5 h-5" alt="Ícone Semana" />}            
+            sparklineData={sparklineSemana}
+            sparklineColor="#1A6E3C"
           />
-          <StatCard
-            icon={<Calendar className="w-4 h-4" />}
-            title="Óleo coletado - Mês"
+          <SummaryCard
+            label="ÓLEO COLETADO - MÊS"
             value={formatLitros(stats.volumeMes)}
-            pct={stats.volumeMesPct}
-            compareLabel="vs mês anterior"
-            color="text-blue-600"
-            hexColor="#2563eb"
+            subtext={`${stats.volumeMesPct >= 0 ? `+${stats.volumeMesPct}%` : `${stats.volumeMesPct}%`} vs mês anterior`}
+            labelColor="text-blue-primary"
+            iconBgColor="bg-blue-100"
+            icon={<img src="/assets/icons/icon-calendar-month.svg" className="w-5 h-5" alt="Ícone Mês" />}            
+            sparklineData={sparklineMensal}
+            sparklineColor="#1C60AF"
           />
-          <StatCard
-            icon={<BarChart3 className="w-4 h-4" />}
-            title="Óleo coletado - Ano"
+          <SummaryCard
+            label="ÓLEO COLETADO - ANO"
             value={formatLitros(stats.volumeAno)}
-            pct={stats.volumeAnoPct}
-            compareLabel="vs ano anterior"
-            color="text-orange-500"
-            hexColor="#f97316"
+            subtext={`${stats.volumeAnoPct >= 0 ? `+${stats.volumeAnoPct}%` : `${stats.volumeAnoPct}%`} vs ano anterior`}
+            labelColor="text-orange-primary"
+            iconBgColor="bg-orange-100"
+            icon={<img src="/assets/icons/icon-coleta-anual.svg" className="w-5 h-5" alt="Ícone Ano" />}            
+            sparklineData={sparklineMensal}
+            sparklineColor="#DF8729"
           />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-          <StatCard
-            icon={<Users className="w-4 h-4" />}
-            title="Parceiros Ativos"
+          <SummaryCard
+            label="PARCEIROS ATIVOS"
             value={String(stats.parceirosAtivos)}
-            pct={12}
-            compareLabel="vs mês anterior"
-            color="text-purple-600"
-            hexColor="#9333ea"
+            subtext="+12% vs mês anterior"
+            labelColor="text-violet-primary"
+            iconBgColor="bg-violet-100"
+            icon={<Users className="w-5 h-5 text-violet-600" />}
           />
-          <StatCard
-            icon={<MapPin className="w-4 h-4" />}
-            title="Pontos de Coleta"
+          <SummaryCard
+            label="PONTOS DE COLETA"
             value={String(stats.pontosColeta)}
-            pct={8}
-            compareLabel="vs mês anterior"
-            color="text-teal-500"
-            hexColor="#14b8a6"
+            subtext="+8% vs mês anterior"
+            labelColor="text-teal-primary"
+            iconBgColor="bg-teal-100"
+            icon={<MapPin className="w-5 h-5 text-teal-500" />}
           />
         </div>
 
-        {/* SEÇÃO 2: MAPA */}
         <div className="mt-8">
           <MapSection solicitacoes={todasSolicitacoes} />
         </div>
 
         {/* SEÇÃO 3: Solicitações, Previsão, Histórico, Destinação */}
         <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Solicitações de Coleta */}
           <div className="bg-white rounded-xl shadow-sm border border-white-200 p-4">
             <h2 className="font-bold text-white-700 mb-3">Solicitações de Coleta</h2>
             <div className="grid grid-cols-2 gap-3">
@@ -910,7 +855,6 @@ function Dashboard() {
             </button>
           </div>
 
-          {/* Previsão de Coleta */}
           <div className="bg-white rounded-xl shadow-sm border border-white-200 p-4">
             <h2 className="font-bold text-white-700 mb-2">Previsão de Coleta</h2>
             <p className="text-2xl font-bold text-green-primary">{formatLitros(stats.previsao.total)}</p>
@@ -936,7 +880,6 @@ function Dashboard() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-          {/* Óleo Coletado (Histórico) - COM FILTRO E MÉTRICAS */}
           <div className="bg-white rounded-xl shadow-sm border border-white-200 p-4">
             <div className="flex flex-wrap items-center justify-between mb-3">
               <h2 className="font-bold text-white-700">Óleo Coletado (Histórico)</h2>
@@ -988,7 +931,6 @@ function Dashboard() {
               </ResponsiveContainer>
             </div>
 
-            {/* Legenda com métricas */}
             <div className="mt-3 flex flex-wrap items-center justify-between text-sm border-t border-white-100 pt-3">
               <div className="flex items-center gap-4">
                 <span className="text-white-600">Total do período:</span>
@@ -1004,7 +946,6 @@ function Dashboard() {
             </div>
           </div>
 
-          {/* Destinação do Óleo */}
           <div className="bg-white rounded-xl shadow-sm border border-white-200 p-4">
             <h2 className="font-bold text-white-700 mb-2">Destinação do Óleo</h2>
             <div className="h-52">
