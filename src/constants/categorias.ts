@@ -5,7 +5,7 @@ export const CATEGORIA_PONTO_COLETA = {
   4: 'Hotel / Pousada',
   5: 'Restaurante / Bar',
   6: 'Condomínio',
-  7: 'Feira Livre',
+  7: 'Feira Livre / Eventos',
   8: 'Doador Avulso'
 } as const
 

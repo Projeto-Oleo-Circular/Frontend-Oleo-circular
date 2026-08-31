@@ -190,7 +190,7 @@ export const authService = {
       { value: 4, label: 'Hotel / Pousada' },
       { value: 5, label: 'Restaurante / Bar' },
       { value: 6, label: 'Condomínio' },
-      { value: 7, label: 'Feira Livre' },
+      { value: 7, label: 'Feira Livre / Eventos' },
       { value: 8, label: 'Doador Avulso' },
     ];
   },

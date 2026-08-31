@@ -339,7 +339,7 @@ function InfoParceiro({
               <hr className="border-white-100" />
               <Input type="text" icon="icon-city" placeholder="Cidade" name="cidade" value={formData.cidade} onChange={handleInputChange} noBorder error={fieldErrors.cidade} />
               <hr className="border-white-100" />
-              <Input type="text" icon="icon-logradouro" placeholder="Logradouro" name="logradouro" value={formData.logradouro} onChange={handleInputChange} noBorder error={fieldErrors.logradouro} />
+              <Input type="text" icon="icon-rua" placeholder="Rua" name="logradouro" value={formData.logradouro} onChange={handleInputChange} noBorder error={fieldErrors.logradouro} />
               <hr className="border-white-100" />
               <Input type="text" icon="icon-bairro" placeholder="Bairro" name="bairro" value={formData.bairro} onChange={handleInputChange} noBorder error={fieldErrors.bairro} />
               <hr className="border-white-100" />

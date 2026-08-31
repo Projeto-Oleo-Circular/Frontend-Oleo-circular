@@ -251,7 +251,7 @@ function InfoIns({
         }
 
         if (!formData.rua.trim()) {
-            errors.rua = 'Rua é obrigatória';
+            errors.rua = 'Logradouro é obrigatória';
             hasError = true;
         }
 
