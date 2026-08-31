@@ -7,14 +7,14 @@ import {
 import StatusBadge from "../../../../components/ui/StatusBadge"
 import AdminTopNav from "../../../../components/layout/AdminTopNav"
 import AdminFilterDropdown, { FilterOption } from "../../../../components/ui/AdminFilterDropdown"
-import { Clock, CalendarCheck, Truck, CheckCircle2, X, Eye, MapPin, User, Building2, Phone, Mail, Download } from "lucide-react"
+import { Clock, CalendarCheck, Truck, CheckCircle2, X, Eye, MapPin, User, Building2, Phone, Mail } from "lucide-react"
 import SummaryCard from "../../../../components/ui/SummaryCard"
 import Button from "../../../../components/ui/Button"
 import Pagination from "../../../../components/ui/Pagination"
 import Footer from "../../../../components/layout/Footer"
 import {
   authService,
-  type ParceiroIndicador, // ← ADICIONE ESTE IMPORT
+  type ParceiroIndicador,
 } from "../../../../services/authService";
 
 interface Contagens {
@@ -27,20 +27,77 @@ interface Contagens {
 
 type ModalTipo = "agendar" | "concluir" | "detalhes" | null;
 
+const TURNOS_AGENDAMENTO = [
+  {
+    turno: 'Manhã',
+    slots: [
+      '08:00 - 09:00',
+      '09:00 - 10:00',
+      '10:00 - 11:00',
+      '11:00 - 12:00'
+    ]
+  },
+  {
+    turno: 'Tarde',
+    slots: [
+      '13:00 - 14:00',
+      '14:00 - 15:00',
+      '15:00 - 16:00',
+      '16:00 - 17:00'
+    ]
+  },
+  {
+    turno: 'Noite',
+    slots: [
+      '18:00 - 19:00',
+      '19:00 - 20:00',
+      '20:00 - 21:00',
+      '21:00 - 22:00'
+    ]
+  }
+];
+
 function formatarData(iso: string | null): string {
   if (!iso) return "—";
   const data = new Date(iso);
+  if (isNaN(data.getTime())) return "—";
   
-  // Garante a formatação no fuso horário de Brasília
   const dataFormatada = data.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
-  /*
   const horaFormatada = data.toLocaleTimeString("pt-BR", {
     hour: "2-digit",
     minute: "2-digit",
     timeZone: "America/Sao_Paulo",
   });
-*/
-  return `${dataFormatada}`;
+
+  return `${dataFormatada} às ${horaFormatada}`;
+}
+
+function formatarAgendamentoCompleto(isoData: string | null): string {
+  if (!isoData) return "—";
+  
+  const data = new Date(isoData);
+  if (isNaN(data.getTime())) return "—";
+
+  const dataFormatada = data.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
+
+  const horaInicio = data.toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "America/Sao_Paulo",
+    hour12: false,
+  });
+
+  const [h] = horaInicio.split(":").map(Number);
+  const horaFimNum = h + 1;
+  const horaFim = `${String(horaFimNum).padStart(2, '0')}:00`;
+
+  let turno = "";
+  if (h >= 8 && h < 12) turno = "Manhã";
+  else if (h >= 13 && h < 17) turno = "Tarde";
+  else if (h >= 18 && h < 22) turno = "Noite";
+  else turno = "Comercial";
+
+  return `${dataFormatada} • ${turno} (${horaInicio} - ${horaFim})`;
 }
 
 function formatarEndereco(ponto: SolicitacaoColeta["pontoColeta"]): string {
@@ -73,7 +130,10 @@ function Requests() {
     tipo: null,
     solicitacao: null,
   });
+
   const [dataAgendamento, setDataAgendamento] = useState("");
+  const [horarioSelecionado, setHorarioSelecionado] = useState("");
+
   const [volumeColetado, setVolumeColetado] = useState("");
   const [salvando, setSalvando] = useState(false);
 
@@ -136,23 +196,22 @@ function Requests() {
     carregarIndicadores();
   }, []);
 
-      const obterNomeParceiroIndicador = (solicitacao: SolicitacaoColeta): string => {
-      // 1. Tenta buscar pelo ID na lista de indicadores
-      if (solicitacao.parceiro?.parceiroIndicadorId) {
-        const encontrado = indicadores.find(
-          (ind) => String(ind.id) === String(solicitacao.parceiro?.parceiroIndicadorId)
-        );
-        if (encontrado) return encontrado.nome;
-      }
+  const obterNomeParceiroIndicador = (solicitacao: SolicitacaoColeta): string => {
+    if (solicitacao.parceiro?.parceiroIndicadorId) {
+      const encontrado = indicadores.find(
+        (ind) => String(ind.id) === String(solicitacao.parceiro?.parceiroIndicadorId)
+      );
+      if (encontrado) return encontrado.nome;
+    }
+    return "—";
+  };
 
-      // 2. Se não encontrou, retorna "—"
-      return "—";
-    };
-      const abrirModal = (tipo: ModalTipo, solicitacao: SolicitacaoColeta) => {
-        setModal({ tipo, solicitacao });
-        setDataAgendamento("");
-        setVolumeColetado("");
-      };
+  const abrirModal = (tipo: ModalTipo, solicitacao: SolicitacaoColeta) => {
+    setModal({ tipo, solicitacao });
+    setDataAgendamento("");
+    setHorarioSelecionado("");
+    setVolumeColetado("");
+  };
 
   const fecharModal = () => setModal({ tipo: null, solicitacao: null });
 
@@ -173,9 +232,13 @@ function Requests() {
     setSalvando(true);
     try {
       if (modal.tipo === "agendar") {
+        const horaInicio = horarioSelecionado.split(" - ")[0]; 
+        
+        const dataHoraLocal = `${dataAgendamento} ${horaInicio}:00`;
+
         await adminSolicitacoesService.atualizarStatus(modal.solicitacao.id, {
           status: "AGENDADA",
-          dataAgendamento: new Date(dataAgendamento).toISOString(),
+          dataAgendamento: dataHoraLocal, 
         });
       } else if (modal.tipo === "concluir") {
         await adminSolicitacoesService.atualizarStatus(modal.solicitacao.id, {
@@ -237,7 +300,6 @@ function Requests() {
       <AdminTopNav />
 
       <main className="w-full max-w-[1440px] mx-auto p-6">
-
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-green-primary mt-2 sm:mt-5 mb-1">
@@ -258,16 +320,6 @@ function Requests() {
                 setStatusFiltro(val as StatusSolicitacao | "");
               }}
             />
-          {/*
-            <button
-              onClick={() => {
-                // Lógica de exportação de relatório
-              }}
-              className="flex items-center bg-green-primary hover:bg-green-hover text-white font-bold px-4 py-2 rounded-lg text-sm transition-colors cursor-pointer"
-            >
-              <span>Exportar relatório</span>
-            </button>
-          */}
           </div>
         </div>
 
@@ -352,11 +404,11 @@ function Requests() {
                     <td className="p-4 text-sm font-medium text-black-primary">#{s.id}</td>
                     
                     <td className="p-4">
-                      <p className="font-medium text-sm text-sm text-black-primary">{s.parceiro.razaoSocial}</p>
-                        {s.parceiro.documento && (
-                          <p className="text-xs text-white-500 mt-0.5">{s.parceiro.documento}</p>
-                        )}
-                      </td>
+                      <p className="font-medium text-sm text-black-primary">{s.parceiro.razaoSocial}</p>
+                      {s.parceiro.documento && (
+                        <p className="text-xs text-white-500 mt-0.5">{s.parceiro.documento}</p>
+                      )}
+                    </td>
 
                     <td className="p-4 text-sm text-black-primary font-medium whitespace-nowrap">{formatarData(s.dataSolicitacao)}</td>
                     
@@ -369,13 +421,13 @@ function Requests() {
                       </div>
                     </td>
 
-                     <td className="p-4 text-sm font-medium text-black-primary">
+                    <td className="p-4 text-sm font-medium text-black-primary">
                       {obterNomeParceiroIndicador(s)}
                     </td>
                     
                     <td className="p-4 text-sm text-black-primary font-medium">{s.pontoColeta.nomePontoColeta}</td>
                     
-                    <td className="p-4 text-sm text-black-primary font-medium  whitespace-nowrap">{s.pontoColeta.capacidadeBombona} L</td>
+                    <td className="p-4 text-sm text-black-primary font-medium whitespace-nowrap">{s.pontoColeta.capacidadeBombona} L</td>
                     
                     <td className="p-4 whitespace-nowrap">
                       <StatusBadge status={s.status} />
@@ -400,9 +452,10 @@ function Requests() {
           }}
         />
 
+        {/* MODAL DE AGENDAR / CONCLUIR */}
         {(modal.tipo === "agendar" || modal.tipo === "concluir") && modal.solicitacao && (
           <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl animate-slide-down">
+            <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl animate-slide-down">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-bold text-lg text-green-primary">
                   {modal.tipo === "agendar" ? "Agendar coleta" : "Concluir coleta"} — #{modal.solicitacao.id}
@@ -412,28 +465,64 @@ function Requests() {
                 </button>
               </div>
 
+              {/* MODAL AGENDAR */}
               {modal.tipo === "agendar" && (
-                <label className="block mb-4">
-                  <span className="text-sm text-white-600 font-medium">Data do Agendamento</span>
-                  <input
-                    type="date"
-                    value={dataAgendamento}
-                    onChange={(e) => setDataAgendamento(e.target.value)}
-                    className="w-full border border-white-200 rounded-lg px-3 py-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
-                  />
-                </label>
+                <div className="space-y-4 mb-4">
+                  <label className="block">
+                    <span className="text-sm text-gray-700 font-medium">Data da Coleta</span>
+                    <input
+                      type="date"
+                      value={dataAgendamento}
+                      onChange={(e) => setDataAgendamento(e.target.value)}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1 text-sm focus:outline-none focus:border-green-primary bg-white cursor-pointer"
+                    />
+                  </label>
+
+                  {dataAgendamento && (
+                    <div>
+                      <span className="text-sm text-gray-700 font-medium block mb-2">Selecione o Turno e Horário (Blocos de 1h)</span>
+                      <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
+                        {TURNOS_AGENDAMENTO.map((grupo) => (
+                          <div key={grupo.turno} className="border border-gray-100 p-2.5 rounded-lg bg-gray-50">
+                            <span className="text-xs font-bold text-green-700 uppercase"> {grupo.turno}</span>
+                            <div className="grid grid-cols-2 gap-2 mt-2">
+                              {grupo.slots.map((slot) => {
+                                const isSelected = horarioSelecionado === slot;
+                                return (
+                                  <button
+                                    key={slot}
+                                    type="button"
+                                    onClick={() => setHorarioSelecionado(slot)}
+                                    className={`py-2 px-3 text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
+                                      isSelected
+                                        ? 'bg-green-600 text-white border-green-600 shadow-sm'
+                                        : 'bg-white text-gray-700 border-gray-200 hover:border-green-400'
+                                    }`}
+                                  >
+                                    {slot}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               )}
 
+              {/* MODAL CONCLUIR */}
               {modal.tipo === "concluir" && (
                 <label className="block mb-4">
-                  <span className="text-sm text-white-500 font-medium">Volume coletado (litros)</span>
+                  <span className="text-sm text-gray-700 font-medium">Volume coletado (litros)</span>
                   <input
                     type="number"
                     min={1}
                     placeholder="Ex: 50"
                     value={volumeColetado}
                     onChange={(e) => setVolumeColetado(e.target.value)}
-                    className="w-full border border-white-200 rounded-lg px-3 py-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
                   />
                 </label>
               )}
@@ -455,7 +544,7 @@ function Requests() {
                   onClick={confirmarModal}
                   disabled={
                     salvando ||
-                    (modal.tipo === "agendar" && !dataAgendamento) ||
+                    (modal.tipo === "agendar" && (!dataAgendamento || !horarioSelecionado)) ||
                     (modal.tipo === "concluir" && !volumeColetado)
                   }
                   fullWidth
@@ -467,6 +556,7 @@ function Requests() {
           </div>
         )}
 
+        {/* MODAL DETALHES */}
         {modal.tipo === "detalhes" && modal.solicitacao && (
           <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl p-6 w-full max-w-lg shadow-xl animate-slide-down max-h-[90vh] overflow-y-auto">
@@ -545,7 +635,9 @@ function Requests() {
                     {modal.solicitacao.dataAgendamento && (
                       <div className="flex justify-between text-xs py-1">
                         <span className="text-white-500">Agendado para:</span>
-                        <span className="font-semibold text-black-primary">{formatarData(modal.solicitacao.dataAgendamento)}</span>
+                        <span className="font-semibold text-black-primary">
+                          {formatarAgendamentoCompleto(modal.solicitacao.dataAgendamento)}
+                        </span>
                       </div>
                     )}
                     {modal.solicitacao.volumeColetado && (
