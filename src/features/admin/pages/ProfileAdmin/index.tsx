@@ -133,7 +133,7 @@ function Profile() {
                 <div className="w-full max-w-md mx-auto flex flex-col gap-6 pb-8">
                     <div className="flex items-center gap-4 pt-2">
                         <button
-                            onClick={() => (editando ? handleCancelarEdicao() : navigate("/home"))}
+                            onClick={() => (editando ? handleCancelarEdicao() : navigate("/admin/dashboard"))}
                             className="w-10 h-10 bg-green-400 text-white rounded-full flex items-center justify-center shadow-md shrink-0"
                         >
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -238,8 +238,8 @@ function Profile() {
                                     />
                                     <hr className="border-white-100" />
                                     <div className="flex items-center px-4 py-3 bg-white">
-                                        <img src="/assets/icons/icon-lock.svg" alt="" className="w-5 h-5 mr-3 opacity-50" />
-                                        <span className="text-sm text-gray-600 font-medium">Nível de acesso: </span>
+                                        <img src="/assets/icons/icon-access.svg" alt="" className="w-5 h-5 mr-3 opacity-50" />
+                                        <span className="text-sm text-white-600 font-medium">Nível de acesso: </span>
                                         <span className="ml-2 text-sm font-semibold text-green-700">{nivelAcesso}</span>
                                     </div>
                                 </div>
