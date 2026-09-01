@@ -78,7 +78,7 @@ function Spinner({ color = 'white', size = 'md' }: { color?: 'white' | 'green' |
         white: 'border-white/30 border-t-white',
         green: 'border-green-primary/30 border-t-green-primary',
         orange: 'border-orange-primary/30 border-t-orange-primary',
-        black: 'border-black-300 border-t-white-600'
+        black: 'border-black-200 border-t-white-600'
     }
 
     return (

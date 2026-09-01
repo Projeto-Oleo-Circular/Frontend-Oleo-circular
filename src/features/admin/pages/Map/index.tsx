@@ -23,12 +23,10 @@ import {
 import {
   adminSolicitacoesService,
   type SolicitacaoColeta,
-  type StatusSolicitacao,
 } from "../../../../services/AdminSolicitacaoService";
 import Footer from "../../../../components/layout/Footer";
 
 
-// ---------- TIPOS AUXILIARES ----------
 interface ParceiroAdmin {
   id: number;
   razaoSocial: string;
@@ -66,17 +64,10 @@ interface MapControllerProps {
 type FiltroModo = "todos" | "apenas-pontos" | "apenas-solicitacoes";
 type CamadaMapa = "mapa" | "satelite";
 
-// ---------- UTILITÁRIOS ----------
 const numeroValido = (valor: unknown): number | null => {
   if (valor === null || valor === undefined || valor === "") return null;
   const numero = Number(String(valor).replace(",", "."));
   return Number.isFinite(numero) ? numero : null;
-};
-
-const normalizarStatus = (valor: unknown): StatusAprovacao => {
-  const status = String(valor || "PENDENTE").toUpperCase();
-  if (status === "APROVADO" || status === "REJEITADO") return status;
-  return "PENDENTE";
 };
 
 const BRASIL_BOUNDS = {
@@ -139,7 +130,6 @@ const obterCoordenadasDoPonto = (
   return [latitudeBruta, longitudeBruta];
 };
 
-// ---------- CRIAÇÃO DE ÍCONE ----------
 const criarIcone = (
   status: StatusAprovacao,
   hasSolicitacao: boolean,
@@ -149,7 +139,6 @@ const criarIcone = (
   let backgroundColor = "#9E9E9E";
 
   if (modo === "apenas-solicitacoes") {
-    // No modo apenas solicitações, usamos azul para todos os pontos com solicitação
     backgroundColor = hasSolicitacao ? "#1E88E5" : "#9E9E9E";
   } else {
     if (status === "APROVADO") {
@@ -194,7 +183,6 @@ const criarIcone = (
   });
 };
 
-// ---------- MAP CONTROLLER ----------
 function MapController({ rota, pontos }: MapControllerProps) {
   const map = useMap();
 
@@ -221,7 +209,6 @@ function MapController({ rota, pontos }: MapControllerProps) {
   return null;
 }
 
-// ---------- COMPONENTE PRINCIPAL ----------
 function MapPage() {
   const { addToast } = useToast();
   const [pontos, setPontos] = useState<GeocodedPoint[]>([]);
@@ -234,7 +221,6 @@ function MapPage() {
   const [carregandoRota, setCarregandoRota] = useState(false);
   const [modalRotaAberta, setModalRotaAberta] = useState(false);
 
-  // ---------- CARREGAR DADOS ----------
   const carregarDados = useCallback(async () => {
     try {
       setCarregandoPontos(true);
@@ -332,16 +318,13 @@ function MapPage() {
     };
   };
 
-  // ---------- EFECTS ----------
   useEffect(() => {
     void carregarDados();
   }, [carregarDados]);
 
-  // ---------- FILTROS ----------
   const pontosFiltrados = useMemo(() => {
     let resultado = pontos;
 
-    // Filtro de texto
     if (filtroTexto.trim()) {
       const termo = filtroTexto.toLowerCase().trim();
       resultado = resultado.filter((ponto) => {
@@ -354,22 +337,17 @@ function MapPage() {
       });
     }
 
-    // Filtro de modo
     if (modoFiltro === "apenas-pontos") {
-      // Mostra todos os pontos, independente de solicitação
       return resultado;
     }
 
     if (modoFiltro === "apenas-solicitacoes") {
-      // Mostra apenas pontos com pelo menos uma solicitação
       return resultado.filter((p) => p.hasSolicitacao);
     }
 
-    // "todos" - mostra todos
     return resultado;
   }, [filtroTexto, pontos, modoFiltro]);
 
-  // ---------- SELEÇÃO E ROTA ----------
   const togglePontoSelecionado = (ponto: GeocodedPoint) => {
     if (!ponto.latlng) {
       addToast("Ponto sem coordenadas disponíveis", "warning");
@@ -439,12 +417,11 @@ function MapPage() {
     setModalRotaAberta(false);
   };
 
-  // ---------- RENDER ----------
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-background overflow-x-hidden">
       <AdminTopNav />
 
-      <main className="w-full max-w-[1440px] mx-auto p-6 flex-1">
+      <main className="w-full max-w-[1440px] mx-auto p-4 sm:p-6 flex-1">
         <h1 className="text-2xl sm:text-3xl font-bold text-green-primary mt-2 sm:mt-5 mb-1">
           Mapa de Pontos de Coleta
         </h1>
@@ -452,94 +429,93 @@ function MapPage() {
           Visualize todos os pontos de coleta e suas solicitações.
         </p>
 
-        {/* Barra de ferramentas */}
-        <div className="flex flex-wrap items-center gap-3 mb-4">
-          {/* Filtros de modo */}
-          <div className="flex gap-1 bg-white rounded-lg border border-white-200 p-1">
-            <button
-              type="button"
-              onClick={() => setModoFiltro("todos")}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                modoFiltro === "todos"
-                  ? "bg-green-primary text-white"
-                  : "text-white-600 hover:bg-white-100"
-              }`}
-            >
-              Todos
-            </button>
-            <button
-              type="button"
-              onClick={() => setModoFiltro("apenas-pontos")}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                modoFiltro === "apenas-pontos"
-                  ? "bg-green-primary text-white"
-                  : "text-white-600 hover:bg-white-100"
-              }`}
-            >
-              Pontos
-            </button>
-            <button
-              type="button"
-              onClick={() => setModoFiltro("apenas-solicitacoes")}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                modoFiltro === "apenas-solicitacoes"
-                  ? "bg-green-primary text-white"
-                  : "text-white-600 hover:bg-white-100"
-              }`}
-            >
-              Solicitações
-            </button>
+        {/* Barra de Filtros Responsiva */}
+        <div className="flex flex-col xl:flex-row items-stretch xl:items-center gap-3 mb-6">
+          <div className="flex flex-wrap gap-2">
+            <div className="flex gap-1 bg-white-primary rounded-lg border border-white-200 p-1">
+              <button
+                type="button"
+                onClick={() => setModoFiltro("todos")}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors cursor-pointer ${
+                  modoFiltro === "todos"
+                    ? "bg-green-primary text-white"
+                    : "text-white-600 hover:bg-white-100"
+                }`}
+              >
+                Todos
+              </button>
+              <button
+                type="button"
+                onClick={() => setModoFiltro("apenas-pontos")}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors cursor-pointer ${
+                  modoFiltro === "apenas-pontos"
+                    ? "bg-green-primary text-white"
+                    : "text-white-600 hover:bg-white-100"
+                }`}
+              >
+                Pontos
+              </button>
+              <button
+                type="button"
+                onClick={() => setModoFiltro("apenas-solicitacoes")}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors cursor-pointer ${
+                  modoFiltro === "apenas-solicitacoes"
+                    ? "bg-green-primary text-white"
+                    : "text-white-600 hover:bg-white-100"
+                }`}
+              >
+                Solicitações
+              </button>
+            </div>
+
+            <div className="flex gap-1 bg-white rounded-lg border border-white-200 p-1">
+              <button
+                type="button"
+                onClick={() => setCamada("mapa")}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors flex items-center gap-1 cursor-pointer ${
+                  camada === "mapa"
+                    ? "bg-green-primary text-white"
+                    : "text-white-600 hover:bg-white-100"
+                }`}
+              >
+                <Layers className="w-3.5 h-3.5" />
+                Mapa
+              </button>
+              <button
+                type="button"
+                onClick={() => setCamada("satelite")}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors flex items-center gap-1 cursor-pointer ${
+                  camada === "satelite"
+                    ? "bg-green-primary text-white"
+                    : "text-white-600 hover:bg-white-100"
+                }`}
+              >
+                <Layers className="w-3.5 h-3.5" />
+                Satélite
+              </button>
+            </div>
           </div>
 
-          {/* Alternância de camada */}
-          <div className="flex gap-1 bg-white rounded-lg border border-white-200 p-1">
-            <button
-              type="button"
-              onClick={() => setCamada("mapa")}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors flex items-center gap-1 ${
-                camada === "mapa"
-                  ? "bg-green-primary text-white"
-                  : "text-white-600 hover:bg-white-100"
-              }`}
-            >
-              <Layers className="w-3.5 h-3.5" />
-              Mapa
-            </button>
-            <button
-              type="button"
-              onClick={() => setCamada("satelite")}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors flex items-center gap-1 ${
-                camada === "satelite"
-                  ? "bg-green-primary text-white"
-                  : "text-white-600 hover:bg-white-100"
-              }`}
-            >
-              <Layers className="w-3.5 h-3.5" />
-              Satélite
-            </button>
-          </div>
-
-          {/* Barra de pesquisa + atualizar (80/20) */}
-          <div className="flex-1 flex items-stretch gap-2 min-w-[200px]">
-            <div className="relative flex-[4]">
+          <div className="flex-1 flex flex-col sm:flex-row items-stretch gap-2">
+            <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white-400 w-4 h-4" />
               <Input
                 type="text"
                 placeholder="Buscar por nome, parceiro ou endereço"
                 value={filtroTexto}
                 onChange={(e) => setFiltroTexto(e.target.value)}
-                className="pl-10 h-full"
+                className="pl-10 w-full"
               />
             </div>
             <Button
               type="button"
-              variant="secondary"
+              variant="terciary"
               onClick={() => void carregarDados()}
               disabled={carregandoPontos}
-              className="flex-[1]"
+              className="sm:w-auto shrink-0"
             >
               {carregandoPontos ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="w-4 h-4 animate-spin mx-auto" />
               ) : (
                 "Atualizar"
               )}
@@ -547,9 +523,9 @@ function MapPage() {
           </div>
         </div>
 
+        {/* Conteúdo Principal: Mapa e Listas Laterais */}
         <div className="flex flex-col lg:flex-row gap-6">
-          {/* MAPA */}
-          <div className="flex-1 h-[70vh] rounded-2xl overflow-hidden shadow-lg relative">
+          <div className="flex-1 h-[50vh] sm:h-[65vh] lg:h-[78vh] rounded-2xl overflow-hidden shadow-sm relative border border-white-200">
             {carregandoPontos ? (
               <div className="absolute inset-0 flex items-center justify-center bg-white z-[1001]">
                 <Loader2 className="w-8 h-8 text-green-primary animate-spin" />
@@ -605,9 +581,7 @@ function MapPage() {
                           </p>
                           <p>Capacidade: {ponto.capacidadeBombona} L</p>
 
-                          {/* Status conforme modo de filtro */}
                           {modoFiltro === "apenas-solicitacoes" ? (
-                            // Exibe status da primeira solicitação (ou lista)
                             ponto.solicitacoes.length > 0 ? (
                               <div className="mt-1">
                                 <span className="text-xs text-white-500">Status da solicitação:</span>
@@ -622,7 +596,6 @@ function MapPage() {
                               <p className="text-xs text-white-400 mt-1">Sem solicitação</p>
                             )
                           ) : (
-                            // Exibe status do ponto
                             <p className="mt-1">
                               Status: {ponto.statusAprovacaoPontoColeta}
                               {ponto.hasSolicitacao && (
@@ -633,7 +606,6 @@ function MapPage() {
                             </p>
                           )}
 
-                          {/* Lista de solicitações (apenas no modo todos) */}
                           {modoFiltro === "todos" && ponto.solicitacoes.length > 0 && (
                             <div className="mt-2 pt-2 border-t border-white-200">
                               <p className="text-xs font-bold text-white-600">
@@ -657,7 +629,7 @@ function MapPage() {
 
                           <button
                             type="button"
-                            className="mt-2 rounded bg-green-600 px-3 py-1 text-xs font-semibold text-white hover:bg-green-700 w-full"
+                            className="mt-2 rounded bg-green-600 px-3 py-1 text-xs font-semibold text-white hover:bg-green-700 w-full cursor-pointer"
                             onClick={(e) => {
                               e.stopPropagation();
                               togglePontoSelecionado(ponto);
@@ -683,40 +655,40 @@ function MapPage() {
             )}
 
             {/* Legenda */}
-            <div className="absolute top-4 right-4 bg-white rounded-lg shadow p-3 z-[1000] text-xs">
-              <h3 className="font-bold mb-2">Legenda</h3>
+            <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-xs rounded-lg shadow-md p-2.5 z-[1000] text-xs">
+              <h3 className="font-bold mb-1.5">Legenda</h3>
               {modoFiltro === "apenas-solicitacoes" ? (
                 <>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="w-3 h-3 rounded-full bg-blue-500" /> Com solicitação
+                    <span className="w-3 h-3 rounded-full bg-blue-500 shrink-0" /> Com solicitação
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="w-3 h-3 rounded-full bg-white-400" /> Sem solicitação
+                    <span className="w-3 h-3 rounded-full bg-white-400 shrink-0" /> Sem solicitação
                   </div>
                 </>
               ) : (
                 <>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="w-3 h-3 rounded-full bg-green-500" /> Aprovado
+                    <span className="w-3 h-3 rounded-full bg-green-500 shrink-0" /> Aprovado
                   </div>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="w-3 h-3 rounded-full bg-blue-500" /> Aprovado com solicitação
+                    <span className="w-3 h-3 rounded-full bg-blue-500 shrink-0" /> Com solicitação
                   </div>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="w-3 h-3 rounded-full bg-orange-500" /> Pendente
+                    <span className="w-3 h-3 rounded-full bg-orange-500 shrink-0" /> Pendente
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="w-3 h-3 rounded-full bg-red-500" /> Rejeitado
+                    <span className="w-3 h-3 rounded-full bg-red-500 shrink-0" /> Rejeitado
                   </div>
                 </>
               )}
             </div>
           </div>
 
-          {/* LISTA LATERAL */}
-          <div className="lg:w-96 flex flex-col gap-4">
-            <div className="bg-white rounded-xl shadow-sm p-4 max-h-96 overflow-y-auto">
-              <h2 className="font-bold text-white-700 mb-2">
+          {/* LISTA LATERAL / INFERIOR */}
+          <div className="w-full lg:w-96 flex flex-col gap-4">
+            <div className="bg-white rounded-xl shadow-sm p-4 max-h-80 lg:max-h-96 overflow-y-auto border border-white-200">
+              <h2 className="font-bold text-white-600 mb-2">
                 Pontos encontrados ({pontosFiltrados.length})
               </h2>
               <ul className="space-y-2">
@@ -727,19 +699,18 @@ function MapPage() {
                   return (
                     <li
                       key={ponto.id}
-                      className={`flex justify-between items-center p-2 rounded transition-colors ${
-                        selecionado ? "bg-green-50 border border-green-200" : "hover:bg-white-50"
+                      className={`flex justify-between items-center p-2.5 rounded-lg transition-colors ${
+                        selecionado ? "bg-green-50 border border-green-200" : "hover:bg-white-50 border border-transparent"
                       } cursor-pointer`}
                       onClick={() => togglePontoSelecionado(ponto)}
                     >
-                      <div className="min-w-0">
+                      <div className="min-w-0 pr-2">
                         <p className="font-medium text-sm truncate">{ponto.nomePontoColeta}</p>
                         <p className="text-xs text-white-500 truncate">
                           {`${ponto.logradouro}, ${ponto.numero} - ${ponto.bairro}, ${ponto.cidade}`}
                         </p>
-                        <div className="flex flex-wrap items-center gap-2 mt-1">
+                        <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
                           {modoFiltro === "apenas-solicitacoes" ? (
-                            // Exibe status da solicitação
                             ponto.solicitacoes.length > 0 ? (
                               <StatusBadge status={ponto.solicitacoes[0].status} />
                             ) : (
@@ -748,21 +719,20 @@ function MapPage() {
                               </span>
                             )
                           ) : (
-                            // Exibe status do ponto
                             <>
                               <span
-                                className={`text-xs px-2 py-0.5 rounded-full ${
+                                className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                                   ponto.statusAprovacaoPontoColeta === "APROVADO"
                                     ? "bg-green-100 text-green-700"
                                     : ponto.statusAprovacaoPontoColeta === "PENDENTE"
-                                    ? "bg-orange-100 text-orange-700"
+                                    ? "bg-orange-100 text-orange-600"
                                     : "bg-red-100 text-red-700"
                                 }`}
                               >
                                 {ponto.statusAprovacaoPontoColeta}
                               </span>
                               {ponto.hasSolicitacao && (
-                                <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+                                <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">
                                   {ponto.solicitacoes.filter((s) => s.status !== "CONCLUIDA").length} ativa(s)
                                 </span>
                               )}
@@ -787,22 +757,22 @@ function MapPage() {
               </ul>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm p-4">
-              <h2 className="font-bold text-white-700 mb-2">
+            <div className="bg-white rounded-xl shadow-sm p-4 border border-white-200">
+              <h2 className="font-bold text-white-600 mb-2">
                 Pontos na rota ({selectedPontos.length})
               </h2>
               {selectedPontos.length ? (
-                <ul className="space-y-2 mb-4">
+                <ul className="space-y-2 mb-4 max-h-40 overflow-y-auto pr-1">
                   {selectedPontos.map((ponto, index) => (
-                    <li key={ponto.id} className="flex items-center gap-2 text-sm">
-                      <span className="bg-green-primary text-white w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold">
+                    <li key={ponto.id} className="flex items-center gap-2 text-sm bg-white-50 p-1.5 rounded-md">
+                      <span className="bg-green-primary text-white w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold shrink-0">
                         {index + 1}
                       </span>
                       <span className="flex-1 truncate">{ponto.nomePontoColeta}</span>
                       <button
                         type="button"
                         onClick={() => togglePontoSelecionado(ponto)}
-                        className="text-red-400 hover:text-red-600"
+                        className="text-red-400 hover:text-red-600 cursor-pointer p-1"
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -849,45 +819,45 @@ function MapPage() {
 
       {/* MODAL ROTA REUTILIZÁVEL */}
       {modalRotaAberta && rota && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[2000] p-4">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-[2000] p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 relative max-h-[90vh] overflow-y-auto">
             <button
               type="button"
               onClick={() => setModalRotaAberta(false)}
-              className="absolute top-4 right-4 text-white-400 hover:text-white-600"
+              className="absolute top-4 right-4 text-white-400 hover:text-white-600 cursor-pointer"
             >
               <X className="w-6 h-6" />
             </button>
-            <h2 className="text-2xl font-bold text-green-700 mb-4 flex items-center gap-2">
+            <h2 className="text-xl sm:text-2xl font-bold text-green-700 mb-4 flex items-center gap-2">
               <Navigation className="w-6 h-6" />
               Resumo da Rota
             </h2>
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div className="bg-white-50 rounded-lg p-3">
-                <span className="text-sm text-white-500">Distância total</span>
-                <p className="text-xl font-bold text-white-800">
+                <span className="text-xs sm:text-sm text-white-500">Distância total</span>
+                <p className="text-lg sm:text-xl font-bold text-white-800">
                   {rota.distanciaKm.toFixed(2)} km
                 </p>
               </div>
               <div className="bg-white-50 rounded-lg p-3">
-                <span className="text-sm text-white-500">Tempo estimado</span>
-                <p className="text-xl font-bold text-white-800">
+                <span className="text-xs sm:text-sm text-white-500">Tempo estimado</span>
+                <p className="text-lg sm:text-xl font-bold text-white-800">
                   {Math.round(rota.duracaoMin)} min
                 </p>
               </div>
             </div>
-            <h3 className="font-semibold text-white-700 mb-2">
+            <h3 className="font-semibold text-white-600 mb-2 text-sm sm:text-base">
               Ordem de passagem ({rota.pontosOrdenados.length} pontos)
             </h3>
-            <ol className="space-y-3 mb-6">
+            <ol className="space-y-3 mb-6 max-h-60 overflow-y-auto pr-1">
               {rota.pontosOrdenados.map((ponto, index) => (
                 <li key={ponto.id} className="flex gap-3 items-start">
                   <span className="bg-green-primary text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
                     {index + 1}
                   </span>
                   <div>
-                    <p className="font-medium text-white-800">{ponto.nomePontoColeta}</p>
-                    <p className="text-sm text-white-500">
+                    <p className="font-medium text-sm text-white-800">{ponto.nomePontoColeta}</p>
+                    <p className="text-xs sm:text-sm text-white-500">
                       {`${ponto.logradouro}, ${ponto.numero} - ${ponto.bairro}, ${ponto.cidade}${ponto.estado ? ` - ${ponto.estado}` : ""}`}
                     </p>
                   </div>
@@ -895,7 +865,7 @@ function MapPage() {
               ))}
             </ol>
             <div className="flex justify-end gap-2">
-              <Button onClick={() => setModalRotaAberta(false)} variant="secondary">
+              <Button onClick={() => setModalRotaAberta(false)} variant="secondary" size="sm">
                 Fechar
               </Button>
               <Button
@@ -904,6 +874,7 @@ function MapPage() {
                   setModalRotaAberta(false);
                 }}
                 variant="primary"
+                size="sm"
               >
                 Limpar Rota
               </Button>
@@ -911,7 +882,7 @@ function MapPage() {
           </div>
         </div>
       )}
-        <Footer />
+      <Footer />
     </div>
   );
 }

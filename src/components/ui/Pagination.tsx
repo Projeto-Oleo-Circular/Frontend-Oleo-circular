@@ -66,7 +66,7 @@ export const Pagination: React.FC<PaginationProps> = ({
               className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
                 currentPage === p
                   ? 'bg-green-400 text-white shadow-xs'
-                  : 'border border-white-200 bg-white text-white-200 hover:bg-white-100'
+                  : 'border border-white-200 bg-green-300 text-white-primary hover:bg-green-400/50 hover:text-green-primary'
               }`}
             >
               {p}

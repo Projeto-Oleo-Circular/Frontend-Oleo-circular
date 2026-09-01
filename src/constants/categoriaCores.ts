@@ -11,7 +11,7 @@ export const CATEGORIA_CORES: Record<number, CategoriaCor> = {
   4: { bg: "bg-teal-200", text: "text-teal-400", badgeBg: "bg-teal-300" },
   5: { bg: "bg-orange-100", text: "text-orange-primary", badgeBg: "bg-orange-300" },
   6: { bg: "bg-green-100", text: "text-green-primary", badgeBg: "bg-green-300" },
-  7: { bg: "bg-yellow-100", text: "text-yellow-primary", badgeBg: "bg-yellow-600" },
+  7: { bg: "bg-yellow-100", text: "text-yellow-primary", badgeBg: "bg-yellow-500" },
   8: { bg: "bg-red-100", text: "text-red-primary", badgeBg: "bg-red-200" },
 };
 

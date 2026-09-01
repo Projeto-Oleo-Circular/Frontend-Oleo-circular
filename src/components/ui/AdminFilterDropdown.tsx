@@ -40,14 +40,14 @@ export default function AdminFilterDropdown({
             <button
                 type="button"
                 onClick={() => setIsOpen((prev) => !prev)}
-                className="flex items-center justify-between gap-2 px-4 py-2 bg-transparent text-green-primary border border-green-primary rounded-lg font-semibold text-sm hover:bg-green-100 transition-colors focus:outline-none"
+                className="flex items-center justify-between gap-2 px-4 py-2 bg-transparent text-green-primary border border-green-primary rounded-lg font-semibold text-sm hover:bg-green-100 transition-colors focus:outline-none cursor-pointer"
             >
                 <span>{labelExibido}</span>
                 {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </button>
 
             {isOpen && (
-                <div className="absolute left-0 mt-1 w-48 bg-white border border-green-primary rounded-xl shadow-lg z-50 overflow-hidden py-1">
+                <div className="absolute left-0 sm:left-auto sm:right-0 mt-2 w-48 bg-white border border-green-primary rounded-xl shadow-lg z-50 overflow-hidden py-1">
                     {options.map((option) => {
                         const isSelected = option.value === value;
                         return (

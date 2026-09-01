@@ -296,10 +296,10 @@ function Requests() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-background overflow-x-hidden">
       <AdminTopNav />
 
-      <main className="w-full max-w-[1440px] mx-auto p-6">
+      <main className="w-full max-w-[1440px] mx-auto p-5">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-green-primary mt-2 sm:mt-5 mb-1">
@@ -310,7 +310,7 @@ function Requests() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center justify-start gap-3">
             <AdminFilterDropdown
               placeholder="Filtros"
               options={statusOptions}
@@ -452,7 +452,6 @@ function Requests() {
           }}
         />
 
-        {/* MODAL DE AGENDAR / CONCLUIR */}
         {(modal.tipo === "agendar" || modal.tipo === "concluir") && modal.solicitacao && (
           <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl animate-slide-down">
@@ -465,7 +464,6 @@ function Requests() {
                 </button>
               </div>
 
-              {/* MODAL AGENDAR */}
               {modal.tipo === "agendar" && (
                 <div className="space-y-4 mb-4">
                   <label className="block">
@@ -512,7 +510,6 @@ function Requests() {
                 </div>
               )}
 
-              {/* MODAL CONCLUIR */}
               {modal.tipo === "concluir" && (
                 <label className="block mb-4">
                   <span className="text-sm text-gray-700 font-medium">Volume coletado (litros)</span>
@@ -556,7 +553,6 @@ function Requests() {
           </div>
         )}
 
-        {/* MODAL DETALHES */}
         {modal.tipo === "detalhes" && modal.solicitacao && (
           <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl p-6 w-full max-w-lg shadow-xl animate-slide-down max-h-[90vh] overflow-y-auto">

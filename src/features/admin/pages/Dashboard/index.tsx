@@ -888,7 +888,7 @@ function Dashboard() {
           </div>
 
           <div className="bg-white rounded-xl shadow-sm border border-white-200 p-4">
-            <h2 className="font-bold text-white-700 mb-2">Previsão de Coleta</h2>
+            <h2 className="font-bold text-white-600 mb-2">Previsão de Coleta</h2>
             <p className="text-2xl font-bold text-green-primary">{formatLitros(stats.previsao.total)}</p>
             <p className="text-xs text-white-500">Próximos 7 dias</p>
             <p className="text-xs text-white-400 mt-1">
@@ -908,7 +908,7 @@ function Dashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
           <div className="bg-white rounded-xl shadow-sm border border-white-200 p-4">
             <div className="flex flex-wrap items-center justify-between mb-3">
-              <h2 className="font-bold text-white-700">Óleo Coletado (Histórico)</h2>
+              <h2 className="font-bold text-white-600">Óleo Coletado (Histórico)</h2>
               <div className="flex gap-1 bg-white-100 rounded-lg p-1">
                 <button
                   onClick={() => setPeriodoHistorico(1)}
@@ -973,7 +973,7 @@ function Dashboard() {
           </div>
 
           <div className="bg-white rounded-xl shadow-sm border border-white-200 p-4">
-            <h2 className="font-bold text-white-700 mb-3">Top Parceiros por Volume Coletado</h2>
+            <h2 className="font-bold text-white-600 mb-3">Top Parceiros por Volume Coletado</h2>
 
             {stats.topParceiros.length === 0 ? (
               <p className="text-sm text-white-500 py-8 text-center">
