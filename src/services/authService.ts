@@ -151,12 +151,12 @@ export const authService = {
   },
 
   async ForgotPassword(email: string): Promise<ForgotPasswordResponse> {
-    const response = await api.post('/parceiros/forgot-password', { email });
+    const response = await api.post('/parceiros/esqueci-senha', { email });
     return response.data;
   },
 
-  async resetPassword(data: ResetPasswordCredentials): Promise<ForgotPasswordResponse> {
-    const response = await api.post('/parceiros/reset-password', data);
+  async resetPassword(data: { token: string; novaSenha: string; confirmarSenha: string }): Promise<ForgotPasswordResponse> {
+    const response = await api.post('/parceiros/redefinir-senha', data);
     return response.data;
   },
 

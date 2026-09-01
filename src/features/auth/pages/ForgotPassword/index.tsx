@@ -45,7 +45,7 @@ function ForgotPassword() {
         try {
             await authService.ForgotPassword(formData.email);
 
-            addToast('E-mail enviado com sucesso!', 'success');
+            addToast('E-mail de redefinição enviado com sucesso!', 'success');
 
             setTimeout(() => {
                 navigate('/login');
@@ -69,8 +69,6 @@ function ForgotPassword() {
     return (
         <div className="flex flex-col h-screen">
             <HeaderPublic />
-            
-            {/* ToastContainer removido daqui pois o ToastProvider gerencia isso no topo */}
 
             <div className="flex flex-1 overflow-hidden">
                 <aside className="hidden md:flex md:w-1/2 relative">
@@ -120,6 +118,7 @@ function ForgotPassword() {
                                 type="submit"
                                 disabled={loading}
                                 variant="primary"
+                                className="cursor-pointer"
                             >
                                 {loading ? 'Enviando...' : 'Enviar'}
                             </Button>
@@ -128,6 +127,7 @@ function ForgotPassword() {
                                 type="button"
                                 onClick={() => navigate("/login")}
                                 variant="secondary"
+                                className="cursor-pointer"
                             >
                                 Voltar
                             </Button>
