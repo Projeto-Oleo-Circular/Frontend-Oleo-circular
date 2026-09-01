@@ -53,17 +53,30 @@ function Profile() {
         try {
             setSalvando(true)
 
-            // await adminAuthService.atualizarPerfil({
-            //     nome: form.nome.trim(),
-            //     email: form.email.trim(),
-            // })
+            const adminAtual = adminAuthService.getCurrentAdmin()
+            if (!adminAtual) throw new Error("Usuário não autenticado.")
 
-            // if (form.senhaAtual && form.novaSenha) {
-            //     await adminAuthService.alterarSenha({
-            //         senhaAtual: form.senhaAtual,
-            //         novaSenha: form.novaSenha,
-            //     })
-            // }
+            const payload: { nome: string; email: string; senhaAtual?: string; novaSenha?: string } = {
+                nome: form.nome.trim(),
+                email: form.email.trim(),
+            }
+
+            if (form.novaSenha) {
+                if (form.novaSenha.length < 6) {
+                    addToast("A nova senha deve ter pelo menos 6 caracteres.", "error")
+                    setSalvando(false)
+                    return
+                }
+                if (!form.senhaAtual) {
+                    addToast("Digite sua senha atual para autorizar a mudança.", "error")
+                    setSalvando(false)
+                    return
+                }
+                payload.senhaAtual = form.senhaAtual;
+                payload.novaSenha = form.novaSenha;
+            }
+
+            await adminAuthService.updateAdmin(adminAtual.id, payload)
 
             addToast("Perfil atualizado com sucesso!", "success")
             setForm((prev) => ({ ...prev, senhaAtual: "", novaSenha: "" }))
@@ -77,6 +90,7 @@ function Profile() {
                 email: dataAtualizada?.email || "",
             }))
         } catch (error: any) {
+            console.error("Erro ao salvar:", error)
             addToast(error.response?.data?.message || "Erro ao salvar alterações", "error")
         } finally {
             setSalvando(false)

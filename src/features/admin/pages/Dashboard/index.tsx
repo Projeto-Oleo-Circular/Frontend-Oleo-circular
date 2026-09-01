@@ -50,7 +50,7 @@ import {
   type StatusAprovacao,
 } from "../../../../services/adminPontosService";
 import Footer from "../../../../components/layout/Footer";
-
+import { IndicadoresAmbientais } from "../../../../components/dash/IndicadoresAmbientais";
 
 function startOfDay(d: Date) {
   const x = new Date(d);
@@ -1011,7 +1011,10 @@ function Dashboard() {
               </div>
             )}
           </div>
-        </div>
+         
+        </div> <div className="mt-6">
+  <IndicadoresAmbientais />
+</div>
       </main>
       <Footer />
     </div>

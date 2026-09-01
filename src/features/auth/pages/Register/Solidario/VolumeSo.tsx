@@ -35,7 +35,6 @@ function VolumeSo({
 
     const handleVolumeChange = (value: number) => {
         setVolume(value);
-        console.log('Volume selecionado:', value);
     };
 
     const handleNext = () => {

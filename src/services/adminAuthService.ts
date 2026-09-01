@@ -22,8 +22,14 @@ interface AdminLoginResponse {
     };
 }
 
-// Chaves próprias no localStorage — não podem ser as mesmas do authService de parceiro,
-// senão logar como admin derruba a sessão de parceiro no mesmo navegador (e vice-versa).
+interface UpdateAdminData {
+    nome?: string;
+    email?: string;
+    senhaAtual?: string; 
+    novaSenha?: string;  
+    nivelAcesso?: string;
+}
+
 const ADMIN_TOKEN_KEY = 'admin_token';
 const ADMIN_USER_KEY = 'admin_user';
 
@@ -39,8 +45,39 @@ export const adminAuthService = {
 
     async getMe(): Promise<AdminUser> {
         const response = await api.get<AdminUser>('/admin/me');
+        if (response.data) {
+            localStorage.setItem(ADMIN_USER_KEY, JSON.stringify(response.data));
+        }
         return response.data;
     },
+
+    async updateAdmin(id: string | number, data: UpdateAdminData): Promise<AdminUser> {
+        const response = await api.put<AdminUser>(`/admin/admins/${id}`, data);
+        
+        const currentAdmin = this.getCurrentAdmin();
+        if (currentAdmin && String(currentAdmin.id) === String(id)) {
+            const updatedUser = { ...currentAdmin, ...response.data };
+            localStorage.setItem(ADMIN_USER_KEY, JSON.stringify(updatedUser));
+        }
+
+        return response.data;
+    },
+
+    async atualizarPerfil(data: { nome: string; email: string }): Promise<AdminUser> {
+        const admin = this.getCurrentAdmin();
+        if (!admin) throw new Error("Usuário não autenticado.");
+        return this.updateAdmin(admin.id, data);
+    },
+
+    async alterarSenha(data: { senhaAtual: string; novaSenha: string }): Promise<AdminUser> {
+            const admin = this.getCurrentAdmin();
+            if (!admin) throw new Error("Usuário não autenticado.");
+            
+            return this.updateAdmin(admin.id, { 
+                senhaAtual: data.senhaAtual, 
+                novaSenha: data.novaSenha 
+            });
+        },
 
     getToken(): string | null {
         return localStorage.getItem(ADMIN_TOKEN_KEY);

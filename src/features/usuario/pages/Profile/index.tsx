@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, type ChangeEvent } from "react"
+import { useState, useEffect, type ChangeEvent } from "react"
 import { useNavigate } from "react-router-dom"
 import HeaderApp from "../../../../components/layout/HeaderApp"
 import Button from "../../../../components/ui/Button"
@@ -26,6 +26,7 @@ function Profile() {
     const [userData, setUserData] = useState<any>(null)
 
     const [form, setForm] = useState({
+        razaoSocial: "",
         nome: "",
         email: "",
         telefone: "",
@@ -33,20 +34,19 @@ function Profile() {
         novaSenha: "",
     })
 
-    const [mostrarSenhaAtual, setMostrarSenhaAtual] = useState(false)
-    const [mostrarNovaSenha, setMostrarNovaSenha] = useState(false)
-
     useEffect(() => {
         const carregar = async () => {
             try {
                 const data = await authService.getUserData()
                 setUserData(data)
-                setForm((prev) => ({
-                    ...prev,
-                    nome: data?.razaoSocial || data?.nome || "",
+                setForm({
+                    razaoSocial: data?.razaoSocial || "",
+                    nome: data?.nome || "",
                     email: data?.email || "",
                     telefone: data?.telefone || "",
-                }))
+                    senhaAtual: "",
+                    novaSenha: "",
+                })
             } catch (error) {
                 addToast("Erro ao carregar dados do perfil", "error")
             } finally {
@@ -65,26 +65,65 @@ function Profile() {
         try {
             setSalvando(true)
 
-            await authService.atualizarPerfil({
-                nome: form.nome.trim(),
-                email: form.email.trim(),
-                telefone: form.telefone.replace(/\D/g, ""),
-            })
-
-            if (form.senhaAtual && form.novaSenha) {
-                await authService.alterarSenha({
-                    senhaAtual: form.senhaAtual,
-                    novaSenha: form.novaSenha,
-                })
+            const payload: any = {}
+            
+            if (form.razaoSocial && form.razaoSocial.trim()) {
+                payload.razaoSocial = form.razaoSocial.trim()
+            }
+            
+            if (form.nome && form.nome.trim()) {
+                payload.nome = form.nome.trim()
+            }
+            
+            if (form.email && form.email.trim()) {
+                payload.email = form.email.trim()
+            }
+            
+            const telefoneLimpo = form.telefone ? form.telefone.replace(/\D/g, "") : ""
+            if (telefoneLimpo) {
+                if (telefoneLimpo.length >= 10 && telefoneLimpo.length <= 11) {
+                    payload.telefone = telefoneLimpo
+                } else {
+                    addToast("O telefone precisa ter DDD + Número (10 ou 11 dígitos).", "error")
+                    setSalvando(false)
+                    return
+                }
             }
 
+            // Validação de alteração de senha
+            if (form.novaSenha && form.novaSenha.trim() !== "") {
+                if (form.novaSenha.length < 6) {
+                    addToast("A nova senha deve ter pelo menos 6 caracteres.", "error")
+                    setSalvando(false)
+                    return
+                }
+                if (!form.senhaAtual) {
+                    addToast("Digite sua senha atual para autorizar a mudança.", "error")
+                    setSalvando(false)
+                    return
+                }
+                payload.senhaAtual = form.senhaAtual
+                payload.novaSenha = form.novaSenha
+            }
+
+            await authService.atualizarPerfil(payload)
+
             addToast("Perfil atualizado com sucesso!", "success")
-            setForm((prev) => ({ ...prev, senhaAtual: "", novaSenha: "" }))
             setEditando(false)
 
+            // Recarrega os dados atualizados direto da API
             const dataAtualizada = await authService.getUserData()
             setUserData(dataAtualizada)
+            setForm({
+                razaoSocial: dataAtualizada?.razaoSocial || "",
+                nome: dataAtualizada?.nome || "",
+                email: dataAtualizada?.email || "",
+                telefone: dataAtualizada?.telefone || "",
+                senhaAtual: "",
+                novaSenha: "",
+            })
         } catch (error: any) {
+            console.error("Erro ao salvar perfil do parceiro:", error)
             addToast(error.response?.data?.message || "Erro ao salvar alterações", "error")
         } finally {
             setSalvando(false)
@@ -93,7 +132,8 @@ function Profile() {
 
     const handleCancelarEdicao = () => {
         setForm({
-            nome: userData?.razaoSocial || userData?.nome || "",
+            razaoSocial: userData?.razaoSocial || "",
+            nome: userData?.nome || "",
             email: userData?.email || "",
             telefone: userData?.telefone || "",
             senhaAtual: "",
@@ -110,7 +150,7 @@ function Profile() {
         }, 300)
     }
 
-    const getInitials = (nome: string) => nome?.charAt(0)?.toUpperCase() || "U"
+    const getInitials = (texto: string) => texto?.charAt(0)?.toUpperCase() || "U"
 
     if (loading) {
         return (
@@ -120,11 +160,11 @@ function Profile() {
         )
     }
 
-    const nomeExibicao = userData?.razaoSocial || userData?.nome || "Usuário"
+    const nomePrincipal = userData?.razaoSocial || userData?.nome || "Usuário"
 
     return (
         <div className="flex flex-col h-full overflow-hidden bg-background relative">
-            <HeaderApp userName={nomeExibicao} />
+            <HeaderApp userName={nomePrincipal} />
 
             <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
                 <div className="w-full max-w-md mx-auto flex flex-col gap-6 pb-8">
@@ -145,13 +185,25 @@ function Profile() {
 
                     <div className="flex flex-col items-center gap-3">
                         <div className="w-28 h-28 rounded-full bg-green-primary text-white flex items-center justify-center text-4xl font-bold border-4 border-white shadow-md">
-                            {getInitials(nomeExibicao)}
+                            {getInitials(nomePrincipal)}
                         </div>
 
                         {!editando && (
                             <div className="text-center">
-                                <p className="text-lg font-bold text-black-primary">{nomeExibicao}</p>
-                                <p className="text-sm text-white-500">{userData?.email}</p>
+                                {/* 🚀 Renderiza Razão Social e Nome de forma limpa na tela */}
+                                {userData?.razaoSocial && (
+                                    <p className="text-lg font-bold text-black-primary">{userData.razaoSocial}</p>
+                                )}
+                                {userData?.nome && userData?.nome !== userData?.razaoSocial && (
+                                    <p className="text-sm font-medium text-white-600">Contato: {userData.nome}</p>
+                                )}
+                                {!userData?.razaoSocial && userData?.nome && (
+                                    <p className="text-lg font-bold text-black-primary">{userData.nome}</p>
+                                )}
+                                <p className="text-sm text-white-500 mt-0.5">{userData?.email}</p>
+                                {userData?.telefone && (
+                                    <p className="text-sm text-white-500 mt-0.5">{userData.telefone}</p>
+                                )}
                             </div>
                         )}
                     </div>
@@ -232,7 +284,17 @@ function Profile() {
                                     <Input
                                         type="text"
                                         icon="icon-name"
-                                        placeholder="Nome completo"
+                                        placeholder="Razão Social"
+                                        name="razaoSocial"
+                                        value={form.razaoSocial}
+                                        onChange={handleChange}
+                                        noBorder
+                                    />
+                                    <hr className="border-white-100" />
+                                    <Input
+                                        type="text"
+                                        icon="icon-name"
+                                        placeholder="Nome de Contato / Responsável"
                                         name="nome"
                                         value={form.nome}
                                         onChange={handleChange}

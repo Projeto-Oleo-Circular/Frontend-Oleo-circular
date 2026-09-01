@@ -65,7 +65,7 @@ export interface RegisterCredentials {
   outroParceiro?: string | null; 
   comoConheceu?: string;
   observacao?: string;
-  longitude?:number;
+  longitude?: number;
   latitude?: number;
 }
 
@@ -90,6 +90,7 @@ export interface ParceiroIndicador {
   ativo: boolean;
   criadoEm: string;
 }
+
 export interface CategoriaOption {
   value: number;
   label: string;
@@ -100,20 +101,19 @@ export interface DisponibilidadeResponse {
   documentoDisponivel: boolean | null;
 }
 
+// 🚀 Atualizado para suportar a razão social, nome, telefone e os campos de segurança de senha
 export interface AtualizarPerfilPayload {
+  razaoSocial?: string;
   nome?: string;
   email?: string;
   telefone?: string;
+  senhaAtual?: string; 
+  novaSenha?: string;  
 }
 
 export interface AlterarSenhaPayload {
   senhaAtual: string;
   novaSenha: string;
-}
-
-export interface DisponibilidadeResponse {
-  emailDisponivel: boolean | null;
-  documentoDisponivel: boolean | null;
 }
 
 export const authService = {
@@ -166,7 +166,6 @@ export const authService = {
   },
 
   async register(data: RegisterCredentials): Promise<RegisterResponse> {
-    console.log('Dados enviados para API:', data);
     const response = await api.post('/parceiros/register', data);
     return response.data;
   },
@@ -197,12 +196,10 @@ export const authService = {
 
   async getUserData() {
     try {
-      const userData = localStorage.getItem('userData');
-      if (userData) {
-        return JSON.parse(userData);
-      }
-
       const response = await api.get('/parceiros/me');
+      if (response.data) {
+        localStorage.setItem('userData', JSON.stringify(response.data));
+      }
       return response.data;
     } catch (error) {
       console.error('Erro ao buscar dados do usuário:', error);
@@ -224,9 +221,13 @@ export const authService = {
     return !!localStorage.getItem('token');
   },
 
-  // ⚠️ Suposições
   async atualizarPerfil(payload: AtualizarPerfilPayload) {
     const response = await api.put('/parceiros/me', payload);
+    
+    if (response.data) {
+       localStorage.setItem('userData', JSON.stringify(response.data));
+    }
+    
     return response.data;
   },
 

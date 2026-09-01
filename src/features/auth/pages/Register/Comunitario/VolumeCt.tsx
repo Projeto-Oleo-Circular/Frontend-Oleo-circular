@@ -35,7 +35,6 @@ function VolumeCt({
 
     const handleVolumeChange = (value: number) => {
         setVolume(value);
-        console.log('Volume selecionado:', value);
     };
 
     const handleNext = () => {
@@ -96,7 +95,7 @@ function VolumeCt({
                             <Button
                                 type="button"
                                 onClick={() => {
-                                    console.log('🔙 Botão Voltar clicado no VolumeCt');
+                                    
                                     onBack();
                                 }}
                                 variant="secondary"
