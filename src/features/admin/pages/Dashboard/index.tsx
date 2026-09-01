@@ -776,105 +776,117 @@ function Dashboard() {
           <div className="mb-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md p-3">{erro}</div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <SummaryCard
-            label="ÓLEO COLETADO - SEMANA"
-            value={formatLitros(stats.volumeSemana)}
-            subtext={`${stats.volumeSemanaPct >= 0 ? `+${stats.volumeSemanaPct}%` : `${stats.volumeSemanaPct}%`} vs semana anterior`}
-            labelColor="text-green-primary"
-            iconBgColor="bg-green-100"
-            icon={<img src="/assets/icons/icon-calendar-week.svg" className="w-5 h-5" alt="Ícone Semana" />}            
-            sparklineData={sparklineSemana}
-            sparklineColor="#1A6E3C"
-          />
-          <SummaryCard
-            label="ÓLEO COLETADO - MÊS"
-            value={formatLitros(stats.volumeMes)}
-            subtext={`${stats.volumeMesPct >= 0 ? `+${stats.volumeMesPct}%` : `${stats.volumeMesPct}%`} vs mês anterior`}
-            labelColor="text-blue-primary"
-            iconBgColor="bg-blue-100"
-            icon={<img src="/assets/icons/icon-calendar-month.svg" className="w-5 h-5" alt="Ícone Mês" />}            
-            sparklineData={sparklineMensal}
-            sparklineColor="#1C60AF"
-          />
-          <SummaryCard
-            label="ÓLEO COLETADO - ANO"
-            value={formatLitros(stats.volumeAno)}
-            subtext={`${stats.volumeAnoPct >= 0 ? `+${stats.volumeAnoPct}%` : `${stats.volumeAnoPct}%`} vs ano anterior`}
-            labelColor="text-orange-primary"
-            iconBgColor="bg-orange-100"
-            icon={<img src="/assets/icons/icon-coleta-anual.svg" className="w-5 h-5" alt="Ícone Ano" />}            
-            sparklineData={sparklineMensal}
-            sparklineColor="#DF8729"
-          />
+        {/* LINHA 1: Indicadores Ambientais */}
+        <div className="mb-6">
+          <IndicadoresAmbientais />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-          <SummaryCard
-            label="PARCEIROS ATIVOS"
-            value={String(stats.parceirosAtivos)}
-            subtext="+12% vs mês anterior"
-            labelColor="text-violet-primary"
-            iconBgColor="bg-violet-100"
-            icon={<Users className="w-5 h-5 text-violet-600" />}
-          />
-          <SummaryCard
-            label="PONTOS DE COLETA"
-            value={String(stats.pontosColeta)}
-            subtext="+8% vs mês anterior"
-            labelColor="text-teal-primary"
-            iconBgColor="bg-teal-100"
-            icon={<MapPin className="w-5 h-5 text-teal-500" />}
-          />
-        </div>
-
-        <div className="mt-8">
+        {/* LINHA 2: Mapa */}
+        <div className="mb-6">
           <MapSection solicitacoes={todasSolicitacoes} />
         </div>
 
-        <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* LINHA 3: 5 Cards - 3 em cima e 2 embaixo */}
+        <div className="mb-6">
+          {/* Primeira linha: 3 cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+            <SummaryCard
+              label="ÓLEO COLETADO - SEMANA"
+              value={formatLitros(stats.volumeSemana)}
+              subtext={`${stats.volumeSemanaPct >= 0 ? `+${stats.volumeSemanaPct}%` : `${stats.volumeSemanaPct}%`} vs semana anterior`}
+              labelColor="text-green-primary"
+              iconBgColor="bg-green-100"
+              icon={<img src="/assets/icons/icon-calendar-week.svg" className="w-5 h-5" alt="Ícone Semana" />}            
+              sparklineData={sparklineSemana}
+              sparklineColor="#1A6E3C"
+            />
+            <SummaryCard
+              label="ÓLEO COLETADO - MÊS"
+              value={formatLitros(stats.volumeMes)}
+              subtext={`${stats.volumeMesPct >= 0 ? `+${stats.volumeMesPct}%` : `${stats.volumeMesPct}%`} vs mês anterior`}
+              labelColor="text-blue-primary"
+              iconBgColor="bg-blue-100"
+              icon={<img src="/assets/icons/icon-calendar-month.svg" className="w-5 h-5" alt="Ícone Mês" />}            
+              sparklineData={sparklineMensal}
+              sparklineColor="#1C60AF"
+            />
+            <SummaryCard
+              label="ÓLEO COLETADO - ANO"
+              value={formatLitros(stats.volumeAno)}
+              subtext={`${stats.volumeAnoPct >= 0 ? `+${stats.volumeAnoPct}%` : `${stats.volumeAnoPct}%`} vs ano anterior`}
+              labelColor="text-orange-primary"
+              iconBgColor="bg-orange-100"
+              icon={<img src="/assets/icons/icon-coleta-anual.svg" className="w-5 h-5" alt="Ícone Ano" />}            
+              sparklineData={sparklineMensal}
+              sparklineColor="#DF8729"
+            />
+          </div>
+
+          {/* Segunda linha: 2 cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <SummaryCard
+              label="PARCEIROS ATIVOS"
+              value={String(stats.parceirosAtivos)}
+              subtext="+12% vs mês anterior"
+              labelColor="text-violet-primary"
+              iconBgColor="bg-violet-100"
+              icon={<Users className="w-5 h-5 text-violet-600" />}
+            />
+            <SummaryCard
+              label="PONTOS DE COLETA"
+              value={String(stats.pontosColeta)}
+              subtext="+8% vs mês anterior"
+              labelColor="text-teal-primary"
+              iconBgColor="bg-teal-100"
+              icon={<MapPin className="w-5 h-5 text-teal-500" />}
+            />
+          </div>
+        </div>
+
+        {/* LINHA 4: Solicitações de Coleta | Óleo Coletado (Histórico) */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <div className="bg-white rounded-2xl shadow-sm border border-white-200 p-5">
             <div className="flex items-center mb-4">
-          <h2 className="font-bold text-lg text-black-primary">Solicitações de Coleta</h2>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="bg-red-50 rounded-xl p-4 flex flex-col items-center text-center gap-1">
-            <div className="w-11 h-11 rounded-full flex items-center justify-center mb-1">
-              <img src="/assets/icons/icon-relogio2.svg" alt="" className="w-5 h-5 sm:w-7 sm:h-7" />
+              <h2 className="font-bold text-lg text-black-primary">Solicitações de Coleta</h2>
             </div>
-            <p className="text-sm text-black-primary font-medium">Pendentes</p>
-            <p className="text-3xl font-bold text-red-500">{stats.contagemStatus.AGUARDANDO}</p>
-            <p className="text-xs text-black-200">Aguardando agendamento</p>
-          </div>
 
-          <div className="bg-orange-50 rounded-xl p-4 flex flex-col items-center text-center gap-1">
-            <div className="w-11 h-11 rounded-full flex items-center justify-center mb-1">
-              <img src="/assets/icons/icon-calendar.svg" alt="" className="w-5 h-5 sm:w-7 sm:h-7" />
-            </div>
-            <p className="text-sm text-black-primary font-medium">Agendadas</p>
-            <p className="text-3xl font-bold text-orange-500">{stats.contagemStatus.AGENDADA}</p>
-            <p className="text-xs text-black-200">Próximos 3 dias</p>
-          </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="bg-red-50 rounded-xl p-4 flex flex-col items-center text-center gap-1">
+                <div className="w-11 h-11 rounded-full flex items-center justify-center mb-1">
+                  <img src="/assets/icons/icon-relogio2.svg" alt="" className="w-5 h-5 sm:w-7 sm:h-7" />
+                </div>
+                <p className="text-sm text-black-primary font-medium">Pendentes</p>
+                <p className="text-3xl font-bold text-red-500">{stats.contagemStatus.AGUARDANDO}</p>
+                <p className="text-xs text-black-200">Aguardando agendamento</p>
+              </div>
 
-          <div className="bg-blue-50 rounded-xl p-4 flex flex-col items-center text-center gap-1">
-            <div className="w-11 h-11 rounded-full flex items-center justify-center mb-1">
-              <img src="/assets/icons/icon-caminhao2.svg" alt="" className="w-5 h-5 sm:w-7 sm:h-7" />
-            </div>
-            <p className="text-sm text-black-primary font-medium">Em rota</p>
-            <p className="text-3xl font-bold text-blue-500">{stats.contagemStatus.EM_ROTA}</p>
-            <p className="text-xs text-black-200">Coletas em andamento</p>
-          </div>
+              <div className="bg-orange-50 rounded-xl p-4 flex flex-col items-center text-center gap-1">
+                <div className="w-11 h-11 rounded-full flex items-center justify-center mb-1">
+                  <img src="/assets/icons/icon-calendar.svg" alt="" className="w-5 h-5 sm:w-7 sm:h-7" />
+                </div>
+                <p className="text-sm text-black-primary font-medium">Agendadas</p>
+                <p className="text-3xl font-bold text-orange-500">{stats.contagemStatus.AGENDADA}</p>
+                <p className="text-xs text-black-200">Próximos 3 dias</p>
+              </div>
 
-          <div className="bg-green-50 rounded-xl p-4 flex flex-col items-center text-center gap-1">
-            <div className="w-11 h-11 rounded-full flex items-center justify-center mb-1">
-              <img src="/assets/icons/icon-check.svg" alt="" className="w-5 h-5 sm:w-7 sm:h-7" />
+              <div className="bg-blue-50 rounded-xl p-4 flex flex-col items-center text-center gap-1">
+                <div className="w-11 h-11 rounded-full flex items-center justify-center mb-1">
+                  <img src="/assets/icons/icon-caminhao2.svg" alt="" className="w-5 h-5 sm:w-7 sm:h-7" />
+                </div>
+                <p className="text-sm text-black-primary font-medium">Em rota</p>
+                <p className="text-3xl font-bold text-blue-500">{stats.contagemStatus.EM_ROTA}</p>
+                <p className="text-xs text-black-200">Coletas em andamento</p>
+              </div>
+
+              <div className="bg-green-50 rounded-xl p-4 flex flex-col items-center text-center gap-1">
+                <div className="w-11 h-11 rounded-full flex items-center justify-center mb-1">
+                  <img src="/assets/icons/icon-check.svg" alt="" className="w-5 h-5 sm:w-7 sm:h-7" />
+                </div>
+                <p className="text-sm text-black-primary font-medium">Concluído</p>
+                <p className="text-3xl font-bold text-green-600">{stats.contagemStatus.CONCLUIDA}</p>
+                <p className="text-xs text-black-200">Esta semana</p>
+              </div>
             </div>
-            <p className="text-sm text-black-primary font-medium">Concluído</p>
-            <p className="text-3xl font-bold text-green-600">{stats.contagemStatus.CONCLUIDA}</p>
-            <p className="text-xs text-black-200">Esta semana</p>
-          </div>
-        </div>
 
             <button
               onClick={() => navigate("/admin/requests")}
@@ -887,25 +899,6 @@ function Dashboard() {
             </button>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-white-200 p-4">
-            <h2 className="font-bold text-white-600 mb-2">Previsão de Coleta</h2>
-            <p className="text-2xl font-bold text-green-primary">{formatLitros(stats.previsao.total)}</p>
-            <p className="text-xs text-white-500">Próximos 7 dias</p>
-            <p className="text-xs text-white-400 mt-1">
-              Baseado nas solicitações {stats.previsao.detalhes.map(d => d.status.toLowerCase()).join(' e ')}
-            </p>
-            <div className="mt-4 space-y-2">
-              {stats.previsao.detalhes.map((item) => (
-                <div key={item.status} className="flex justify-between text-sm border-b border-white-100 pb-1">
-                  <span className="text-white-600">{item.status}</span>
-                  <span className="font-semibold">{formatLitros(item.volume)} ({item.count} solicitações)</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
           <div className="bg-white rounded-xl shadow-sm border border-white-200 p-4">
             <div className="flex flex-wrap items-center justify-between mb-3">
               <h2 className="font-bold text-white-600">Óleo Coletado (Histórico)</h2>
@@ -971,6 +964,26 @@ function Dashboard() {
               </span>
             </div>
           </div>
+        </div>
+
+        {/* LINHA 5: Previsão de Coleta | Top Parceiros por Volume Coletado */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="bg-white rounded-xl shadow-sm border border-white-200 p-4">
+            <h2 className="font-bold text-white-600 mb-2">Previsão de Coleta</h2>
+            <p className="text-2xl font-bold text-green-primary">{formatLitros(stats.previsao.total)}</p>
+            <p className="text-xs text-white-500">Próximos 7 dias</p>
+            <p className="text-xs text-white-400 mt-1">
+              Baseado nas solicitações {stats.previsao.detalhes.map(d => d.status.toLowerCase()).join(' e ')}
+            </p>
+            <div className="mt-4 space-y-2">
+              {stats.previsao.detalhes.map((item) => (
+                <div key={item.status} className="flex justify-between text-sm border-b border-white-100 pb-1">
+                  <span className="text-white-600">{item.status}</span>
+                  <span className="font-semibold">{formatLitros(item.volume)} ({item.count} solicitações)</span>
+                </div>
+              ))}
+            </div>
+          </div>
 
           <div className="bg-white rounded-xl shadow-sm border border-white-200 p-4">
             <h2 className="font-bold text-white-600 mb-3">Top Parceiros por Volume Coletado</h2>
@@ -1011,10 +1024,7 @@ function Dashboard() {
               </div>
             )}
           </div>
-         
-        </div> <div className="mt-6">
-  <IndicadoresAmbientais />
-</div>
+        </div>
       </main>
       <Footer />
     </div>
