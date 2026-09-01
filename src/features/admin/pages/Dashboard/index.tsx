@@ -457,36 +457,40 @@ function MapSection({ solicitacoes }: { solicitacoes: SolicitacaoColeta[] }) {
       </div>
 
       <div className="p-4">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="flex-[8] relative">
+        <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-2 mb-4">
+          <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white-400 w-4 h-4" />
             <Input
               type="text"
               placeholder="Buscar por nome, parceiro ou endereço"
               value={filtroTexto}
               onChange={(e) => setFiltroTexto(e.target.value)}
-              className="pl-10"
+              className="pl-10 w-full"
             />
           </div>
-          <Button
-            onClick={() => navigate("/admin/map")}
-            variant="secondary"
-            className="flex-[1] flex items-center justify-center"
-          >
-            <span className="hidden sm:inline">Ver mapa</span>
-          </Button>
-          <Button
-            onClick={carregarPontos}
-            disabled={carregandoPontos}
-            variant="terciary"
-            className="flex-[1] flex items-center justify-center"
-          >
-            {carregandoPontos ? (
-              <div className="w-4 h-4 border-2 border-green-primary border-t-transparent rounded-full animate-spin" />
-            ) : (
-              "Atualizar"
-            )}
-          </Button>
+
+        <div className="flex items-center gap-2 shrink-0">
+            <Button
+              onClick={() => navigate("/admin/map")}
+              variant="secondary"
+              className="flex-1 lg:flex-initial flex items-center justify-center gap-1.5 whitespace-nowrap px-4"
+            >
+              Ver mapa
+            </Button>
+
+            <Button
+              onClick={carregarPontos}
+              disabled={carregandoPontos}
+              variant="terciary"
+              className="flex-1 lg:flex-initial flex items-center justify-center whitespace-nowrap px-4"
+            >
+              {carregandoPontos ? (
+                <div className="w-4 h-4 border-2 border-green-primary border-t-transparent rounded-full animate-spin" />
+              ) : (
+                "Atualizar"
+              )}
+            </Button>
+          </div>
         </div>
 
         <div className="h-[400px] rounded-xl overflow-hidden bg-white-100">
@@ -595,7 +599,7 @@ interface DashboardStats {
   previsao: { total: number; detalhes: { status: string; volume: number; count: number }[] };
   contagemStatus: Record<StatusSolicitacao, number>;
   historicoMensal: { mes: string; volume: number }[];
-  destinacao: { nome: string; valor: number; percentual: number }[];
+  topParceiros: { nome: string; volume: number }[];
 }
 
 function Dashboard() {
@@ -646,25 +650,32 @@ function Dashboard() {
         const volumeAno = sumVolumeColetado(concluidas, anoAtualInicio, anoAtualFim);
         const volumeAnoAnt = sumVolumeColetado(concluidas, anoAnteriorInicio, anoAnteriorFim);
 
+        const volumePorParceiro = new Map<number, { nome: string; volume: number }>();
+          concluidas.forEach((item) => {
+            const parceiro = (item as any).parceiro;
+            if (!parceiro || !item.volumeColetado) return;
+            const atual = volumePorParceiro.get(parceiro.id) || { nome: parceiro.razaoSocial, volume: 0 };
+            atual.volume += item.volumeColetado;
+            volumePorParceiro.set(parceiro.id, atual);
+          });
+          const topParceiros = Array.from(volumePorParceiro.values())
+            .sort((a, b) => b.volume - a.volume)
+            .slice(0, 5);
+
         const meses = [
           "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez",
-          "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
+          "Jan", "Fev", "Mar", "Abr", "Mai",
         ];
         const hoje = new Date();
-        const historicoMensal = meses.map((mes, i) => {
-          const mesOffset = 11 - i;
-          const inicioMes = startOfMonth(-mesOffset);
-          const fimMes = new Date(hoje.getFullYear(), hoje.getMonth() - mesOffset + 1, 1);
-          const volume = sumVolumeColetado(concluidas, inicioMes, fimMes);
-          return { mes, volume };
-        });
-
-        const destinacao = [
-          { nome: "Biodiesel", valor: 92750, percentual: 72 },
-          { nome: "Sabão / Cosméticos", valor: 22150, percentual: 17 },
-          { nome: "Ração Animal", valor: 8650, percentual: 7 },
-          { nome: "Outros", valor: 5100, percentual: 4 },
-        ];
+        const historicoMensal = Array.from({ length: 12 }, (_, i) => {
+        const offset = 11 - i;
+        const inicioMes = startOfMonth(-offset);
+        const fimMes = new Date(hoje.getFullYear(), hoje.getMonth() - offset + 1, 1);
+        const volume = sumVolumeColetado(concluidas, inicioMes, fimMes);
+        const rotulo = inicioMes.toLocaleDateString("pt-BR", { month: "short" });
+        const mes = rotulo.charAt(0).toUpperCase() + rotulo.slice(1).replace(".", "");
+        return { mes, volume };
+      })
 
         setStats({
           volumeSemana,
@@ -678,7 +689,7 @@ function Dashboard() {
           previsao,
           contagemStatus,
           historicoMensal,
-          destinacao,
+          topParceiros,
         });
       } catch (e) {
         console.error(e);
@@ -821,37 +832,58 @@ function Dashboard() {
           <MapSection solicitacoes={todasSolicitacoes} />
         </div>
 
-        {/* SEÇÃO 3: Solicitações, Previsão, Histórico, Destinação */}
         <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white rounded-xl shadow-sm border border-white-200 p-4">
-            <h2 className="font-bold text-white-700 mb-3">Solicitações de Coleta</h2>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-orange-50 rounded-lg p-3 border-l-4 border-orange-500">
-                <p className="text-xs text-orange-600 font-medium">Pendentes</p>
-                <p className="text-2xl font-bold text-white-800">{stats.contagemStatus.AGUARDANDO}</p>
-                <p className="text-xs text-white-500">Aguardando agendamento</p>
-              </div>
-              <div className="bg-blue-50 rounded-lg p-3 border-l-4 border-blue-500">
-                <p className="text-xs text-blue-600 font-medium">Agendadas</p>
-                <p className="text-2xl font-bold text-white-800">{stats.contagemStatus.AGENDADA}</p>
-                <p className="text-xs text-white-500">Próximos 3 dias</p>
-              </div>
-              <div className="bg-violet-50 rounded-lg p-3 border-l-4 border-violet-500">
-                <p className="text-xs text-violet-600 font-medium">Em Rota</p>
-                <p className="text-2xl font-bold text-white-800">{stats.contagemStatus.EM_ROTA}</p>
-                <p className="text-xs text-white-500">Coletas em andamento</p>
-              </div>
-              <div className="bg-green-50 rounded-lg p-3 border-l-4 border-green-500">
-                <p className="text-xs text-green-600 font-medium">Concluídas</p>
-                <p className="text-2xl font-bold text-white-800">{stats.contagemStatus.CONCLUIDA}</p>
-                <p className="text-xs text-white-500">Esta semana</p>
-              </div>
+          <div className="bg-white rounded-2xl shadow-sm border border-white-200 p-5">
+            <div className="flex items-center mb-4">
+          <h2 className="font-bold text-lg text-black-primary">Solicitações de Coleta</h2>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="bg-red-50 rounded-xl p-4 flex flex-col items-center text-center gap-1">
+            <div className="w-11 h-11 rounded-full flex items-center justify-center mb-1">
+              <img src="/assets/icons/icon-relogio2.svg" alt="" className="w-5 h-5 sm:w-7 sm:h-7" />
             </div>
+            <p className="text-sm text-black-primary font-medium">Pendentes</p>
+            <p className="text-3xl font-bold text-red-500">{stats.contagemStatus.AGUARDANDO}</p>
+            <p className="text-xs text-black-200">Aguardando agendamento</p>
+          </div>
+
+          <div className="bg-orange-50 rounded-xl p-4 flex flex-col items-center text-center gap-1">
+            <div className="w-11 h-11 rounded-full flex items-center justify-center mb-1">
+              <img src="/assets/icons/icon-calendar.svg" alt="" className="w-5 h-5 sm:w-7 sm:h-7" />
+            </div>
+            <p className="text-sm text-black-primary font-medium">Agendadas</p>
+            <p className="text-3xl font-bold text-orange-500">{stats.contagemStatus.AGENDADA}</p>
+            <p className="text-xs text-black-200">Próximos 3 dias</p>
+          </div>
+
+          <div className="bg-blue-50 rounded-xl p-4 flex flex-col items-center text-center gap-1">
+            <div className="w-11 h-11 rounded-full flex items-center justify-center mb-1">
+              <img src="/assets/icons/icon-caminhao2.svg" alt="" className="w-5 h-5 sm:w-7 sm:h-7" />
+            </div>
+            <p className="text-sm text-black-primary font-medium">Em rota</p>
+            <p className="text-3xl font-bold text-blue-500">{stats.contagemStatus.EM_ROTA}</p>
+            <p className="text-xs text-black-200">Coletas em andamento</p>
+          </div>
+
+          <div className="bg-green-50 rounded-xl p-4 flex flex-col items-center text-center gap-1">
+            <div className="w-11 h-11 rounded-full flex items-center justify-center mb-1">
+              <img src="/assets/icons/icon-check.svg" alt="" className="w-5 h-5 sm:w-7 sm:h-7" />
+            </div>
+            <p className="text-sm text-black-primary font-medium">Concluído</p>
+            <p className="text-3xl font-bold text-green-600">{stats.contagemStatus.CONCLUIDA}</p>
+            <p className="text-xs text-black-200">Esta semana</p>
+          </div>
+        </div>
+
             <button
               onClick={() => navigate("/admin/requests")}
-              className="mt-3 text-sm text-green-primary font-medium hover:underline flex items-center gap-1"
+              className="mt-4 w-full border-2 border-green-primary text-green-primary font-bold text-sm rounded-xl py-2.5 flex items-center justify-center gap-2 hover:bg-green-50 transition-colors"
             >
-              Ver todas as solicitações →
+              Ver todas as solicitações
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
             </button>
           </div>
 
@@ -870,12 +902,6 @@ function Dashboard() {
                 </div>
               ))}
             </div>
-            <button
-              onClick={() => navigate("/admin/previsao")}
-              className="mt-3 text-sm text-green-primary font-medium hover:underline flex items-center gap-1"
-            >
-              Ver previsão detalhada →
-            </button>
           </div>
         </div>
 
@@ -947,33 +973,43 @@ function Dashboard() {
           </div>
 
           <div className="bg-white rounded-xl shadow-sm border border-white-200 p-4">
-            <h2 className="font-bold text-white-700 mb-2">Destinação do Óleo</h2>
-            <div className="h-52">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={stats.destinacao}
-                    dataKey="valor"
-                    nameKey="nome"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                    label={({ nome, percentual }) => `${nome}: ${percentual}%`}
-                  >
-                    {stats.destinacao.map((_, idx) => (
-                      <Cell key={`cell-${idx}`} fill={COLORS[idx % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => `${value} L`} />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-            <button
-              onClick={() => navigate("/admin/destinacao")}
-              className="mt-2 text-sm text-green-primary font-medium hover:underline flex items-center gap-1"
-            >
-              Ver detalhes de destinação →
-            </button>
+            <h2 className="font-bold text-white-700 mb-3">Top Parceiros por Volume Coletado</h2>
+
+            {stats.topParceiros.length === 0 ? (
+              <p className="text-sm text-white-500 py-8 text-center">
+                Nenhuma coleta concluída ainda.
+              </p>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {stats.topParceiros.map((p, index) => {
+                  const maior = stats.topParceiros[0].volume || 1;
+                  const largura = Math.max(8, Math.round((p.volume / maior) * 100));
+                  return (
+                    <div key={p.nome} className="flex items-center gap-3">
+                      <span className="text-xs font-bold text-white-400 w-4 shrink-0">
+                        {index + 1}º
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-sm font-medium text-black-primary truncate" title={p.nome}>
+                            {p.nome}
+                          </span>
+                          <span className="text-sm font-bold text-green-primary shrink-0 ml-2">
+                            {formatLitros(p.volume)}
+                          </span>
+                        </div>
+                        <div className="w-full h-2 bg-white-100 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-green-primary rounded-full transition-all"
+                            style={{ width: `${largura}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       </main>
