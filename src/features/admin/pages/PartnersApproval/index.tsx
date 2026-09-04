@@ -15,7 +15,7 @@ import AdminTopNav from "../../../../components/layout/AdminTopNav";
 import AdminFilterDropdown, {
   type FilterOption,
 } from "../../../../components/ui/AdminFilterDropdown";
-
+import { CriarParceiroModal, NovoParceiroPayload } from "../../../../components/modal/CriarParceiroModal";
 import {
   User,
   Phone,
@@ -29,6 +29,7 @@ import {
   XCircle,
   ChevronLeft,
   ChevronRight,
+  Plus,
 } from "lucide-react";
 import Button from "../../../../components/ui/Button";
 import Footer from "../../../../components/layout/Footer";
@@ -48,14 +49,6 @@ function formatarData(iso?: string | null): string {
   const data = new Date(iso);
   
   return data.toLocaleDateString("pt-BR")
-
-  /*
-  if (Number.isNaN(data.getTime())) return "—";
-  return `${data.toLocaleDateString("pt-BR")} ${data.toLocaleTimeString("pt-BR", {
-    hour: "2-digit",
-    minute: "2-digit",
-  })}`;
-  */
 }
 
 // Helper para padronizar o extrato da contagem total independente da resposta
@@ -76,10 +69,10 @@ function extrairItens(resposta: ListarParceirosResponse | Parceiro[]): Parceiro[
 
 // Helper para obter o nome ou razão social com base no tipo de parceiro
 function obterNomeOuRazaoSocial(parceiro: Parceiro): string {
-  if (parceiro.tipoParceiro === "SOLIDARIO") {
+  if (parceiro.tipoParceiro === "SOLIDARIO" || parceiro.tipoParceiro === "COMUNITARIO") {
     return parceiro.nome || "—";
   }
-  // Para INSTITUCIONAL, COMUNITARIO e demais pessoas jurídicas
+  // Para INSTITUCIONAL e demais pessoas jurídicas
   return parceiro.razaoSocial || parceiro.nome || "—";
 }
 
@@ -90,6 +83,7 @@ export function PartnersApproval() {
   const [salvando, setSalvando] = useState(false);
   const [observacaoModal, setObservacaoModal] = useState("");
   const [contagens, setContagens] = useState<ContagensParceiros | null>(null);
+  const [isModalCriarOpen, setIsModalCriarOpen] = useState(false);
 
   // Paginação e Filtros
   const [page, setPage] = useState(1);
@@ -223,6 +217,61 @@ export function PartnersApproval() {
     return "—";
   };
 
+  const handleAbrirModalCriar = () => {
+    setIsModalCriarOpen(true);
+  };
+
+  const handleCriarParceiro = async (dados: NovoParceiroPayload) => {
+  setSalvando(true);
+  try {
+    // Usar o mesmo endpoint de registro
+    await authService.register({
+      tipoPessoa: dados.tipoPessoa,
+      tipoParceiro: dados.tipoParceiro,
+      razaoSocial: dados.razaoSocial,
+      nome: dados.nome,
+      email: dados.email,
+      senha: dados.senha,
+      documento: dados.documento,
+      telefone: dados.telefone,
+      porte: dados.porte,
+      aceiteMarketing: dados.aceiteMarketing,
+      responsavelLegal: dados.responsavelLegal,
+      responsavelLegalCpf: dados.responsavelLegalCpf,
+      cep: dados.cep,
+      logradouro: dados.logradouro,
+      numero: dados.numero,
+      cidade: dados.cidade,
+      bairro: dados.bairro,
+      estado: dados.estado,
+      complemento: dados.complemento,
+      categoria: dados.categoria,
+      expectativaGeracao: dados.expectativaGeracao,
+      capacidadeBombona: dados.capacidadeBombona,
+      nivelAtualPct: dados.nivelAtualPct,
+      statusBombona: dados.statusBombona,
+      redesSociais: dados.redesSociais,
+      site: dados.site,
+      aceiteDivulgacao: dados.aceiteDivulgacao,
+      parceiroIndicadorId: dados.parceiroIndicadorId,
+      outroParceiro: dados.outroParceiro,
+      comoConheceu: dados.comoConheceu,
+      observacao: dados.observacao,
+      longitude: dados.longitude,
+      latitude: dados.latitude,
+    });
+
+    // Recarregar a lista
+    await Promise.all([carregarParceiros(), carregarContagensParceiros()]);
+    setIsModalCriarOpen(false);
+  } catch (error) {
+    console.error("Erro ao criar parceiro:", error);
+    throw error;
+  } finally {
+    setSalvando(false);
+  }
+};
+
   // Garante filtragem client-side caso a API devolva lista inteira e não filtre no backend
   const parceirosFiltrados = parceiros.filter((parceiro) => {
     const atendeStatus =
@@ -279,76 +328,90 @@ export function PartnersApproval() {
       <AdminTopNav />
 
       <main className="w-full max-w-[1440px] mx-auto p-6 flex-1">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-          <div>
+       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-green-primary mt-2 sm:mt-5 mb-1">
-              Aprovação de Parceiros
+            Aprovação de Parceiros
             </h1>
             <p className="text-sm sm:text-base text-white-500">
-              Analise, filtre e aprove os parceiros cadastrados.
+            Analise, filtre e aprove os parceiros cadastrados.
             </p>
-          </div>
+        </div>
 
-          <div className="flex flex-col sm:flex-row items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-center gap-3">
             <div className="relative w-full sm:w-64">
-              <input
+            <input
                 type="text"
                 placeholder="Buscar parceiro..."
                 value={termoBusca}
                 onChange={handleSearchChange}
                 className="w-full pl-9 pr-4 py-2 text-sm bg-white border border-white-200 rounded-lg text-black-primary focus:outline-none focus:border-green-primary"
-              />
-              <Search className="w-4 h-4 text-white-400 absolute left-3 top-2.5" />
+            />
+            <Search className="w-4 h-4 text-white-400 absolute left-3 top-2.5" />
             </div>
 
             <AdminFilterDropdown
-              placeholder="Filtros"
-              options={statusOptions}
-              value={statusFiltro}
-              onChange={(val) => handleFilterChange(val as StatusAprovacao | "")}
+            placeholder="Filtros"
+            options={statusOptions}
+            value={statusFiltro}
+            onChange={(val) => handleFilterChange(val as StatusAprovacao | "")}
             />
-          </div>
+        </div>
         </div>
 
         {/* CARDS DE RESUMO */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-          <SummaryCard
+        <SummaryCard
             label="Pendentes"
             value={contagens?.pendentes}
             subtext="Parceiros"
             labelColor="text-orange-primary"
             iconBgColor="bg-orange-200"
             icon={<Clock className="w-5 h-5 sm:w-6 sm:h-6 text-orange-primary" />}
-          />
+        />
 
-          <SummaryCard
+        <SummaryCard
             label="Aprovados"
             value={contagens?.aprovados}
             subtext="Parceiros"
             labelColor="text-green-primary"
             iconBgColor="bg-green-bg-card"
             icon={<CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6 text-green-primary" />}
-          />
+        />
 
-          <SummaryCard
+        <SummaryCard
             label="Rejeitados"
             value={contagens?.rejeitados}
             subtext="Parceiros"
             labelColor="text-red-primary"
             iconBgColor="bg-red-200"
             icon={<XCircle className="w-5 h-5 sm:w-6 sm:h-6 text-red-primary" />}
-          />
+        />
 
-          <SummaryCard
+        <SummaryCard
             label="Total de Parceiros"
             value={contagens?.total}
             subtext="Cadastrados"
             labelColor="text-green-primary"
             iconBgColor="bg-green-100"
             icon={<User className="w-5 h-5 sm:w-6 sm:h-6 text-green-primary" />}
-          />
+        />
         </div>
 
+        {/* BOTÃO NOVO PARCEIRO - APENAS NO LADO DIREITO */}
+        <div className="flex justify-end mb-4">
+        <div className="inline-block">
+            <Button
+            variant="primary"
+            size="sm"
+            onClick={handleAbrirModalCriar}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs"
+            >
+            <Plus className="w-3.5 h-3.5" />
+            Novo Parceiro
+            </Button>
+        </div>
+        </div>
         {/* TABELA */}
         <div className="bg-white rounded-xl shadow-sm border border-white-200 overflow-x-auto">
           <table className="w-full text-left border-collapse">
@@ -641,6 +704,15 @@ export function PartnersApproval() {
             </div>
           </div>
         )}
+
+        {/* MODAL CRIAR PARCEIRO */}
+        <CriarParceiroModal
+          isOpen={isModalCriarOpen}
+          onClose={() => setIsModalCriarOpen(false)}
+          onSubmit={handleCriarParceiro}
+          indicadores={indicadores}
+          loading={salvando}
+        />
       </main>
 
       <Footer />

@@ -5,6 +5,11 @@ import {
   type PontoColetaAdmin,
   type StatusAprovacao,
 } from "../../../../services/adminPontosService";
+import {
+  pontosColetaService,
+  type CriarPontoColetaPayload,
+} from "../../../../services/pontosColetaService";
+import { adminParceiroService, type Parceiro } from "../../../../services/adminParceiroService";
 
 import StatusBadge from "../../../../components/ui/StatusBadge";
 import AdminTopNav from "../../../../components/layout/AdminTopNav";
@@ -24,12 +29,16 @@ import {
   X,
   Check,
   FileText,
+  Plus,
+  Search,
 } from "lucide-react";
 
 import SummaryCard from "../../../../components/ui/SummaryCard";
 import Button from "../../../../components/ui/Button";
 import Pagination from "../../../../components/ui/Pagination";
 import Footer from "../../../../components/layout/Footer";
+import { CriarPontoColetaModal } from "../../../../components/modal/CriarPontoColetaModal";
+import { SelecionarParceiroModal } from "../../../../components/modal/SelecionarParceiroModal";
 
 interface ContagensPontos {
   pendentes: number;
@@ -73,6 +82,14 @@ function obterNomeResponsavel(ponto: PontoColetaAdmin): string {
   return parceiro.responsavelLegal || parceiro.responsavelLegalNome || parceiro.nome || "—";
 }
 
+// Helper para obter nome de exibição do parceiro
+function obterNomeExibicaoParceiro(parceiro: Parceiro): string {
+  if (parceiro.tipoParceiro === "SOLIDARIO") {
+    return parceiro.nome || "—";
+  }
+  return parceiro.razaoSocial || parceiro.nome || "—";
+}
+
 export function PointsApproval() {
   const [pontos, setPontos] = useState<PontoColetaAdmin[]>([]);
   const [totalPages, setTotalPages] = useState(1);
@@ -86,6 +103,11 @@ export function PointsApproval() {
   const [salvando, setSalvando] = useState(false);
   const [observacaoModal, setObservacaoModal] = useState("");
   const [mensagemErroModal, setMensagemErroModal] = useState("");
+
+  // Estados para criação de ponto
+  const [parceiroSelecionado, setParceiroSelecionado] = useState<Parceiro | null>(null);
+  const [isModalCriarOpen, setIsModalCriarOpen] = useState(false);
+  const [isModalSelecionarParceiroOpen, setIsModalSelecionarParceiroOpen] = useState(false);
 
   const [modal, setModal] = useState<{
     tipo: ModalTipo;
@@ -145,6 +167,40 @@ export function PointsApproval() {
     carregarPontos();
     carregarContagensPontos();
   }, [carregarPontos, carregarContagensPontos]);
+
+  // Abrir modal de seleção de parceiro
+  const handleAbrirSelecionarParceiro = () => {
+    setIsModalSelecionarParceiroOpen(true);
+  };
+
+  // Abrir modal de criação com parceiro selecionado
+  const handleSelecionarParceiro = (parceiro: Parceiro) => {
+    setParceiroSelecionado(parceiro);
+    setIsModalSelecionarParceiroOpen(false);
+    setIsModalCriarOpen(true);
+  };
+
+  // Criar ponto de coleta
+  const handleCriarPonto = async (dados: CriarPontoColetaPayload) => {
+    setSalvando(true);
+    try {
+      // Adicionar o parceiroId ao payload
+      const payload = {
+        ...dados,
+        parceiroId: parceiroSelecionado?.id,
+      };
+      
+      await pontosColetaService.criarPontoColeta(payload);
+      await Promise.all([carregarPontos(), carregarContagensPontos()]);
+      setIsModalCriarOpen(false);
+      setParceiroSelecionado(null);
+    } catch (error) {
+      console.error("Erro ao criar ponto de coleta:", error);
+      throw error;
+    } finally {
+      setSalvando(false);
+    }
+  };
 
   const abrirModal = (tipo: ModalTipo, ponto: PontoColetaAdmin) => {
     setObservacaoModal("");
@@ -260,6 +316,20 @@ export function PointsApproval() {
             icon={<Building2 className="w-5 h-5 sm:w-6 sm:h-6 text-green-primary" />}
           />
         </div>
+
+        {/* BOTÃO NOVO PONTO - ABAIXO DOS CARDS */}
+               <div className="flex justify-end mb-4">
+        <div className="inline-block">
+            <Button
+            variant="primary"
+            size="sm"
+            onClick={handleAbrirSelecionarParceiro}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Novo Ponto
+          </Button>
+        </div> </div>
 
         {/* TABELA DE PONTOS */}
         <div className="bg-white rounded-xl shadow-sm border border-white-200 overflow-x-auto">
@@ -402,6 +472,26 @@ export function PointsApproval() {
             setLimit(novoLimite);
             setPage(1);
           }}
+        />
+
+        {/* MODAL: SELECIONAR PARCEIRO */}
+        <SelecionarParceiroModal
+          isOpen={isModalSelecionarParceiroOpen}
+          onClose={() => setIsModalSelecionarParceiroOpen(false)}
+          onSelecionar={handleSelecionarParceiro}
+          loading={salvando}
+        />
+
+        {/* MODAL: CRIAR PONTO DE COLETA */}
+        <CriarPontoColetaModal
+          isOpen={isModalCriarOpen}
+          onClose={() => {
+            setIsModalCriarOpen(false);
+            setParceiroSelecionado(null);
+          }}
+          onSubmit={handleCriarPonto}
+          loading={salvando}
+          parceiroNome={parceiroSelecionado ? obterNomeExibicaoParceiro(parceiroSelecionado) : undefined}
         />
 
         {/* MODAL CONFIRMAÇÃO */}

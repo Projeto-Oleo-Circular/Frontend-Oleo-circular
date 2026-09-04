@@ -21,8 +21,6 @@ export interface PontoColetaResumo {
     nomePontoColeta: string;
 }
 
-// Deliberadamente sem senhaHash — a API devolve esse campo, mas o front não deve
-// tipar nem usar. Ver observação sobre isso: vale corrigir no back-end.
 export interface ParceiroResumo {
     id: number;
     tipoPessoa: string;
@@ -71,10 +69,16 @@ export interface ListarSolicitacoesFiltros {
     parceiro?: string;
     parceiroIndicadorId?: number;
     capacidadeBombona?: number;
-    dataSolicitacao?: string; // AAAA-MM-DD
+    dataSolicitacao?: string;
     endereco?: string;
     page?: number;
     limit?: number;
+}
+
+export interface CriarSolicitacaoPayload {
+    pontoColetaId: number;
+    tamanhoBombona: number;
+    observacoes?: string;
 }
 
 export const STATUS_SOLICITACAO: StatusSolicitacao[] = [
@@ -85,6 +89,9 @@ export const STATUS_SOLICITACAO: StatusSolicitacao[] = [
 ];
 
 export const adminSolicitacoesService = {
+    /**
+     * Listar solicitações com filtros (admin)
+     */
     async listar(filtros: ListarSolicitacoesFiltros = {}): Promise<ListarSolicitacoesResponse> {
         const query = new URLSearchParams();
         Object.entries(filtros).forEach(([key, value]) => {
@@ -99,20 +106,29 @@ export const adminSolicitacoesService = {
         return response.data;
     },
 
+async criar(payload: CriarSolicitacaoPayload): Promise<SolicitacaoColeta> {
+    const response = await api.post<SolicitacaoColeta>(
+        '/admin/solicitacoes-coleta',
+        {
+            pontoColetaId: payload.pontoColetaId,
+            volumeInformado: payload.tamanhoBombona,
+            // ✅ Se observacoes for undefined ou vazio, não envia o campo
+            ...(payload.observacoes && payload.observacoes.trim() !== '' && {
+                observacoes: payload.observacoes.trim()
+            }),
+        }
+    );
+    return response.data;
+},
     /**
+     * Atualizar status de uma solicitação (admin)
      * PATCH /admin/solicitacoes-coleta/{id}/status
-     *
-     * Regras de validação do back-end (via Zod), pra UI saber quando pedir cada campo:
-     * - dataAgendamento é OBRIGATÓRIA quando status === 'AGENDADA'
-     * - volumeColetado é OBRIGATÓRIO quando status === 'CONCLUIDA'
-     * - dataConclusao é setada automaticamente pelo back-end quando status === 'CONCLUIDA' (não envie)
      */
-    
     async atualizarStatus(
         id: number,
         dados: {
             status: StatusSolicitacao;
-            dataAgendamento?: string; // ISO 8601
+            dataAgendamento?: string;
             volumeColetado?: number;
             observacoes?: string;
         }

@@ -1,5 +1,47 @@
+// services/pontosColetaService.ts
 import api from "./api";
 
+// ============================================
+// INTERFACES PÚBLICAS
+// ============================================
+export interface PontoColetaPublico {
+  id: number;
+  nomePontoColeta: string;
+  categoria: string | number;
+  endereco: {
+    logradouro: string;
+    numero: string;
+    bairro: string;
+    cidade: string;
+    estado: string | null;
+    cep: string | null;
+    complemento: string | null;
+  };
+  localizacao: {
+    latitude: number;
+    longitude: number;
+  } | null;
+  capacidade: {
+    bombona: number;
+    nivelAtual: number;
+    status: string;
+    expectativaGeracao: number | null;
+  };
+  criadoEm: string;
+  atualizadoEm: string;
+}
+
+export interface ListarPontosPublicosResponse {
+  items: PontoColetaPublico[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+// ============================================
+// INTERFACES EXISTENTES (AUTENTICADAS)
+// ============================================
 export interface PontoColeta {
     id: number;
     parceiroId: number;
@@ -44,6 +86,9 @@ export interface AtualizarNivelBombonaRequest {
     nivel: number;
 }
 
+// ============================================
+// SERVIÇO AUTENTICADO (PARCEIROS)
+// ============================================
 export const pontosColetaService = {
     /**
      * GET /pontos-coleta/meus
@@ -75,6 +120,10 @@ export const pontosColetaService = {
         return data;
     },
 
+    /**
+     * GET /pontos-coleta/:id
+     * Busca um ponto de coleta por ID.
+     */
     async buscarPontoPorId(id: number): Promise<PontoColeta> {
         const { data } = await api.get<PontoColeta>(`/pontos-coleta/${id}`);
         return data;
@@ -82,9 +131,58 @@ export const pontosColetaService = {
 
     /**
      * DELETE /parceiros/pontos-coleta/:id
-     * Exclui um ponto de coleta pertencente ao parceiro autenticado
+     * Exclui um ponto de coleta pertencente ao parceiro autenticado.
      */
     async excluirPontoColeta(id: number): Promise<void> {
         await api.delete(`/parceiros/pontos-coleta/${id}`);
     },
+};
+
+// ============================================
+// SERVIÇO PÚBLICO (SEM AUTENTICAÇÃO)
+// ============================================
+export const publicPontosService = {
+    /**
+     * GET /pontos-coleta/public
+     * Lista todos os pontos de coleta APROVADOS (públicos)
+     * Não requer autenticação.
+     */
+    async listarPontosPublicos(params?: {
+        page?: number;
+        limit?: number;
+        categoria?: string;
+        search?: string;
+    }): Promise<ListarPontosPublicosResponse> {
+        const queryParams = new URLSearchParams();
+        
+        if (params?.page) queryParams.append('page', String(params.page));
+        if (params?.limit) queryParams.append('limit', String(params.limit));
+        if (params?.categoria) queryParams.append('categoria', params.categoria);
+        if (params?.search) queryParams.append('search', params.search);
+
+        const url = `/pontos-coleta/public${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+        
+        try {
+            const { data } = await api.get<ListarPontosPublicosResponse>(url);
+            return data;
+        } catch (error) {
+            console.error('Erro ao buscar pontos públicos:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Busca um ponto de coleta específico por ID (público)
+     * Não requer autenticação.
+     */
+    async buscarPontoPublicoPorId(id: number): Promise<PontoColetaPublico | null> {
+        try {
+            const response = await this.listarPontosPublicos({ limit: 1000 });
+            const ponto = response.items.find(p => p.id === id);
+            return ponto || null;
+        } catch (error) {
+            console.error('Erro ao buscar ponto público:', error);
+            return null;
+        }
+    }
 };
