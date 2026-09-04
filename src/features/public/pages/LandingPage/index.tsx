@@ -1,7 +1,22 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { renderToStaticMarkup } from "react-dom/server";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
+import {
+  ChefHat,
+  Factory,
+  GraduationCap,
+  BedDouble,
+  UtensilsCrossed,
+  Building2,
+  Tent,
+  HeartHandshake,
+  MapPin,
+  Tag,
+  Frown,
+  type LucideIcon,
+} from "lucide-react";
 import HeaderPublic from "../../../../components/layout/HeaderPublic";
 import Button from "../../../../components/ui/Button";
 import { publicPontosService, type PontoColetaPublico } from "../../../../services/pontosColetaService";
@@ -35,16 +50,16 @@ const TILE_LAYERS = {
 // ============================================
 type CategoriaPontoColeta = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
-// Mapeamento por número
-const CATEGORIA_MAP: Record<CategoriaPontoColeta, { label: string; icon: string; color: string }> = {
-  1: { label: "Cozinha Industrial", icon: "🍳", color: "#E67E22" },
-  2: { label: "Empresa / Indústria", icon: "🏭", color: "#2C3E50" },
-  3: { label: "Escola / Universidade", icon: "🏫", color: "#2980B9" },
-  4: { label: "Hotel / Pousada", icon: "🏨", color: "#8E44AD" },
-  5: { label: "Restaurante / Bar", icon: "🍽️", color: "#E74C3C" },
-  6: { label: "Condomínio", icon: "🏢", color: "#16A085" },
-  7: { label: "Feira Livre / Eventos", icon: "🎪", color: "#F39C12" },
-  8: { label: "Doador Avulso", icon: "🙋", color: "#1ABC9C" },
+// Mapeamento por número (agora com componente de ícone em vez de emoji)
+const CATEGORIA_MAP: Record<CategoriaPontoColeta, { label: string; icon: LucideIcon; color: string }> = {
+  1: { label: "Cozinha Industrial", icon: ChefHat, color: "#E67E22" },
+  2: { label: "Empresa / Indústria", icon: Factory, color: "#2C3E50" },
+  3: { label: "Escola / Universidade", icon: GraduationCap, color: "#2980B9" },
+  4: { label: "Hotel / Pousada", icon: BedDouble, color: "#8E44AD" },
+  5: { label: "Restaurante / Bar", icon: UtensilsCrossed, color: "#E74C3C" },
+  6: { label: "Condomínio", icon: Building2, color: "#16A085" },
+  7: { label: "Feira Livre / Eventos", icon: Tent, color: "#F39C12" },
+  8: { label: "Doador Avulso", icon: HeartHandshake, color: "#1ABC9C" },
 };
 
 // Mapeamento reverso: label -> número
@@ -85,7 +100,7 @@ const getCategoriaNumero = (categoria: string | number): CategoriaPontoColeta =>
 
 // Estender o tipo PontoColetaPublico com campos calculados
 interface EstabelecimentoCompleto extends PontoColetaPublico {
-  categoriaInfo: { label: string; icon: string; color: string };
+  categoriaInfo: { label: string; icon: LucideIcon; color: string };
   categoriaNumero: CategoriaPontoColeta;
 }
 
@@ -301,9 +316,13 @@ export default function LandingPageEstabelecimentos() {
             if (!estabelecimento.localizacao) return null;
             
             const { latitude, longitude } = estabelecimento.localizacao;
-            const { icon, color, label } = estabelecimento.categoriaInfo;
-            
-            // Ícone customizado por categoria
+            const { icon: CategoriaIcon, color, label } = estabelecimento.categoriaInfo;
+
+            // Ícone customizado por categoria (SVG do lucide-react renderizado como marcador)
+            const iconMarkup = renderToStaticMarkup(
+              <CategoriaIcon color="#ffffff" size={18} strokeWidth={2.25} />
+            );
+
             const categoriaIcon = L.divIcon({
               html: `
                 <div style="
@@ -316,9 +335,8 @@ export default function LandingPageEstabelecimentos() {
                   display: flex;
                   align-items: center;
                   justify-content: center;
-                  font-size: 18px;
                 ">
-                  ${icon}
+                  ${iconMarkup}
                 </div>
               `,
               className: "",
@@ -336,7 +354,12 @@ export default function LandingPageEstabelecimentos() {
                 <Popup className="max-w-xs">
                   <div className="p-2">
                     <div className="flex items-center gap-2 mb-2">
-                      <span className="text-2xl">{icon}</span>
+                      <span
+                        className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+                        style={{ backgroundColor: color }}
+                      >
+                        <CategoriaIcon color="#ffffff" size={16} strokeWidth={2.25} />
+                      </span>
                       <h3 className="font-bold text-green-primary text-base">
                         {estabelecimento.nomePontoColeta}
                       </h3>
@@ -344,14 +367,14 @@ export default function LandingPageEstabelecimentos() {
                     
                     <div className="space-y-1.5 text-sm">
                       <p className="flex items-start gap-2">
-                        <span className="text-white-400 shrink-0">🏢</span>
+                        <Tag className="w-4 h-4 text-white-400 shrink-0 mt-0.5" />
                         <span className="text-white-600">
                           <span className="font-medium">Categoria:</span> {label}
                         </span>
                       </p>
 
                       <p className="flex items-start gap-2">
-                        <span className="text-white-400 shrink-0">📍</span>
+                        <MapPin className="w-4 h-4 text-white-400 shrink-0 mt-0.5" />
                         <span className="text-white-600 text-xs">
                           {estabelecimento.endereco.logradouro}, {estabelecimento.endereco.numero}<br />
                           {estabelecimento.endereco.bairro}, {estabelecimento.endereco.cidade} {estabelecimento.endereco.estado || ""}
@@ -446,6 +469,7 @@ export default function LandingPageEstabelecimentos() {
               const numKey = parseInt(key) as CategoriaPontoColeta;
               const count = contagemCategorias[numKey] || 0;
               if (count === 0) return null;
+              const Icon = config.icon;
               
               return (
                 <button
@@ -458,7 +482,7 @@ export default function LandingPageEstabelecimentos() {
                   }`}
                   style={categoriaFiltro === numKey ? { backgroundColor: config.color } : {}}
                 >
-                  <span>{config.icon}</span>
+                  <Icon className="w-3.5 h-3.5" />
                   <span>{config.label}</span>
                   <span className="text-[10px] opacity-70">({count})</span>
                 </button>
@@ -483,6 +507,7 @@ export default function LandingPageEstabelecimentos() {
             const numKey = parseInt(key) as CategoriaPontoColeta;
             const count = contagemCategorias[numKey] || 0;
             if (count === 0) return null;
+            const Icon = config.icon;
             
             return (
               <button
@@ -495,7 +520,7 @@ export default function LandingPageEstabelecimentos() {
                 }`}
                 style={categoriaFiltro === numKey ? { backgroundColor: config.color } : {}}
               >
-                <span>{config.icon}</span>
+                <Icon className="w-3 h-3" />
                 <span>{count}</span>
               </button>
             );
@@ -625,7 +650,7 @@ export default function LandingPageEstabelecimentos() {
         {erro && !carregando && (
           <div className="absolute inset-0 z-[999] flex items-center justify-center bg-white/60 backdrop-blur-sm">
             <div className="bg-white rounded-xl shadow-lg p-6 max-w-md text-center">
-              <span className="text-4xl mb-3 block">😕</span>
+              <Frown className="w-10 h-10 mx-auto mb-3 text-red-600" strokeWidth={1.75} />
               <h3 className="text-lg font-bold text-red-600 mb-2">Ops! Algo deu errado</h3>
               <p className="text-sm text-white-600">{erro}</p>
               <button
