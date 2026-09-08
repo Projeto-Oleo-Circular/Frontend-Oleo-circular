@@ -34,7 +34,7 @@ import {
 import Button from "../../../../components/ui/Button";
 import Footer from "../../../../components/layout/Footer";
 import SummaryCard from "../../../../components/ui/SummaryCard";
-
+import { IndicadoresAmbientais } from "../../../../components/dash/IndicadoresAmbientais";
 interface ContagensParceiros {
   pendentes: number;
   aprovados: number;
@@ -106,7 +106,8 @@ export function PartnersApproval() {
     { value: "APROVADO", label: "Aprovado" },
     { value: "REJEITADO", label: "Rejeitado" },
   ];
-
+const [mostrarResumoAmbiental, setMostrarResumoAmbiental] =
+  useState(false);
   // Carrega a listagem do grid respeitando o parâmetro de busca/filtros
   const carregarParceiros = useCallback(async () => {
     setLoading(true);
@@ -296,9 +297,13 @@ export function PartnersApproval() {
   };
 
   const fecharModal = () => {
-    setModal({ tipo: null, parceiro: null });
-    setObservacaoModal("");
-  };
+  setMostrarResumoAmbiental(false);
+
+  setModal({
+    tipo: null,
+    parceiro: null,
+  });
+};
 
   const processarAcaoModal = async () => {
     if (!modal.tipo || !modal.parceiro) return;
@@ -604,106 +609,224 @@ export function PartnersApproval() {
           </div>
         )}
 
-        {/* MODAL DETALHES */}
-        {modal.tipo === "detalhes" && modal.parceiro && (
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl p-6 w-full max-w-lg shadow-xl animate-slide-down max-h-[90vh] overflow-y-auto">
-              <div className="flex items-center justify-between pb-3 border-b border-white-100 mb-4">
-                <div>
-                  <h2 className="font-bold text-xl text-green-primary">
-                    Detalhes do Parceiro
-                  </h2>
-                  <p className="text-xs text-white-500">
-                    ID do Parceiro: #{modal.parceiro.id}
-                  </p>
-                </div>
-                <button
-                  onClick={fecharModal}
-                  className="text-white-500 hover:text-black-primary cursor-pointer"
-                >
-                  <X className="w-5 h-5 text-red-primary" />
-                </button>
+       {/* MODAL DETALHES */}
+{modal.tipo === "detalhes" && modal.parceiro && (
+  <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+
+    <div className="bg-white rounded-xl p-6 w-full max-w-lg shadow-xl animate-slide-down max-h-[90vh] overflow-y-auto">
+
+      {/* CABEÇALHO */}
+      <div className="flex items-center justify-between pb-3 border-b border-white-100 mb-4">
+
+        <div>
+          <h2 className="font-bold text-xl text-green-primary">
+            Detalhes do Parceiro
+          </h2>
+
+          <p className="text-xs text-white-500">
+            ID do Parceiro: #{modal.parceiro.id}
+          </p>
+        </div>
+
+        <button
+          onClick={fecharModal}
+          className="text-white-500 hover:text-black-primary cursor-pointer"
+        >
+          <X className="w-5 h-5 text-red-primary" />
+        </button>
+
+      </div>
+
+      <div className="space-y-4">
+
+        {/* STATUS */}
+        <div className="flex items-center justify-between bg-white-50 p-3 rounded-lg border border-white-100">
+
+          <div>
+            <span className="text-xs text-white-500 block">
+              Status de Cadastro
+            </span>
+
+            <StatusBadge
+              status={
+                modal.parceiro.statusAprovacaoParceiro ||
+                "PENDENTE"
+              }
+              tipo="parceiro"
+            />
+          </div>
+
+          <div className="text-right">
+            <span className="text-xs text-white-500 block">
+              Data de Cadastro
+            </span>
+
+            <span className="text-xs font-semibold text-black-primary">
+              {formatarData(modal.parceiro.criadoEm)}
+            </span>
+          </div>
+
+        </div>
+
+        {/* IDENTIFICAÇÃO */}
+        <div className="border border-white-100 rounded-lg p-3">
+
+          <h3 className="text-xs font-bold text-green-primary uppercase tracking-wider mb-2 flex items-center gap-1.5">
+            <User className="w-3.5 h-3.5" />
+            Identificação
+          </h3>
+
+          <p className="text-sm font-semibold text-black-primary">
+            {obterNomeOuRazaoSocial(modal.parceiro)}
+          </p>
+
+          {modal.parceiro.tipoParceiro !== "SOLIDARIO" &&
+            modal.parceiro.nome && (
+              <p className="text-xs text-white-500">
+                Nome Fantasia / Nome:{" "}
+                {modal.parceiro.nome}
+              </p>
+            )}
+
+          {modal.parceiro.responsavelLegal && (
+            <p className="text-xs text-white-500 mt-1">
+              Responsável Legal:{" "}
+              {modal.parceiro.responsavelLegal}
+            </p>
+          )}
+
+          <p className="text-xs text-white-500 mt-1">
+            Tipo:{" "}
+            <strong>
+              {modal.parceiro.tipoPessoa}
+            </strong>{" "}
+            ({modal.parceiro.tipoParceiro})
+          </p>
+
+          <p className="text-xs text-white-500 mt-0.5">
+            Parceiro Indicador:{" "}
+            <strong>
+              {obterNomeParceiroIndicador(
+                modal.parceiro
+              )}
+            </strong>
+          </p>
+
+          <p className="text-xs text-white-500 mt-0.5">
+            CPF/CNPJ:{" "}
+            {modal.parceiro.documento || "—"}
+          </p>
+
+        </div>
+
+        {/* CONTATO */}
+        <div className="border border-white-100 rounded-lg p-3">
+
+          <h3 className="text-xs font-bold text-green-primary uppercase tracking-wider mb-2 flex items-center gap-1.5">
+            <Phone className="w-3.5 h-3.5" />
+            Contato
+          </h3>
+
+          <p className="text-xs text-white-500 flex items-center gap-1">
+            <Mail className="w-3 h-3" />
+            {modal.parceiro.email}
+          </p>
+
+          <p className="text-xs text-white-500 flex items-center gap-1 mt-1">
+            <Phone className="w-3 h-3" />
+            {modal.parceiro.telefone || "—"}
+          </p>
+
+        </div>
+
+        {/* ============================================== */}
+        {/* IMPACTO AMBIENTAL - SOMENTE PARCEIRO APROVADO */}
+        {/* ============================================== */}
+
+        {modal.parceiro.statusAprovacaoParceiro ===
+          "APROVADO" && (
+
+          <div className="border border-green-100 rounded-lg overflow-hidden">
+
+            {/* BOTÃO RESUMO */}
+            <button
+              type="button"
+              onClick={() =>
+                setMostrarResumoAmbiental(
+                  (valorAtual) => !valorAtual
+                )
+              }
+              className="
+                w-full
+                flex
+                items-center
+                justify-between
+                p-4
+                bg-green-50
+                hover:bg-green-100
+                transition-colors
+                cursor-pointer
+              "
+            >
+
+              <div className="text-left">
+
+                <p className="text-sm font-bold text-green-primary">
+                  Resumo Ambiental
+                </p>
+
+                <p className="text-xs text-white-500 mt-0.5">
+                  Consulte o impacto gerado pelas
+                  coletas deste parceiro
+                </p>
+
               </div>
 
-              <div className="space-y-4">
-                <div className="flex items-center justify-between bg-white-50 p-3 rounded-lg border border-white-100">
-                  <div>
-                    <span className="text-xs text-white-500 block">
-                      Status de Cadastro
-                    </span>
-                    <StatusBadge
-                      status={
-                        modal.parceiro.statusAprovacaoParceiro || "PENDENTE"
-                      }
-                      tipo="parceiro"
-                    />
-                  </div>
-                  <div className="text-right">
-                    <span className="text-xs text-white-500 block">
-                      Data de Cadastro
-                    </span>
-                    <span className="text-xs font-semibold text-black-primary">
-                      {formatarData(modal.parceiro.criadoEm)}
-                    </span>
-                  </div>
-                </div>
+              <span className="text-xs font-semibold text-green-primary">
+                {mostrarResumoAmbiental
+                  ? "Ocultar"
+                  : "Visualizar"}
+              </span>
 
-                <div className="border border-white-100 rounded-lg p-3">
-                  <h3 className="text-xs font-bold text-green-primary uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                    <User className="w-3.5 h-3.5" /> Identificação
-                  </h3>
-                  <p className="text-sm font-semibold text-black-primary">
-                    {obterNomeOuRazaoSocial(modal.parceiro)}
-                  </p>
-                  {modal.parceiro.tipoParceiro !== "SOLIDARIO" && modal.parceiro.nome && (
-                    <p className="text-xs text-white-500">
-                      Nome Fantasia / Nome: {modal.parceiro.nome}
-                    </p>
-                  )}
-                  {modal.parceiro.responsavelLegal && (
-                    <p className="text-xs text-white-500 mt-1">
-                      Responsável Legal: {modal.parceiro.responsavelLegal}
-                    </p>
-                  )}
-                  <p className="text-xs text-white-500 mt-1">
-                    Tipo: <strong>{modal.parceiro.tipoPessoa}</strong> (
-                    {modal.parceiro.tipoParceiro})
-                  </p>
-                  <p className="text-xs text-white-500 mt-0.5">
-                    Parceiro Indicador:{" "}
-                    <strong>{obterNomeParceiroIndicador(modal.parceiro)}</strong>
-                  </p>
-                  <p className="text-xs text-white-500 mt-0.5">
-                    CPF/CNPJ: {modal.parceiro.documento || "—"}
-                  </p>
-                </div>
+            </button>
 
-                <div className="border border-white-100 rounded-lg p-3">
-                  <h3 className="text-xs font-bold text-green-primary uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                    <Phone className="w-3.5 h-3.5" /> Contato
-                  </h3>
-                  <p className="text-xs text-white-500 flex items-center gap-1">
-                    <Mail className="w-3 h-3" /> {modal.parceiro.email}
-                  </p>
-                  <p className="text-xs text-white-500 flex items-center gap-1 mt-1">
-                    <Phone className="w-3 h-3" /> {modal.parceiro.telefone || "—"}
-                  </p>
-                </div>
+            {/* CONTEÚDO */}
+            {mostrarResumoAmbiental && (
+
+              <div className="p-4 border-t border-green-100">
+
+                <IndicadoresAmbientais
+            tipo="admin-parceiro"
+            parceiroId={modal.parceiro.id}
+            titulo="Impacto Ambiental do Parceiro"
+            variant="modal"
+            />
               </div>
 
-              <div className="mt-6">
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={fecharModal}
-                  fullWidth
-                >
-                  Fechar
-                </Button>
-              </div>
-            </div>
+            )}
+
           </div>
         )}
+
+      </div>
+
+      {/* BOTÃO FECHAR */}
+      <div className="mt-6">
+
+        <Button
+          variant="primary"
+          size="sm"
+          onClick={fecharModal}
+          fullWidth
+        >
+          Fechar
+        </Button>
+
+      </div>
+
+    </div>
+  </div>
+)}
 
         {/* MODAL CRIAR PARCEIRO */}
         <CriarParceiroModal

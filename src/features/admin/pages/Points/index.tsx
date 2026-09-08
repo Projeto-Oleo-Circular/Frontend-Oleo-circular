@@ -39,6 +39,7 @@ import Pagination from "../../../../components/ui/Pagination";
 import Footer from "../../../../components/layout/Footer";
 import { CriarPontoColetaModal } from "../../../../components/modal/CriarPontoColetaModal";
 import { SelecionarParceiroModal } from "../../../../components/modal/SelecionarParceiroModal";
+import { IndicadoresAmbientais } from "../../../../components/dash/IndicadoresAmbientais";
 
 interface ContagensPontos {
   pendentes: number;
@@ -142,7 +143,8 @@ export function PointsApproval() {
       setLoading(false);
     }
   }, [page, limit, statusFiltro]);
-
+const [mostrarResumoAmbiental, setMostrarResumoAmbiental] =
+  useState(false);
   const carregarContagensPontos = useCallback(async () => {
     try {
       const [pendentes, aprovados, rejeitados, total] = await Promise.all([
@@ -202,12 +204,22 @@ export function PointsApproval() {
     }
   };
 
-  const abrirModal = (tipo: ModalTipo, ponto: PontoColetaAdmin) => {
-    setObservacaoModal("");
-    setModal({ tipo, ponto });
-  };
+  const abrirModal = (
+  tipo: ModalTipo,
+  ponto: PontoColetaAdmin
+) => {
+  setMostrarResumoAmbiental(false);
+  setObservacaoModal("");
+
+  setModal({
+    tipo,
+    ponto,
+  });
+};
 
   const fecharModal = () => {
+      setMostrarResumoAmbiental(false);
+
     setModal({ tipo: null, ponto: null });
     setObservacaoModal("");
   };
@@ -536,73 +548,264 @@ export function PointsApproval() {
         )}
 
         {/* MODAL DETALHES */}
-        {modal.tipo === "detalhes" && modal.ponto && (
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl p-6 w-full max-w-lg shadow-xl animate-slide-down max-h-[90vh] overflow-y-auto">
-              <div className="flex items-center justify-between pb-3 border-b border-white-100 mb-4">
-                <div>
-                  <h2 className="font-bold text-xl text-green-primary">Detalhes do Ponto de Coleta</h2>
-                  <p className="text-xs text-white-500">ID do ponto: #{modal.ponto.id}</p>
+      {/* MODAL DETALHES */}
+{modal.tipo === "detalhes" && modal.ponto && (
+  <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+
+    <div
+      className={`
+        bg-white
+        rounded-xl
+        p-6
+        w-full
+        shadow-xl
+        animate-slide-down
+        max-h-[90vh]
+        overflow-y-auto
+        transition-all
+        ${
+          mostrarResumoAmbiental
+            ? "max-w-lg"
+            : "max-w-lg"
+        }
+      `}
+    >
+
+      {/* CABEÇALHO */}
+      <div className="flex items-center justify-between pb-3 border-b border-white-100 mb-4">
+
+        <div>
+          <h2 className="font-bold text-xl text-green-primary">
+            Detalhes do Ponto de Coleta
+          </h2>
+
+          <p className="text-xs text-white-500">
+            ID do ponto: #{modal.ponto.id}
+          </p>
+        </div>
+
+        <button
+          onClick={fecharModal}
+          className="text-white-500 hover:text-black-primary cursor-pointer"
+        >
+          <X className="w-5 h-5 text-red-primary" />
+        </button>
+
+      </div>
+
+      <div className="space-y-4">
+
+        {/* STATUS + CAPACIDADE */}
+        <div className="flex items-center justify-between bg-white-50 p-3 rounded-lg border border-white-100">
+
+          <div>
+            <span className="text-xs text-white-500 block">
+              Status de Aprovação
+            </span>
+
+            <StatusBadge
+              status={
+                modal.ponto.statusAprovacaoPontoColeta ||
+                "PENDENTE"
+              }
+              tipo="ponto"
+            />
+          </div>
+
+          <div className="text-right">
+
+            <span className="text-xs text-white-500 block">
+              Capacidade Bombona
+            </span>
+
+            <span className="text-xs font-semibold text-black-primary">
+              {modal.ponto.capacidadeBombona} Litros
+            </span>
+
+          </div>
+
+        </div>
+
+        {/* INFORMAÇÕES DO PONTO */}
+        <div className="border border-white-100 rounded-lg p-3">
+
+          <h3 className="text-xs font-bold text-green-primary uppercase tracking-wider mb-2 flex items-center gap-1.5">
+            <Building2 className="w-3.5 h-3.5" />
+
+            Informações do Ponto
+          </h3>
+
+          <p className="text-sm font-semibold text-black-primary">
+            {obterNomePontoOuRazaoSocial(
+              modal.ponto
+            )}
+          </p>
+
+          <p className="text-xs text-white-500 flex items-start gap-1 mt-1">
+
+            <MapPin className="w-3.5 h-3.5 shrink-0 mt-0.5 text-green-primary" />
+
+            <span>
+              {formatarEndereco(modal.ponto)}
+            </span>
+
+          </p>
+
+        </div>
+
+        {/* RESPONSÁVEL */}
+        <div className="border border-white-100 rounded-lg p-3">
+
+          <h3 className="text-xs font-bold text-green-primary uppercase tracking-wider mb-2 flex items-center gap-1.5">
+
+            <User className="w-3.5 h-3.5" />
+
+            Responsável
+
+          </h3>
+
+          <p className="text-sm font-semibold text-black-primary">
+            {obterNomeResponsavel(
+              modal.ponto
+            )}
+          </p>
+
+          {(modal.ponto.parceiro as any)
+            ?.documento && (
+
+            <p className="text-xs text-white-500 flex items-center gap-1 mt-1">
+
+              <FileText className="w-3 h-3" />
+
+              {
+                (modal.ponto.parceiro as any)
+                  .documento
+              }
+
+            </p>
+          )}
+
+          {(modal.ponto.parceiro as any)
+            ?.email && (
+
+            <p className="text-xs text-white-500 flex items-center gap-1 mt-1">
+
+              <Mail className="w-3 h-3" />
+
+              {
+                (modal.ponto.parceiro as any)
+                  .email
+              }
+
+            </p>
+          )}
+
+        </div>
+
+        {/* ================================================= */}
+        {/* RESUMO AMBIENTAL */}
+        {/* SOMENTE SE O PONTO ESTIVER APROVADO */}
+        {/* ================================================= */}
+
+        {modal.ponto.statusAprovacaoPontoColeta ===
+          "APROVADO" && (
+
+          <div className="border border-green-100 rounded-lg overflow-hidden">
+
+            {/* BOTÃO */}
+            <button
+              type="button"
+              onClick={() =>
+                setMostrarResumoAmbiental(
+                  (valorAtual) => !valorAtual
+                )
+              }
+              className="
+                w-full
+                flex
+                items-center
+                justify-between
+                gap-4
+                p-4
+                bg-green-50
+                hover:bg-green-100
+                transition-colors
+                cursor-pointer
+              "
+            >
+
+              <div className="text-left">
+
+                <div className="flex items-center gap-2">
+
+                  <FileText className="w-4 h-4 text-green-primary" />
+
+                  <p className="text-sm font-bold text-green-primary">
+                    Resumo Ambiental
+                  </p>
+
                 </div>
-                <button onClick={fecharModal} className="text-white-500 hover:text-black-primary cursor-pointer">
-                  <X className="w-5 h-5 text-red-primary" />
-                </button>
+
+                <p className="text-xs text-white-500 mt-1">
+                  Consulte o impacto ambiental
+                  gerado pelas coletas realizadas
+                  neste ponto.
+                </p>
+
               </div>
 
-              <div className="space-y-4">
-                <div className="flex items-center justify-between bg-white-50 p-3 rounded-lg border border-white-100">
-                  <div>
-                    <span className="text-xs text-white-500 block">Status de Aprovação</span>
-                    <StatusBadge status={modal.ponto.statusAprovacaoPontoColeta || "PENDENTE"} tipo="ponto" />
-                  </div>
-                  <div className="text-right">
-                    <span className="text-xs text-white-500 block">Capacidade Bombona</span>
-                    <span className="text-xs font-semibold text-black-primary">{modal.ponto.capacidadeBombona} Litros</span>
-                  </div>
-                </div>
+              <span className="text-xs font-semibold text-green-primary whitespace-nowrap">
 
-                <div className="border border-white-100 rounded-lg p-3">
-                  <h3 className="text-xs font-bold text-green-primary uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                    <Building2 className="w-3.5 h-3.5" /> Informações do Ponto
-                  </h3>
-                  <p className="text-sm font-semibold text-black-primary">
-                    {obterNomePontoOuRazaoSocial(modal.ponto)}
-                  </p>
-                  <p className="text-xs text-white-500 flex items-start gap-1 mt-1">
-                    <MapPin className="w-3.5 h-3.5 shrink-0 mt-0.5 text-green-primary" />
-                    <span>{formatarEndereco(modal.ponto)}</span>
-                  </p>
-                </div>
+                {mostrarResumoAmbiental
+                  ? "Ocultar"
+                  : "Visualizar"}
 
-                <div className="border border-white-100 rounded-lg p-3">
-                  <h3 className="text-xs font-bold text-green-primary uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                    <User className="w-3.5 h-3.5" /> Responsável
-                  </h3>
-                  <p className="text-sm font-semibold text-black-primary">
-                    {obterNomeResponsavel(modal.ponto)}
-                  </p>
-                  {(modal.ponto.parceiro as any)?.documento && (
-                    <p className="text-xs text-white-500 flex items-center gap-1 mt-1">
-                      <FileText className="w-3 h-3" /> {(modal.ponto.parceiro as any).documento}
-                    </p>
-                  )}
-                  {(modal.ponto.parceiro as any)?.email && (
-                    <p className="text-xs text-white-500 flex items-center gap-1 mt-1">
-                      <Mail className="w-3 h-3" /> {(modal.ponto.parceiro as any).email}
-                    </p>
-                  )}
-                </div>
+              </span>
+
+            </button>
+
+            {/* ============================================= */}
+            {/* INDICADORES */}
+            {/* ============================================= */}
+
+            {mostrarResumoAmbiental && (
+
+              <div className="p-4 border-t border-green-100">
+
+                <IndicadoresAmbientais
+                  tipo="admin-ponto"
+                  pontoId={modal.ponto.id}
+                  titulo="Impacto Ambiental do Ponto"
+                  variant="modal"
+                />
+
               </div>
 
-              <div className="mt-6">
-                <Button variant="primary" size="sm" onClick={fecharModal} fullWidth>
-                  Fechar
-                </Button>
-              </div>
-            </div>
+            )}
+
           </div>
         )}
 
+      </div>
+
+      {/* FECHAR */}
+      <div className="mt-6">
+
+        <Button
+          variant="primary"
+          size="sm"
+          onClick={fecharModal}
+          fullWidth
+        >
+          Fechar
+        </Button>
+
+      </div>
+
+    </div>
+
+  </div>
+)}
         {/* MODAL DE ERRO - PARCEIRO PENDENTE OU REJEITADO */}
         {modal.tipo === "erro_parceiro" && modal.ponto && (
           <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">

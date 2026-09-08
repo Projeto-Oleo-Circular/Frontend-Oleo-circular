@@ -28,7 +28,7 @@ function PontosColetaCard({ pontos, currentIndex, onAnterior, onProximo, loading
     if (total === 0 || !pontoAtual) {
         return (
             <div className="bg-white-primary rounded-2xl shadow-card p-5">
-                <h2 className="text-lg font-bold text-green-primary mb-1">Pontos de Coleta</h2>
+                <h2 className="text-lg font-bold text-green-primary mb-1">Pontos de xpto Coleta</h2>
                 <p className="text-sm text-white-500">
                     Você ainda não cadastrou nenhum ponto de coleta.
                 </p>
@@ -39,7 +39,7 @@ function PontosColetaCard({ pontos, currentIndex, onAnterior, onProximo, loading
     return (
         <div className="bg-white-primary rounded-2xl shadow-card p-5">
             <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold text-green-primary">Pontos de Coleta</h2>
+                <h2 className="text-lg font-bold text-green-primary">Pontos de xpto Coleta</h2>
                 <div className="flex gap-1.5">
                     {pontos.map((_, index) => (
                         <span

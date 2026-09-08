@@ -150,3 +150,634 @@ body {
 .leaflet-control-attribution {
     display: none !important;
 }
+.pet-bottle {
+    position: relative;
+    width: 170px;
+    height: 430px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+
+    filter: drop-shadow(0 10px 5px rgba(0, 0, 0, 0.14));
+}
+
+
+/* =====================================================
+   CORPO COMPLETO DA GARRAFA
+   Gargalo + ombros + corpo + cintura + base
+   ===================================================== */
+
+.pet-body {
+    position: absolute;
+
+    top: 31px;
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    width: 145px;
+    height: 385px;
+
+    overflow: hidden;
+
+    /* Borda inferior bem arredondada para criar a "barriga" da garrafa */
+    border-radius: 0 0 70px 70px; 
+
+    /*
+       Silhueta completa.
+       Removi os "dentes" do final e deixei os últimos pontos descerem retos
+       para encontrar o border-radius arredondado.
+    */
+    clip-path: polygon(
+        /* gargalo */
+        38% 0%,
+        62% 0%,
+
+        62% 5%,
+        64% 8%,
+
+        /* ombro */
+        70% 11%,
+        78% 15%,
+        86% 21%,
+        91% 27%,
+
+        /* parte superior */
+        94% 35%,
+        95% 43%,
+
+        /* cintura superior */
+        93% 49%,
+        91% 55%,
+
+        /* corpo central */
+        92% 61%,
+        94% 68%,
+
+        /* cintura inferior */
+        92% 74%,
+        91% 79%,
+
+        /* parte inferior */
+        94% 86%,
+        97% 93%,
+
+        /* Base lisa descendo reto até o chão */
+        100% 100%,
+        0% 100%,
+
+        /* Subindo reto do lado esquerdo */
+        3% 93%,
+        6% 86%,
+
+        9% 79%,
+        8% 74%,
+
+        6% 68%,
+        8% 61%,
+
+        9% 55%,
+        7% 49%,
+
+        5% 43%,
+        6% 35%,
+
+        9% 27%,
+        14% 21%,
+        22% 15%,
+        30% 11%,
+
+        36% 8%,
+        38% 5%
+    );
+
+    background:
+        linear-gradient(
+            90deg,
+            #25713f 0%,
+            #47a966 4%,
+            rgba(111, 208, 133, 0.75) 12%,
+            rgba(173, 241, 184, 0.55) 25%,
+            rgba(204, 255, 213, 0.42) 42%,
+            rgba(180, 246, 192, 0.42) 62%,
+            rgba(89, 184, 113, 0.65) 82%,
+            #23703e 100%
+        );
+
+    border: none;
+
+    z-index: 2;
+
+    /*
+       Contorno cartoon
+    */
+    filter:
+        drop-shadow(2px 0 0 #12582c)
+        drop-shadow(-2px 0 0 #12582c)
+        drop-shadow(0 2px 0 #12582c)
+        drop-shadow(0 -2px 0 #12582c);
+}
+
+/* brilho interno */
+.pet-body::before {
+    content: "";
+
+    position: absolute;
+
+    left: 20px;
+    top: 13px;
+
+    width: 22px;
+    height: 260px;
+
+    border-radius: 50%;
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(255,255,255,0.72),
+            rgba(255,255,255,0.30) 48%,
+            rgba(255,255,255,0.05)
+        );
+
+    transform: rotate(2deg);
+
+    z-index: 6;
+
+    pointer-events: none;
+}
+
+
+/* sombra lateral cartoon */
+.pet-body::after {
+    content: "";
+
+    position: absolute;
+
+    top: 10px;
+    right: 9px;
+
+    width: 22px;
+    height: 340px;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(15, 84, 38, 0.28)
+        );
+
+    border-radius: 50%;
+
+    z-index: 4;
+
+    pointer-events: none;
+}
+
+
+/* =====================================================
+   TAMPA
+   ===================================================== */
+
+.pet-cap {
+    position: absolute;
+
+    top: 4px;
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    width: 44px;
+    height: 29px;
+
+    border-radius: 9px 9px 5px 5px;
+
+    background:
+        repeating-linear-gradient(
+            90deg,
+            #176432 0px,
+            #176432 4px,
+            #329552 4px,
+            #329552 7px
+        );
+
+    border: 3px solid #125127;
+
+    box-sizing: border-box;
+
+    z-index: 10;
+
+    box-shadow:
+        inset 0 3px 0 rgba(255,255,255,0.17);
+}
+
+
+/* topo da tampa */
+.pet-cap::before {
+    content: "";
+
+    position: absolute;
+
+    top: -3px;
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    width: 35px;
+    height: 7px;
+
+    border-radius: 50%;
+
+    background: #3a9d58;
+
+    border-top: 2px solid rgba(255,255,255,0.2);
+}
+
+
+/* anel da tampa */
+.pet-cap-ring {
+    position: absolute;
+
+    top: 29px;
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    width: 47px;
+    height: 8px;
+
+    background: #20713c;
+
+    border: 2px solid #125127;
+    border-top: 0;
+
+    border-radius: 0 0 5px 5px;
+
+    z-index: 9;
+}
+
+
+/* =====================================================
+   NECK
+   Agora ele NÃO desenha outro bloco.
+   Só cria detalhes no gargalo existente.
+   ===================================================== */
+
+.pet-neck {
+    position: absolute;
+
+    top: 37px;
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    width: 35px;
+    height: 44px;
+
+    background: transparent;
+
+    z-index: 7;
+
+    pointer-events: none;
+}
+
+
+/* anel moldado da PET */
+.pet-neck::before {
+    content: "";
+
+    position: absolute;
+
+    top: 5px;
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    width: 39px;
+    height: 4px;
+
+    border-top: 2px solid rgba(17, 95, 45, 0.4);
+
+    border-radius: 50%;
+}
+
+
+/* =====================================================
+   LÍQUIDO
+   ===================================================== */
+
+.pet-oil {
+    position: absolute;
+
+    bottom: 0;
+    left: 0;
+
+    width: 100%;
+
+    /* você continua alterando apenas height */
+    height: 68%;
+
+    background:
+        linear-gradient(
+            90deg,
+            #a8650c 0%,
+            #d68c0e 8%,
+            #eda21e 25%,
+            #efa51d 50%,
+            #d8840e 78%,
+            #a96008 100%
+        );
+
+    z-index: 1;
+
+    transition: height 0.8s ease;
+
+    box-shadow:
+        inset 13px 0 13px rgba(92, 50, 0, 0.25),
+        inset -13px 0 13px rgba(92, 50, 0, 0.25);
+}
+
+
+/* superfície do líquido */
+.pet-oil::before {
+    content: "";
+
+    position: absolute;
+
+    top: -6px;
+    left: 0;
+
+    width: 100%;
+    height: 12px;
+
+    background:
+        linear-gradient(
+            180deg,
+            #ffd15b,
+            #dc910f
+        );
+
+    border-radius: 50%;
+}
+
+
+/* =====================================================
+   BOLHAS
+   ===================================================== */
+
+.pet-oil-wave {
+    position: absolute;
+
+    top: 30%;
+    left: 24%;
+
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+
+    background: rgba(255, 210, 68, 0.55);
+
+    border: 1px solid rgba(169, 104, 0, 0.45);
+
+    box-shadow:
+        28px 38px 0 -1px rgba(255, 210, 68, 0.55),
+        52px 12px 0 -2px rgba(255, 210, 68, 0.55),
+        67px 76px 0 0 rgba(255, 210, 68, 0.45),
+        31px 128px 0 -1px rgba(255, 210, 68, 0.45),
+        59px 173px 0 -2px rgba(255, 210, 68, 0.55),
+        12px 200px 0 -2px rgba(255, 210, 68, 0.45);
+
+    z-index: 2;
+}
+
+
+/* =====================================================
+   REFLEXO EXTRA
+   ===================================================== */
+
+.pet-reflection {
+    position: absolute;
+
+    top: 72px;
+    left: 29px;
+
+    width: 11px;
+    height: 110px;
+
+    border-radius: 50%;
+
+    background: rgba(255,255,255,0.55);
+
+    transform: rotate(6deg);
+
+    z-index: 7;
+
+    pointer-events: none;
+}
+
+
+/* pequena segunda luz */
+.pet-reflection::after {
+    content: "";
+
+    position: absolute;
+
+    top: 127px;
+    left: 3px;
+
+    width: 8px;
+    height: 33px;
+
+    background: rgba(255,255,255,0.38);
+
+    border-radius: 50%;
+}
+
+
+/* =====================================================
+   SULCOS DA PET
+   ===================================================== */
+
+.pet-line {
+    position: absolute;
+
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    width: 76%;
+    height: 35px;
+
+    border-top: 2px solid rgba(21, 102, 49, 0.20);
+    border-bottom: 2px solid rgba(21, 102, 49, 0.11);
+
+    border-radius: 50%;
+
+    z-index: 3;
+
+    pointer-events: none;
+}
+
+
+.pet-line-1 {
+    top: 34%;
+}
+
+.pet-line-2 {
+    top: 59%;
+}
+
+.pet-line-3 {
+    top: 79%;
+}
+
+
+/* =====================================================
+   RÓTULO
+   ===================================================== */
+.pet-label {
+    position: absolute;
+
+    top: 48%;
+    left: 50%;
+
+    transform: translate(-50%, -50%);
+
+    width: 112px; /* Ligeiramente menor para respirar */
+    min-height: 84px;
+
+    box-sizing: border-box;
+
+    padding: 10px 10px 12px 10px;
+
+    /* Borda fina e elegante */
+    border: 2px solid #d8b32a; 
+
+    /* Formato mais suave e moderno (ondulado) */
+    border-radius: 12px 8px 12px 8px;
+
+    /* Fundo com gradiente sutil para dar volume */
+    background:
+        linear-gradient(
+            160deg,
+            #ffffff 0%,
+            #fdfcf3 35%,
+            #f3eedd 70%,
+            #e8e0c8 100%
+        );
+
+    z-index: 8;
+
+    /* Sombra projetada mais realista, leve e profunda */
+    box-shadow: 
+        0 8px 14px rgba(8, 76, 35, 0.25),
+        0 3px 4px rgba(8, 76, 35, 0.18),
+        inset 0 1px 2px rgba(255, 255, 255, 0.9);
+
+    text-align: center;
+
+    /* Pequeno brilho no topo do rótulo para dar efeito de papel plastificado */
+    position: relative; 
+}
+
+/* Brilho sutil no topo do rótulo */
+.pet-label::before {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 15%;
+    width: 70%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 50%;
+    filter: blur(1px);
+    pointer-events: none;
+}
+
+/* Linha decorativa fina no rodapé do rótulo */
+
+
+/* Logo */
+.pet-logo {
+    width: 90px; /* Ajuste fino para caber melhor */
+    height: auto;
+
+    display: block;
+
+    margin: 0 auto 10px auto; /* Adiciona espaço abaixo do logo */
+
+    filter:
+        drop-shadow(2px 3px 2px rgba(0, 0, 0, 0.18));
+}
+
+
+/* =====================================================
+   PERCENTUAL
+   ===================================================== */
+
+.pet-percentage {
+    position: absolute;
+
+    right: 15px;
+    bottom: 22px;
+
+    font-family: Arial, sans-serif;
+
+    font-size: 15px;
+    font-weight: 900;
+
+    color: rgba(255,255,255,0.75);
+
+    text-shadow:
+        1px 1px 0 rgba(31, 99, 45, 0.8);
+
+    z-index: 9;
+}
+
+
+/* =====================================================
+   BASE
+   Não desenhamos mais outra peça.
+   Ela agora serve SOMENTE como sombra.
+   ===================================================== */
+
+.pet-base {
+    position: absolute;
+
+    bottom: 1px;
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    width: 120px;
+    height: 9px;
+
+    background: transparent;
+
+    z-index: 0;
+}
+
+
+.pet-base::after {
+    content: "";
+
+    position: absolute;
+
+    left: 50%;
+    bottom: -3px;
+
+    transform: translateX(-50%);
+
+    width: 105px;
+    height: 13px;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            ellipse,
+            rgba(0,0,0,0.22),
+            transparent 68%
+        );
+}

@@ -8,7 +8,7 @@ import { getStatusPontoInfo } from "../../../../constants/statusPonto"
 
 const ITENS_POR_PAGINA = 7
 
-function MyPoints() {
+function Points() {
     const navigate = useNavigate()
     const [pontos, setPontos] = useState<PontoColeta[]>([])
     const [loading, setLoading] = useState(true)
@@ -225,4 +225,4 @@ function MyPoints() {
     )
 }
 
-export default MyPoints
+export default Points
