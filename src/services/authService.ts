@@ -35,7 +35,7 @@ interface ResetPasswordCredentials {
 
 export interface RegisterCredentials {
   tipoPessoa: 'FISICA' | 'JURIDICA' | string;
-  tipoParceiro?: 'GERADOR' | 'INSTITUCIONAL' | string;
+  tipoParceiro?: 'SOLIDARIO' | 'INSTITUCIONAL' | 'COMUNITARIO'| string;
   razaoSocial: string;
   nome?: string | null;
   email: string;

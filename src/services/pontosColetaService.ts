@@ -61,6 +61,9 @@ export interface PontoColeta {
     statusAprovacaoPontoColeta: string;
     nomePontoColeta: string;
     atualizadoEm: string | null;
+    latitude:  string | null ;
+    longitude: string | null;
+    
 }
 
 export interface CriarPontoColetaPayload {
@@ -77,8 +80,10 @@ export interface CriarPontoColetaPayload {
     capacidadeBombona?: number;
     nivelAtualPct?: number;
     statusBombona?: string;
-    latitude?: string;
-    longitude?: string;
+    latitude?: string | number;
+    longitude?: string | number;
+    parceiroId?: number | null; // <--- ADICIONADO `null` AQUI
+    statusAprovacaoPontoColeta?: "PENDENTE" | "APROVADO" | "REJEITADO";
 }
 
 export interface AtualizarNivelBombonaRequest {
@@ -87,7 +92,7 @@ export interface AtualizarNivelBombonaRequest {
 }
 
 // ============================================
-// SERVIÇO AUTENTICADO (PARCEIROS)
+// SERVIÇO AUTENTICADO (PARCEIROS & ADMIN)
 // ============================================
 export const pontosColetaService = {
     /**
@@ -101,16 +106,24 @@ export const pontosColetaService = {
 
     /**
      * POST /pontos-coleta
-     * Cria um novo ponto de coleta caso o usuário crie adicionais após o cadastro.
+     * Cria um novo ponto de coleta para o próprio parceiro logado.
      */
     async criarPontoColeta(payload: CriarPontoColetaPayload): Promise<PontoColeta> {
         const { data } = await api.post<PontoColeta>("/pontos-coleta", payload);
         return data;
     },
 
+// Em pontosColetaService.ts
+    async criarPontoColetaAdmin(payload: CriarPontoColetaPayload): Promise<PontoColeta> {
+        // Se no seu back-end a rota for router.post('/admin', ...) com prefixo '/pontos-coleta', use '/pontos-coleta/admin'
+        // Se o seu back-end usa '/admin/pontos-coleta', ajuste para corresponder exatamente:
+        const { data } = await api.post<PontoColeta>("/pontos-coleta/admin", payload); 
+        return data;
+    },
+
     /**
      * PUT /pontos-coleta/:id
-     * Atualiza os dados do ponto de coleta (ex: nível da bombona e status).
+     * Atualiza os dados do ponto de coleta.
      */
     async atualizarPontoColeta(
         id: number,
@@ -131,7 +144,7 @@ export const pontosColetaService = {
 
     /**
      * DELETE /parceiros/pontos-coleta/:id
-     * Exclui um ponto de coleta pertencente ao parceiro autenticado.
+     * Exclui um ponto de coleta.
      */
     async excluirPontoColeta(id: number): Promise<void> {
         await api.delete(`/parceiros/pontos-coleta/${id}`);

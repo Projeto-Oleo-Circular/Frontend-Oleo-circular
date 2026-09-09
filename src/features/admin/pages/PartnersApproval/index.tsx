@@ -1,3 +1,5 @@
+// PartnersApproval.tsx
+
 import { useEffect, useState, useCallback } from "react";
 import {
   adminParceiroService,
@@ -30,11 +32,13 @@ import {
   ChevronLeft,
   ChevronRight,
   Plus,
+  Pencil,
 } from "lucide-react";
 import Button from "../../../../components/ui/Button";
 import Footer from "../../../../components/layout/Footer";
 import SummaryCard from "../../../../components/ui/SummaryCard";
 import { IndicadoresAmbientais } from "../../../../components/dash/IndicadoresAmbientais";
+
 interface ContagensParceiros {
   pendentes: number;
   aprovados: number;
@@ -47,11 +51,9 @@ type ModalTipo = "aprovar" | "rejeitar" | "detalhes" | null;
 function formatarData(iso?: string | null): string {
   if (!iso) return "—";
   const data = new Date(iso);
-  
-  return data.toLocaleDateString("pt-BR")
+  return data.toLocaleDateString("pt-BR");
 }
 
-// Helper para padronizar o extrato da contagem total independente da resposta
 function extrairTotal(resposta: ListarParceirosResponse | Parceiro[]): number {
   if (Array.isArray(resposta)) {
     return resposta.length;
@@ -59,7 +61,6 @@ function extrairTotal(resposta: ListarParceirosResponse | Parceiro[]): number {
   return resposta.total ?? 0;
 }
 
-// Helper para padronizar a lista de itens
 function extrairItens(resposta: ListarParceirosResponse | Parceiro[]): Parceiro[] {
   if (Array.isArray(resposta)) {
     return resposta;
@@ -67,12 +68,10 @@ function extrairItens(resposta: ListarParceirosResponse | Parceiro[]): Parceiro[
   return resposta.items ?? [];
 }
 
-// Helper para obter o nome ou razão social com base no tipo de parceiro
 function obterNomeOuRazaoSocial(parceiro: Parceiro): string {
   if (parceiro.tipoParceiro === "SOLIDARIO" || parceiro.tipoParceiro === "COMUNITARIO") {
     return parceiro.nome || "—";
   }
-  // Para INSTITUCIONAL e demais pessoas jurídicas
   return parceiro.razaoSocial || parceiro.nome || "—";
 }
 
@@ -84,6 +83,10 @@ export function PartnersApproval() {
   const [observacaoModal, setObservacaoModal] = useState("");
   const [contagens, setContagens] = useState<ContagensParceiros | null>(null);
   const [isModalCriarOpen, setIsModalCriarOpen] = useState(false);
+
+  // Estado para edição
+  const [modoEdicao, setModoEdicao] = useState(false);
+  const [parceiroEditando, setParceiroEditando] = useState<Parceiro | null>(null);
 
   // Paginação e Filtros
   const [page, setPage] = useState(1);
@@ -106,9 +109,9 @@ export function PartnersApproval() {
     { value: "APROVADO", label: "Aprovado" },
     { value: "REJEITADO", label: "Rejeitado" },
   ];
-const [mostrarResumoAmbiental, setMostrarResumoAmbiental] =
-  useState(false);
-  // Carrega a listagem do grid respeitando o parâmetro de busca/filtros
+
+  const [mostrarResumoAmbiental, setMostrarResumoAmbiental] = useState(false);
+
   const carregarParceiros = useCallback(async () => {
     setLoading(true);
     try {
@@ -134,7 +137,6 @@ const [mostrarResumoAmbiental, setMostrarResumoAmbiental] =
     }
   }, [page, limit, statusFiltro, termoBusca]);
 
-  // Carrega os dados para os cards de resumo estatístico
   const carregarContagensParceiros = useCallback(async () => {
     try {
       const resposta = await adminParceiroService.listarParceiros();
@@ -188,7 +190,6 @@ const [mostrarResumoAmbiental, setMostrarResumoAmbiental] =
     carregarIndicadores();
   }, []);
 
-  // Reseta para página 1 ao mudar filtros ou busca
   const handleFilterChange = (val: StatusAprovacao | "") => {
     setStatusFiltro(val);
     setPage(1);
@@ -215,7 +216,7 @@ const [mostrarResumoAmbiental, setMostrarResumoAmbiental] =
       return parceiro.outroParceiro;
     }
 
-    return "—";
+    return "Admin";
   };
 
   const handleAbrirModalCriar = () => {
@@ -223,57 +224,56 @@ const [mostrarResumoAmbiental, setMostrarResumoAmbiental] =
   };
 
   const handleCriarParceiro = async (dados: NovoParceiroPayload) => {
-  setSalvando(true);
-  try {
-    // Usar o mesmo endpoint de registro
-    await authService.register({
-      tipoPessoa: dados.tipoPessoa,
-      tipoParceiro: dados.tipoParceiro,
-      razaoSocial: dados.razaoSocial,
-      nome: dados.nome,
-      email: dados.email,
-      senha: dados.senha,
-      documento: dados.documento,
-      telefone: dados.telefone,
-      porte: dados.porte,
-      aceiteMarketing: dados.aceiteMarketing,
-      responsavelLegal: dados.responsavelLegal,
-      responsavelLegalCpf: dados.responsavelLegalCpf,
-      cep: dados.cep,
-      logradouro: dados.logradouro,
-      numero: dados.numero,
-      cidade: dados.cidade,
-      bairro: dados.bairro,
-      estado: dados.estado,
-      complemento: dados.complemento,
-      categoria: dados.categoria,
-      expectativaGeracao: dados.expectativaGeracao,
-      capacidadeBombona: dados.capacidadeBombona,
-      nivelAtualPct: dados.nivelAtualPct,
-      statusBombona: dados.statusBombona,
-      redesSociais: dados.redesSociais,
-      site: dados.site,
-      aceiteDivulgacao: dados.aceiteDivulgacao,
-      parceiroIndicadorId: dados.parceiroIndicadorId,
-      outroParceiro: dados.outroParceiro,
-      comoConheceu: dados.comoConheceu,
-      observacao: dados.observacao,
-      longitude: dados.longitude,
-      latitude: dados.latitude,
-    });
+    setSalvando(true);
+    try {
+      const temIndicador = Boolean(dados.parceiroIndicadorId);
 
-    // Recarregar a lista
-    await Promise.all([carregarParceiros(), carregarContagensParceiros()]);
-    setIsModalCriarOpen(false);
-  } catch (error) {
-    console.error("Erro ao criar parceiro:", error);
-    throw error;
-  } finally {
-    setSalvando(false);
-  }
-};
+      await authService.register({
+        tipoPessoa: dados.tipoPessoa,
+        tipoParceiro: dados.tipoParceiro,
+        razaoSocial: dados.razaoSocial,
+        nome: dados.nome,
+        email: dados.email,
+        senha: dados.senha,
+        documento: dados.documento,
+        telefone: dados.telefone,
+        porte: dados.porte,
+        aceiteMarketing: dados.aceiteMarketing,
+        responsavelLegal: dados.responsavelLegal,
+        responsavelLegalCpf: dados.responsavelLegalCpf,
+        cep: dados.cep,
+        logradouro: dados.logradouro,
+        numero: dados.numero,
+        cidade: dados.cidade,
+        bairro: dados.bairro,
+        estado: dados.estado,
+        complemento: dados.complemento,
+        categoria: dados.categoria,
+        expectativaGeracao: dados.expectativaGeracao,
+        capacidadeBombona: dados.capacidadeBombona,
+        nivelAtualPct: dados.nivelAtualPct,
+        statusBombona: dados.statusBombona,
+        redesSociais: dados.redesSociais,
+        site: dados.site,
+        aceiteDivulgacao: dados.aceiteDivulgacao,
+        parceiroIndicadorId: temIndicador ? Number(dados.parceiroIndicadorId) : null,
+        outroParceiro: dados.outroParceiro,
+        comoConheceu: temIndicador ? (dados.comoConheceu || "Parceiro Indicador") : "Criado pelo Administrador",
+        observacao: dados.observacao,
+        longitude: dados.longitude,
+        latitude: dados.latitude,
+      });
 
-  // Garante filtragem client-side caso a API devolva lista inteira e não filtre no backend
+      await Promise.all([carregarParceiros(), carregarContagensParceiros()]);
+      setIsModalCriarOpen(false);
+    } catch (error) {
+      console.error("Erro ao criar parceiro:", error);
+      throw error;
+    } finally {
+      setSalvando(false);
+    }
+  };
+
   const parceirosFiltrados = parceiros.filter((parceiro) => {
     const atendeStatus =
       !statusFiltro || parceiro.statusAprovacaoParceiro === statusFiltro;
@@ -293,17 +293,21 @@ const [mostrarResumoAmbiental, setMostrarResumoAmbiental] =
 
   const abrirModal = (tipo: ModalTipo, parceiro: Parceiro) => {
     setObservacaoModal("");
+    setModoEdicao(false);
+    setParceiroEditando(null);
+    setMostrarResumoAmbiental(false);
     setModal({ tipo, parceiro });
   };
 
   const fecharModal = () => {
-  setMostrarResumoAmbiental(false);
-
-  setModal({
-    tipo: null,
-    parceiro: null,
-  });
-};
+    setMostrarResumoAmbiental(false);
+    setModoEdicao(false);
+    setParceiroEditando(null);
+    setModal({
+      tipo: null,
+      parceiro: null,
+    });
+  };
 
   const processarAcaoModal = async () => {
     if (!modal.tipo || !modal.parceiro) return;
@@ -328,95 +332,160 @@ const [mostrarResumoAmbiental, setMostrarResumoAmbiental] =
     }
   };
 
+  // ==========================================================
+  // FUNÇÕES DE EDIÇÃO
+  // ==========================================================
+
+  const handleEditarParceiro = () => {
+    if (modal.parceiro) {
+      setParceiroEditando({ ...modal.parceiro });
+      setModoEdicao(true);
+    }
+  };
+
+  const handleCancelarEdicao = () => {
+    setModoEdicao(false);
+    setParceiroEditando(null);
+  };
+
+  const handleSalvarEdicao = async () => {
+    if (!parceiroEditando) return;
+
+    // Validação básica
+    if (!parceiroEditando.email) {
+      alert("O e-mail é obrigatório.");
+      return;
+    }
+
+    setSalvando(true);
+    try {
+      // Usando o método atualizarParceiro do serviço
+      await adminParceiroService.atualizarParceiro(parceiroEditando.id, {
+        razaoSocial: parceiroEditando.razaoSocial,
+        nome: parceiroEditando.nome,
+        email: parceiroEditando.email,
+        telefone: parceiroEditando.telefone,
+        documento: parceiroEditando.documento,
+        responsavelLegal: parceiroEditando.responsavelLegal,
+      });
+
+      await Promise.all([carregarParceiros(), carregarContagensParceiros()]);
+      
+      // Atualiza o modal com os dados editados
+      setModal((prev) => ({
+        ...prev,
+        parceiro: { ...parceiroEditando },
+      }));
+      
+      setModoEdicao(false);
+      setParceiroEditando(null);
+    } catch (error) {
+      console.error("Erro ao atualizar parceiro:", error);
+      alert("Erro ao salvar as alterações. Tente novamente.");
+    } finally {
+      setSalvando(false);
+    }
+  };
+
+  const handleInputEditChange = (campo: keyof Parceiro, valor: any) => {
+    if (parceiroEditando) {
+      setParceiroEditando((prev) => ({
+        ...prev!,
+        [campo]: valor,
+      }));
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <AdminTopNav />
 
       <main className="w-full max-w-[1440px] mx-auto p-6 flex-1">
-       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-        <div>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-green-primary mt-2 sm:mt-5 mb-1">
-            Aprovação de Parceiros
+              Aprovação de Parceiros
             </h1>
             <p className="text-sm sm:text-base text-white-500">
-            Analise, filtre e aprove os parceiros cadastrados.
+              Analise, filtre e aprove os parceiros cadastrados.
             </p>
-        </div>
+          </div>
 
-        <div className="flex flex-col sm:flex-row items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-center gap-3">
             <div className="relative w-full sm:w-64">
-            <input
+              <input
                 type="text"
                 placeholder="Buscar parceiro..."
                 value={termoBusca}
                 onChange={handleSearchChange}
                 className="w-full pl-9 pr-4 py-2 text-sm bg-white border border-white-200 rounded-lg text-black-primary focus:outline-none focus:border-green-primary"
-            />
-            <Search className="w-4 h-4 text-white-400 absolute left-3 top-2.5" />
+              />
+              <Search className="w-4 h-4 text-white-400 absolute left-3 top-2.5" />
             </div>
 
             <AdminFilterDropdown
-            placeholder="Filtros"
-            options={statusOptions}
-            value={statusFiltro}
-            onChange={(val) => handleFilterChange(val as StatusAprovacao | "")}
+              placeholder="Filtros"
+              options={statusOptions}
+              value={statusFiltro}
+              onChange={(val) => handleFilterChange(val as StatusAprovacao | "")}
             />
-        </div>
+          </div>
         </div>
 
         {/* CARDS DE RESUMO */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-        <SummaryCard
+          <SummaryCard
             label="Pendentes"
             value={contagens?.pendentes}
             subtext="Parceiros"
             labelColor="text-orange-primary"
             iconBgColor="bg-orange-200"
             icon={<Clock className="w-5 h-5 sm:w-6 sm:h-6 text-orange-primary" />}
-        />
+          />
 
-        <SummaryCard
+          <SummaryCard
             label="Aprovados"
             value={contagens?.aprovados}
             subtext="Parceiros"
             labelColor="text-green-primary"
             iconBgColor="bg-green-bg-card"
             icon={<CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6 text-green-primary" />}
-        />
+          />
 
-        <SummaryCard
+          <SummaryCard
             label="Rejeitados"
             value={contagens?.rejeitados}
             subtext="Parceiros"
             labelColor="text-red-primary"
             iconBgColor="bg-red-200"
             icon={<XCircle className="w-5 h-5 sm:w-6 sm:h-6 text-red-primary" />}
-        />
+          />
 
-        <SummaryCard
+          <SummaryCard
             label="Total de Parceiros"
             value={contagens?.total}
             subtext="Cadastrados"
             labelColor="text-green-primary"
             iconBgColor="bg-green-100"
             icon={<User className="w-5 h-5 sm:w-6 sm:h-6 text-green-primary" />}
-        />
+          />
         </div>
 
-        {/* BOTÃO NOVO PARCEIRO - APENAS NO LADO DIREITO */}
+        {/* BOTÃO NOVO PARCEIRO */}
         <div className="flex justify-end mb-4">
-        <div className="inline-block">
+          <div className="inline-block">
             <Button
-            variant="primary"
-            size="sm"
-            onClick={handleAbrirModalCriar}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs"
+              variant="primary"
+              size="sm"
+              onClick={handleAbrirModalCriar}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs"
             >
-            <Plus className="w-3.5 h-3.5" />
-            Novo Parceiro
+              <Plus className="w-3.5 h-3.5" />
+              Novo Parceiro
             </Button>
+          </div>
         </div>
-        </div>
+
         {/* TABELA */}
         <div className="bg-white rounded-xl shadow-sm border border-white-200 overflow-x-auto">
           <table className="w-full text-left border-collapse">
@@ -453,12 +522,10 @@ const [mostrarResumoAmbiental, setMostrarResumoAmbiental] =
                       key={parceiro.id}
                       className="border-b border-white-100 last:border-0 hover:bg-white-50 transition-colors"
                     >
-                      {/* 1. Coluna ID */}
                       <td className="p-4 font-medium text-sm text-black-primary">
                         #{parceiro.id}
                       </td>
 
-                      {/* 2. Coluna Nome / Razão Social */}
                       <td className="p-4">
                         <p className="font-semibold text-sm text-black-primary">
                           {nomeExibicao}
@@ -468,12 +535,10 @@ const [mostrarResumoAmbiental, setMostrarResumoAmbiental] =
                         </span>
                       </td>
 
-                      {/* 3. Coluna Parceiro Indicador */}
                       <td className="p-4 text-sm text-black-primary font-medium whitespace-nowrap">
                         {obterNomeParceiroIndicador(parceiro)}
                       </td>
 
-                      {/* 4. Coluna E-mail / Telefone */}
                       <td className="p-4">
                         <p className="text-black-primary text-sm font-medium">
                           {parceiro.email}
@@ -483,12 +548,10 @@ const [mostrarResumoAmbiental, setMostrarResumoAmbiental] =
                         </p>
                       </td>
 
-                      {/* 5. Coluna Status de Aprovação */}
                       <td className="p-4 whitespace-nowrap">
                         <StatusBadge status={status} tipo="parceiro" />
                       </td>
 
-                      {/* 6. Coluna Ações */}
                       <td className="p-4 whitespace-nowrap">
                         <div className="flex items-center gap-2">
                           {status === "PENDENTE" && (
@@ -609,224 +672,292 @@ const [mostrarResumoAmbiental, setMostrarResumoAmbiental] =
           </div>
         )}
 
-       {/* MODAL DETALHES */}
-{modal.tipo === "detalhes" && modal.parceiro && (
-  <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+        {/* ============================================================ */}
+        {/* MODAL DETALHES COM EDIÇÃO - SEM O BOTÃO X                    */}
+        {/* ============================================================ */}
+        {modal.tipo === "detalhes" && modal.parceiro && (
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl p-6 w-full max-w-lg shadow-xl animate-slide-down max-h-[90vh] overflow-y-auto">
+              {/* CABEÇALHO - SEM O BOTÃO X */}
+              <div className="flex items-center justify-between pb-3 border-b border-white-100 mb-4">
+                <div>
+                  <h2 className="font-bold text-xl text-green-primary">
+                    {modoEdicao ? "Editar Parceiro" : "Detalhes do Parceiro"}
+                  </h2>
+                  <p className="text-xs text-white-500">
+                    ID do Parceiro: #{modal.parceiro.id}
+                  </p>
+                </div>
 
-    <div className="bg-white rounded-xl p-6 w-full max-w-lg shadow-xl animate-slide-down max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center gap-2">
+                  {/* Botão de Editar - apenas quando NÃO está em modo edição */}
+                  {!modoEdicao && (
+                    <button
+                      onClick={handleEditarParceiro}
+                      className="p-2 rounded-lg border border-blue-500 text-blue-500 hover:bg-blue-50 transition-colors cursor-pointer"
+                      title="Editar Parceiro"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              </div>
 
-      {/* CABEÇALHO */}
-      <div className="flex items-center justify-between pb-3 border-b border-white-100 mb-4">
+              <div className="space-y-4">
+                {/* STATUS */}
+                <div className="flex items-center justify-between bg-white-50 p-3 rounded-lg border border-white-100">
+                  <div>
+                    <span className="text-xs text-white-500 block">
+                      Status de Cadastro
+                    </span>
+                    <StatusBadge
+                      status={modal.parceiro.statusAprovacaoParceiro || "PENDENTE"}
+                      tipo="parceiro"
+                    />
+                  </div>
 
-        <div>
-          <h2 className="font-bold text-xl text-green-primary">
-            Detalhes do Parceiro
-          </h2>
+                  <div className="text-right">
+                    <span className="text-xs text-white-500 block">
+                      Data de Cadastro
+                    </span>
+                    <span className="text-xs font-semibold text-black-primary">
+                      {formatarData(modal.parceiro.criadoEm)}
+                    </span>
+                  </div>
+                </div>
 
-          <p className="text-xs text-white-500">
-            ID do Parceiro: #{modal.parceiro.id}
-          </p>
-        </div>
+                {/* IDENTIFICAÇÃO */}
+                <div className="border border-white-100 rounded-lg p-3">
+                  <h3 className="text-xs font-bold text-green-primary uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <User className="w-3.5 h-3.5" />
+                    Identificação
+                  </h3>
 
-        <button
-          onClick={fecharModal}
-          className="text-white-500 hover:text-black-primary cursor-pointer"
-        >
-          <X className="w-5 h-5 text-red-primary" />
-        </button>
+                  {modoEdicao && parceiroEditando ? (
+                    <div className="space-y-2">
+                      {/* Nome/Razão Social */}
+                      <div>
+                        <label className="text-xs text-white-500">
+                          {modal.parceiro.tipoPessoa === "JURIDICA" 
+                            ? "Razão Social" 
+                            : "Nome Completo"}
+                        </label>
+                        <input
+                          type="text"
+                          value={parceiroEditando.razaoSocial || parceiroEditando.nome || ""}
+                          onChange={(e) => {
+                            if (modal.parceiro?.tipoPessoa === "JURIDICA") {
+                              handleInputEditChange("razaoSocial", e.target.value);
+                            } else {
+                              handleInputEditChange("nome", e.target.value);
+                            }
+                          }}
+                          className="w-full border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
+                        />
+                      </div>
 
-      </div>
+                      {/* Email */}
+                      <div>
+                        <label className="text-xs text-white-500">E-mail</label>
+                        <input
+                          type="email"
+                          value={parceiroEditando.email || ""}
+                          onChange={(e) => handleInputEditChange("email", e.target.value)}
+                          className="w-full border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
+                        />
+                      </div>
 
-      <div className="space-y-4">
+                      {/* Telefone */}
+                      <div>
+                        <label className="text-xs text-white-500">Telefone</label>
+                        <input
+                          type="text"
+                          value={parceiroEditando.telefone || ""}
+                          onChange={(e) => handleInputEditChange("telefone", e.target.value)}
+                          className="w-full border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
+                        />
+                      </div>
 
-        {/* STATUS */}
-        <div className="flex items-center justify-between bg-white-50 p-3 rounded-lg border border-white-100">
+                      {/* Documento */}
+                      <div>
+                        <label className="text-xs text-white-500">CPF/CNPJ</label>
+                        <input
+                          type="text"
+                          value={parceiroEditando.documento || ""}
+                          onChange={(e) => handleInputEditChange("documento", e.target.value)}
+                          className="w-full border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
+                        />
+                      </div>
 
-          <div>
-            <span className="text-xs text-white-500 block">
-              Status de Cadastro
-            </span>
+                      {/* Responsável Legal */}
+                      <div>
+                        <label className="text-xs text-white-500">Responsável Legal</label>
+                        <input
+                          type="text"
+                          value={parceiroEditando.responsavelLegal || ""}
+                          onChange={(e) => handleInputEditChange("responsavelLegal", e.target.value)}
+                          className="w-full border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <p className="text-sm font-semibold text-black-primary">
+                        {obterNomeOuRazaoSocial(modal.parceiro)}
+                      </p>
 
-            <StatusBadge
-              status={
-                modal.parceiro.statusAprovacaoParceiro ||
-                "PENDENTE"
-              }
-              tipo="parceiro"
-            />
-          </div>
+                      {modal.parceiro.tipoParceiro !== "SOLIDARIO" &&
+                        modal.parceiro.nome && (
+                          <p className="text-xs text-white-500">
+                            Nome Fantasia / Nome: {modal.parceiro.nome}
+                          </p>
+                        )}
 
-          <div className="text-right">
-            <span className="text-xs text-white-500 block">
-              Data de Cadastro
-            </span>
+                      {modal.parceiro.responsavelLegal && (
+                        <p className="text-xs text-white-500 mt-1">
+                          Responsável Legal: {modal.parceiro.responsavelLegal}
+                        </p>
+                      )}
 
-            <span className="text-xs font-semibold text-black-primary">
-              {formatarData(modal.parceiro.criadoEm)}
-            </span>
-          </div>
+                      <p className="text-xs text-white-500 mt-1">
+                        Tipo: <strong>{modal.parceiro.tipoPessoa}</strong> ({modal.parceiro.tipoParceiro})
+                      </p>
 
-        </div>
+                      <p className="text-xs text-white-500 mt-0.5">
+                        Parceiro Indicador: <strong>{obterNomeParceiroIndicador(modal.parceiro)}</strong>
+                      </p>
 
-        {/* IDENTIFICAÇÃO */}
-        <div className="border border-white-100 rounded-lg p-3">
+                      <p className="text-xs text-white-500 mt-0.5">
+                        CPF/CNPJ: {modal.parceiro.documento || "—"}
+                      </p>
+                    </>
+                  )}
+                </div>
 
-          <h3 className="text-xs font-bold text-green-primary uppercase tracking-wider mb-2 flex items-center gap-1.5">
-            <User className="w-3.5 h-3.5" />
-            Identificação
-          </h3>
+                {/* CONTATO - Modo Edição */}
+                {modoEdicao && parceiroEditando && (
+                  <div className="border border-white-100 rounded-lg p-3">
+                    <h3 className="text-xs font-bold text-green-primary uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                      <Phone className="w-3.5 h-3.5" />
+                      Contato
+                    </h3>
 
-          <p className="text-sm font-semibold text-black-primary">
-            {obterNomeOuRazaoSocial(modal.parceiro)}
-          </p>
+                    <div className="space-y-2">
+                      <div>
+                        <label className="text-xs text-white-500">E-mail</label>
+                        <input
+                          type="email"
+                          value={parceiroEditando.email || ""}
+                          onChange={(e) => handleInputEditChange("email", e.target.value)}
+                          className="w-full border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-white-500">Telefone</label>
+                        <input
+                          type="text"
+                          value={parceiroEditando.telefone || ""}
+                          onChange={(e) => handleInputEditChange("telefone", e.target.value)}
+                          className="w-full border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
 
-          {modal.parceiro.tipoParceiro !== "SOLIDARIO" &&
-            modal.parceiro.nome && (
-              <p className="text-xs text-white-500">
-                Nome Fantasia / Nome:{" "}
-                {modal.parceiro.nome}
-              </p>
-            )}
+                {/* CONTATO - Modo Visualização */}
+                {!modoEdicao && (
+                  <div className="border border-white-100 rounded-lg p-3">
+                    <h3 className="text-xs font-bold text-green-primary uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                      <Phone className="w-3.5 h-3.5" />
+                      Contato
+                    </h3>
 
-          {modal.parceiro.responsavelLegal && (
-            <p className="text-xs text-white-500 mt-1">
-              Responsável Legal:{" "}
-              {modal.parceiro.responsavelLegal}
-            </p>
-          )}
+                    <p className="text-xs text-white-500 flex items-center gap-1">
+                      <Mail className="w-3 h-3" />
+                      {modal.parceiro.email}
+                    </p>
 
-          <p className="text-xs text-white-500 mt-1">
-            Tipo:{" "}
-            <strong>
-              {modal.parceiro.tipoPessoa}
-            </strong>{" "}
-            ({modal.parceiro.tipoParceiro})
-          </p>
+                    <p className="text-xs text-white-500 flex items-center gap-1 mt-1">
+                      <Phone className="w-3 h-3" />
+                      {modal.parceiro.telefone || "—"}
+                    </p>
+                  </div>
+                )}
 
-          <p className="text-xs text-white-500 mt-0.5">
-            Parceiro Indicador:{" "}
-            <strong>
-              {obterNomeParceiroIndicador(
-                modal.parceiro
+                {/* IMPACTO AMBIENTAL - SOMENTE PARCEIRO APROVADO */}
+                {modal.parceiro.statusAprovacaoParceiro === "APROVADO" && !modoEdicao && (
+                  <div className="border border-green-100 rounded-lg overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => setMostrarResumoAmbiental((valorAtual) => !valorAtual)}
+                      className="w-full flex items-center justify-between p-4 bg-green-50 hover:bg-green-100 transition-colors cursor-pointer"
+                    >
+                      <div className="text-left">
+                        <p className="text-sm font-bold text-green-primary">
+                          Resumo Ambiental
+                        </p>
+                        <p className="text-xs text-white-500 mt-0.5">
+                          Consulte o impacto gerado pelas coletas deste parceiro
+                        </p>
+                      </div>
+                      <span className="text-xs font-semibold text-green-primary">
+                        {mostrarResumoAmbiental ? "Ocultar" : "Visualizar"}
+                      </span>
+                    </button>
+
+                    {mostrarResumoAmbiental && (
+                      <div className="p-4 border-t border-green-100">
+                        <IndicadoresAmbientais
+                          tipo="admin-parceiro"
+                          parceiroId={modal.parceiro.id}
+                          titulo="Impacto Ambiental do Parceiro"
+                          variant="modal"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* BOTÕES - Modo Edição */}
+              {modoEdicao ? (
+                <div className="flex gap-3 mt-6 pt-4 border-t border-white-100">
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    onClick={handleCancelarEdicao}
+                    disabled={salvando}
+                    fullWidth
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={handleSalvarEdicao}
+                    loading={salvando}
+                    fullWidth
+                  >
+                    Salvar Alterações
+                  </Button>
+                </div>
+              ) : (
+                /* BOTÃO FECHAR - Modo Visualização */
+                <div className="mt-6 pt-4 border-t border-white-100">
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={fecharModal}
+                    fullWidth
+                  >
+                    Fechar
+                  </Button>
+                </div>
               )}
-            </strong>
-          </p>
-
-          <p className="text-xs text-white-500 mt-0.5">
-            CPF/CNPJ:{" "}
-            {modal.parceiro.documento || "—"}
-          </p>
-
-        </div>
-
-        {/* CONTATO */}
-        <div className="border border-white-100 rounded-lg p-3">
-
-          <h3 className="text-xs font-bold text-green-primary uppercase tracking-wider mb-2 flex items-center gap-1.5">
-            <Phone className="w-3.5 h-3.5" />
-            Contato
-          </h3>
-
-          <p className="text-xs text-white-500 flex items-center gap-1">
-            <Mail className="w-3 h-3" />
-            {modal.parceiro.email}
-          </p>
-
-          <p className="text-xs text-white-500 flex items-center gap-1 mt-1">
-            <Phone className="w-3 h-3" />
-            {modal.parceiro.telefone || "—"}
-          </p>
-
-        </div>
-
-        {/* ============================================== */}
-        {/* IMPACTO AMBIENTAL - SOMENTE PARCEIRO APROVADO */}
-        {/* ============================================== */}
-
-        {modal.parceiro.statusAprovacaoParceiro ===
-          "APROVADO" && (
-
-          <div className="border border-green-100 rounded-lg overflow-hidden">
-
-            {/* BOTÃO RESUMO */}
-            <button
-              type="button"
-              onClick={() =>
-                setMostrarResumoAmbiental(
-                  (valorAtual) => !valorAtual
-                )
-              }
-              className="
-                w-full
-                flex
-                items-center
-                justify-between
-                p-4
-                bg-green-50
-                hover:bg-green-100
-                transition-colors
-                cursor-pointer
-              "
-            >
-
-              <div className="text-left">
-
-                <p className="text-sm font-bold text-green-primary">
-                  Resumo Ambiental
-                </p>
-
-                <p className="text-xs text-white-500 mt-0.5">
-                  Consulte o impacto gerado pelas
-                  coletas deste parceiro
-                </p>
-
-              </div>
-
-              <span className="text-xs font-semibold text-green-primary">
-                {mostrarResumoAmbiental
-                  ? "Ocultar"
-                  : "Visualizar"}
-              </span>
-
-            </button>
-
-            {/* CONTEÚDO */}
-            {mostrarResumoAmbiental && (
-
-              <div className="p-4 border-t border-green-100">
-
-                <IndicadoresAmbientais
-            tipo="admin-parceiro"
-            parceiroId={modal.parceiro.id}
-            titulo="Impacto Ambiental do Parceiro"
-            variant="modal"
-            />
-              </div>
-
-            )}
-
+            </div>
           </div>
         )}
-
-      </div>
-
-      {/* BOTÃO FECHAR */}
-      <div className="mt-6">
-
-        <Button
-          variant="primary"
-          size="sm"
-          onClick={fecharModal}
-          fullWidth
-        >
-          Fechar
-        </Button>
-
-      </div>
-
-    </div>
-  </div>
-)}
 
         {/* MODAL CRIAR PARCEIRO */}
         <CriarParceiroModal

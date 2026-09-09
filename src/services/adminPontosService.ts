@@ -20,6 +20,7 @@ export interface Parceiro {
 }
 
 export interface PontoColetaAdmin {
+  cep: string;
   id: number;
   nomePontoColeta: string;
   capacidadeBombona: number;

@@ -54,4 +54,13 @@ export const adminParceiroService = {
     const response = await api.patch(`/admin/parceiros/${data.id}/status`, data);
     return response.data;
   },
+  // adminParceiroService.ts - Adicione este método
+
+async atualizarParceiro(id: number, payload: Partial<Parceiro>): Promise<Parceiro> {
+  const response = await api.put(`/admin/parceiros/${id}`, payload);
+  
+  // Se houver dados retornados, você pode querer atualizar o cache/localStorage se for o parceiro atual
+  // mas como é admin, geralmente não precisa
+  return response.data;
+}
 };

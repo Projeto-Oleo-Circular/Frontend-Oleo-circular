@@ -1,59 +1,49 @@
-import { useEffect, useState, useCallback } from "react"
+// src/pages/Admin/Requests/index.tsx
+
+import { useEffect, useState, useCallback } from "react";
 import {
   adminSolicitacoesService,
   type SolicitacaoColeta,
   type StatusSolicitacao,
-} from "../../../../services/AdminSolicitacaoService"
-import StatusBadge from "../../../../components/ui/StatusBadge"
-import AdminTopNav from "../../../../components/layout/AdminTopNav"
-import AdminFilterDropdown, { FilterOption } from "../../../../components/ui/AdminFilterDropdown"
-import { Clock, CalendarCheck, Truck, CheckCircle2, X, Eye, MapPin, User, Building2, Phone, Mail } from "lucide-react"
-import SummaryCard from "../../../../components/ui/SummaryCard"
-import Button from "../../../../components/ui/Button"
-import Pagination from "../../../../components/ui/Pagination"
-import Footer from "../../../../components/layout/Footer"
+} from "../../../../services/AdminSolicitacaoService";
+import StatusBadge from "../../../../components/ui/StatusBadge";
+import AdminTopNav from "../../../../components/layout/AdminTopNav";
+import AdminFilterDropdown, { FilterOption } from "../../../../components/ui/AdminFilterDropdown";
+import { Clock, CalendarCheck, Truck, CheckCircle2, X, Eye, MapPin, User, Building2, Phone, Mail, Plus, Search } from "lucide-react";
+import SummaryCard from "../../../../components/ui/SummaryCard";
+import Button from "../../../../components/ui/Button";
+import Pagination from "../../../../components/ui/Pagination";
+import Footer from "../../../../components/layout/Footer";
 import {
   authService,
   type ParceiroIndicador,
 } from "../../../../services/authService";
+import { adminPontosService, type PontoColetaAdmin } from "../../../../services/adminPontosService";
+import { adminParceiroService, type Parceiro } from "../../../../services/adminParceiroService";
 
 interface Contagens {
-  aguardando: number
-  agendada: number
-  emRota: number
-  concluid: number
-  total: number
+  aguardando: number;
+  agendada: number;
+  emRota: number;
+  concluid: number;
+  total: number;
 }
 
 type ModalTipo = "agendar" | "concluir" | "detalhes" | null;
+type StepCriar = "selecionar_parceiro" | "selecionar_ponto" | "dados_solicitacao";
 
 const TURNOS_AGENDAMENTO = [
   {
     turno: 'Manhã',
-    slots: [
-      '08:00 - 09:00',
-      '09:00 - 10:00',
-      '10:00 - 11:00',
-      '11:00 - 12:00'
-    ]
+    slots: ['08:00 - 09:00', '09:00 - 10:00', '10:00 - 11:00', '11:00 - 12:00']
   },
   {
     turno: 'Tarde',
-    slots: [
-      '13:00 - 14:00',
-      '14:00 - 15:00',
-      '15:00 - 16:00',
-      '16:00 - 17:00'
-    ]
+    slots: ['13:00 - 14:00', '14:00 - 15:00', '15:00 - 16:00', '16:00 - 17:00']
   },
   {
     turno: 'Noite',
-    slots: [
-      '18:00 - 19:00',
-      '19:00 - 20:00',
-      '20:00 - 21:00',
-      '21:00 - 22:00'
-    ]
+    slots: ['18:00 - 19:00', '19:00 - 20:00', '20:00 - 21:00', '21:00 - 22:00']
   }
 ];
 
@@ -79,7 +69,6 @@ function formatarAgendamentoCompleto(isoData: string | null): string {
   if (isNaN(data.getTime())) return "—";
 
   const dataFormatada = data.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
-
   const horaInicio = data.toLocaleTimeString("pt-BR", {
     hour: "2-digit",
     minute: "2-digit",
@@ -101,11 +90,24 @@ function formatarAgendamentoCompleto(isoData: string | null): string {
 }
 
 function formatarEndereco(ponto: SolicitacaoColeta["pontoColeta"]): string {
+  if (!ponto) return "—";
   const base = `${ponto.logradouro}, ${ponto.numero} - ${ponto.bairro}, ${ponto.cidade}`;
   return ponto.estado ? `${base}/${ponto.estado}` : base;
 }
 
-function Requests() {
+function obterNomeExibicaoParceiro(parceiro: Parceiro): string {
+  if (parceiro.tipoParceiro === "SOLIDARIO") {
+    return parceiro.nome || "—";
+  }
+  return parceiro.razaoSocial || parceiro.nome || "—";
+}
+
+function formatarEnderecoPonto(ponto: PontoColetaAdmin): string {
+  const base = `${ponto.logradouro}, ${ponto.numero} - ${ponto.bairro}, ${ponto.cidade}`;
+  return ponto.estado ? `${base}/${ponto.estado}` : base;
+}
+
+export function Requests() {
   const [itens, setItens] = useState<SolicitacaoColeta[]>([]);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
@@ -115,6 +117,18 @@ function Requests() {
   const [loading, setLoading] = useState(true);
   const historicoSemanalTotal = [10, 15, 8, 22, 18, 30, 25];
   const [indicadores, setIndicadores] = useState<ParceiroIndicador[]>([]);
+  
+  // Modais
+  const [isModalCriarOpen, setIsModalCriarOpen] = useState(false);
+  const [stepCriar, setStepCriar] = useState<StepCriar>("selecionar_parceiro");
+  const [parceiroSelecionado, setParceiroSelecionado] = useState<Parceiro | null>(null);
+  const [pontoSelecionado, setPontoSelecionado] = useState<PontoColetaAdmin | null>(null);
+  const [pontosDisponiveis, setPontosDisponiveis] = useState<PontoColetaAdmin[]>([]);
+  const [observacaoCriar, setObservacaoCriar] = useState("");
+  const [volumeInformado, setVolumeInformado] = useState<number>(50);
+  const [parceirosList, setParceirosList] = useState<Parceiro[]>([]);
+  const [buscaParceiro, setBuscaParceiro] = useState("");
+  const [carregandoParceiros, setCarregandoParceiros] = useState(false);
 
   const statusOptions: FilterOption[] = [
     { value: "", label: "Todos os Status" },
@@ -133,7 +147,6 @@ function Requests() {
 
   const [dataAgendamento, setDataAgendamento] = useState("");
   const [horarioSelecionado, setHorarioSelecionado] = useState("");
-
   const [volumeColetado, setVolumeColetado] = useState("");
   const [salvando, setSalvando] = useState(false);
 
@@ -196,6 +209,84 @@ function Requests() {
     carregarIndicadores();
   }, []);
 
+  useEffect(() => {
+    if (isModalCriarOpen && stepCriar === "selecionar_parceiro") {
+      carregarParceirosModal();
+    }
+  }, [isModalCriarOpen, stepCriar]);
+
+  const carregarParceirosModal = async () => {
+    setCarregandoParceiros(true);
+    try {
+      const resposta = await adminParceiroService.listarParceiros({
+        limit: 100,
+        statusAprovacao: "APROVADO",
+      });
+      const itensArr = Array.isArray(resposta) ? resposta : resposta.items || [];
+      setParceirosList(itensArr);
+    } catch (error) {
+      console.error("Erro ao carregar parceiros:", error);
+    } finally {
+      setCarregandoParceiros(false);
+    }
+  };
+
+  const handleSelecionarParceiroModal = async (parceiro: Parceiro) => {
+    setCarregandoParceiros(true);
+    try {
+      setParceiroSelecionado(parceiro);
+      const resposta = await adminPontosService.listarPontos({
+        limit: 100,
+        statusAprovacao: "APROVADO",
+      });
+      const pontosFiltrados = (resposta.items || []).filter((p) => p.parceiro?.id === parceiro.id);
+      setPontosDisponiveis(pontosFiltrados);
+      
+      if (pontosFiltrados.length === 0) {
+        setStepCriar("dados_solicitacao");
+        setObservacaoCriar("Este parceiro não possui pontos de coleta aprovados.");
+      } else {
+        setStepCriar("selecionar_ponto");
+      }
+    } catch (error) {
+      console.error("Erro ao carregar pontos:", error);
+    } finally {
+      setCarregandoParceiros(false);
+    }
+  };
+
+  const fecharModalCriar = () => {
+    setIsModalCriarOpen(false);
+    setStepCriar("selecionar_parceiro");
+    setParceiroSelecionado(null);
+    setPontoSelecionado(null);
+    setPontosDisponiveis([]);
+    setObservacaoCriar("");
+    setVolumeInformado(50);
+    setBuscaParceiro("");
+  };
+
+  const handleCriarSolicitacaoAdminSubmit = async () => {
+    if (!pontoSelecionado) return;
+    setSalvando(true);
+    try {
+      await SolicitacoesService.criar({
+        pontoColetaId: pontoSelecionado.id,
+        volumeInformado: Number(volumeInformado),
+        observacoes: observacaoCriar || undefined,
+      });
+
+      fecharModalCriar();
+      setStatusFiltro("");
+      setPage(1);
+      await Promise.all([carregarLista(), carregarContagens()]);
+    } catch (error) {
+      console.error("Erro ao criar solicitação via admin:", error);
+    } finally {
+      setSalvando(false);
+    }
+  };
+
   const obterNomeParceiroIndicador = (solicitacao: SolicitacaoColeta): string => {
     if (solicitacao.parceiro?.parceiroIndicadorId) {
       const encontrado = indicadores.find(
@@ -233,7 +324,6 @@ function Requests() {
     try {
       if (modal.tipo === "agendar") {
         const horaInicio = horarioSelecionado.split(" - ")[0]; 
-        
         const dataHoraLocal = `${dataAgendamento} ${horaInicio}:00`;
 
         await adminSolicitacoesService.atualizarStatus(modal.solicitacao.id, {
@@ -295,11 +385,21 @@ function Requests() {
     );
   };
 
+  const parceirosFiltrados = parceirosList.filter((p) => {
+    const termo = buscaParceiro.toLowerCase().trim();
+    if (!termo) return true;
+    const nome = p.nome?.toLowerCase() || "";
+    const razao = p.razaoSocial?.toLowerCase() || "";
+    const email = p.email?.toLowerCase() || "";
+    const documento = p.documento || "";
+    return nome.includes(termo) || razao.includes(termo) || email.includes(termo) || documento.includes(termo);
+  });
+
   return (
     <div className="min-h-screen flex flex-col bg-background overflow-x-hidden">
       <AdminTopNav />
 
-      <main className="w-full max-w-[1440px] mx-auto p-5">
+      <main className="w-full max-w-[1440px] mx-auto p-5 flex-1">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-green-primary mt-2 sm:mt-5 mb-1">
@@ -370,6 +470,21 @@ function Requests() {
           />
         </div>
 
+        {/* BOTÃO NOVA SOLICITAÇÃO */}
+        <div className="flex justify-end mb-4">
+          <div className="inline-block">
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => setIsModalCriarOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Nova Solicitação
+            </Button>
+          </div>
+        </div>
+
         <div className="bg-white-primary rounded-xl shadow-sm border border-white-200 overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -380,7 +495,7 @@ function Requests() {
                 <th className="p-3">Endereço</th>
                 <th className="p-3 w-48">Parceiro</th>
                 <th className="p-3 w-48">Ponto de Coleta</th>
-                <th className="p-3 w-40">Tamanho da Bombona</th>
+                <th className="p-3 w-40">Volume Informado</th>
                 <th className="p-3 w-32">Status</th>
                 <th className="p-3 w-36">Ações</th>
               </tr>
@@ -404,8 +519,8 @@ function Requests() {
                     <td className="p-4 text-sm font-medium text-black-primary">#{s.id}</td>
                     
                     <td className="p-4">
-                      <p className="font-medium text-sm text-black-primary">{s.parceiro.razaoSocial}</p>
-                      {s.parceiro.documento && (
+                      <p className="font-medium text-sm text-black-primary">{s.parceiro?.razaoSocial || s.parceiro?.nome || "—"}</p>
+                      {s.parceiro?.documento && (
                         <p className="text-xs text-white-500 mt-0.5">{s.parceiro.documento}</p>
                       )}
                     </td>
@@ -425,9 +540,9 @@ function Requests() {
                       {obterNomeParceiroIndicador(s)}
                     </td>
                     
-                    <td className="p-4 text-sm text-black-primary font-medium">{s.pontoColeta.nomePontoColeta}</td>
+                    <td className="p-4 text-sm text-black-primary font-medium">{s.pontoColeta?.nomePontoColeta || "—"}</td>
                     
-                    <td className="p-4 text-sm text-black-primary font-medium whitespace-nowrap">{s.pontoColeta.capacidadeBombona} L</td>
+                    <td className="p-4 text-sm text-black-primary font-medium whitespace-nowrap">{s.volumeInformado || s.pontoColeta?.capacidadeBombona || "—"} L</td>
                     
                     <td className="p-4 whitespace-nowrap">
                       <StatusBadge status={s.status} />
@@ -452,86 +567,271 @@ function Requests() {
           }}
         />
 
-        {(modal.tipo === "agendar" || modal.tipo === "concluir") && modal.solicitacao && (
+        {/* MODAL: CRIAR SOLICITAÇÃO ADMIN */}
+        {isModalCriarOpen && (
           <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl animate-slide-down">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="font-bold text-lg text-green-primary">
-                  {modal.tipo === "agendar" ? "Agendar coleta" : "Concluir coleta"} — #{modal.solicitacao.id}
-                </h2>
-                <button onClick={fecharModal} className="text-red-primary hover:text-red-hover cursor-pointer">
+            <div className="bg-white rounded-xl p-6 w-full max-w-2xl shadow-xl max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between pb-3 border-b border-white-100 mb-4">
+                <div>
+                  <h2 className="font-bold text-xl text-green-primary">
+                    {stepCriar === "selecionar_parceiro" && "Selecionar Parceiro"}
+                    {stepCriar === "selecionar_ponto" && "Selecionar Ponto de Coleta"}
+                    {stepCriar === "dados_solicitacao" && "Nova Solicitação de Coleta"}
+                  </h2>
+                  <p className="text-xs text-white-500">
+                    {stepCriar === "selecionar_parceiro" && "Escolha o parceiro que fará a solicitação"}
+                    {stepCriar === "selecionar_ponto" && "Escolha um dos pontos de coleta do parceiro"}
+                    {stepCriar === "dados_solicitacao" && "Preencha os dados da solicitação"}
+                  </p>
+                </div>
+                <button onClick={fecharModalCriar} className="text-red-primary hover:text-red-hover cursor-pointer" disabled={salvando}>
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-              {modal.tipo === "agendar" && (
-                <div className="space-y-4 mb-4">
-                  <label className="block">
-                    <span className="text-sm text-gray-700 font-medium">Data da Coleta</span>
+              {stepCriar === "selecionar_parceiro" && (
+                <div>
+                  <div className="relative mb-4">
                     <input
-                      type="date"
-                      value={dataAgendamento}
-                      onChange={(e) => setDataAgendamento(e.target.value)}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1 text-sm focus:outline-none focus:border-green-primary bg-white cursor-pointer"
+                      type="text"
+                      placeholder="Buscar por nome, razão social, e-mail ou documento..."
+                      value={buscaParceiro}
+                      onChange={(e) => setBuscaParceiro(e.target.value)}
+                      className="w-full pl-9 pr-4 py-2 text-sm bg-white border border-white-200 rounded-lg text-black-primary focus:outline-none focus:border-green-primary"
                     />
-                  </label>
+                    <Search className="w-4 h-4 text-white-400 absolute left-3 top-2.5" />
+                  </div>
 
-                  {dataAgendamento && (
-                    <div>
-                      <span className="text-sm text-gray-700 font-medium block mb-2">Selecione o Turno e Horário (Blocos de 1h)</span>
-                      <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
-                        {TURNOS_AGENDAMENTO.map((grupo) => (
-                          <div key={grupo.turno} className="border border-gray-100 p-2.5 rounded-lg bg-gray-50">
-                            <span className="text-xs font-bold text-green-700 uppercase"> {grupo.turno}</span>
-                            <div className="grid grid-cols-2 gap-2 mt-2">
-                              {grupo.slots.map((slot) => {
-                                const isSelected = horarioSelecionado === slot;
-                                return (
-                                  <button
-                                    key={slot}
-                                    type="button"
-                                    onClick={() => setHorarioSelecionado(slot)}
-                                    className={`py-2 px-3 text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
-                                      isSelected
-                                        ? 'bg-green-600 text-white border-green-600 shadow-sm'
-                                        : 'bg-white text-gray-700 border-gray-200 hover:border-green-400'
-                                    }`}
-                                  >
-                                    {slot}
-                                  </button>
-                                );
-                              })}
+                  <div className="max-h-[400px] overflow-y-auto">
+                    {carregandoParceiros ? (
+                      <div className="flex items-center justify-center h-40">
+                        <p className="text-white-500">Carregando parceiros...</p>
+                      </div>
+                    ) : parceirosFiltrados.length === 0 ? (
+                      <div className="flex items-center justify-center h-40">
+                        <p className="text-white-500 text-sm">
+                          {buscaParceiro ? "Nenhum parceiro encontrado." : "Nenhum parceiro aprovado disponível."}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {parceirosFiltrados.map((parceiro) => (
+                          <button
+                            key={parceiro.id}
+                            onClick={() => handleSelecionarParceiroModal(parceiro)}
+                            disabled={carregandoParceiros || salvando}
+                            className="w-full text-left p-3 rounded-lg border border-white-100 hover:border-green-primary hover:bg-green-50 transition-all group disabled:opacity-50 cursor-pointer"
+                          >
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1 min-w-0">
+                                <p className="font-semibold text-sm text-black-primary truncate">
+                                  {obterNomeExibicaoParceiro(parceiro)}
+                                </p>
+                                <div className="flex flex-wrap items-center gap-2 mt-1">
+                                  <span className="text-xs text-white-500 flex items-center gap-1">
+                                    <User className="w-3 h-3" />
+                                    {parceiro.tipoParceiro} ({parceiro.tipoPessoa})
+                                  </span>
+                                </div>
+                                <p className="text-xs text-white-400 mt-1 truncate">
+                                  {parceiro.email} • {parceiro.documento || "—"}
+                                </p>
+                              </div>
+                              <div className="ml-3 flex-shrink-0">
+                                <span className="text-xs font-medium text-green-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                                  Selecionar →
+                                </span>
+                              </div>
                             </div>
-                          </div>
+                          </button>
                         ))}
                       </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {stepCriar === "selecionar_ponto" && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-primary/20">
+                    <div className="flex items-center gap-2">
+                      <User className="w-4 h-4 text-green-primary" />
+                      <span className="text-sm text-black-primary">
+                        Parceiro: <strong>{parceiroSelecionado && obterNomeExibicaoParceiro(parceiroSelecionado)}</strong>
+                      </span>
+                    </div>
+                    <button onClick={() => { setStepCriar("selecionar_parceiro"); setPontoSelecionado(null); }} className="text-xs text-green-primary hover:underline cursor-pointer" disabled={salvando}>
+                      Trocar
+                    </button>
+                  </div>
+
+                  <div className="max-h-[400px] overflow-y-auto space-y-2">
+                    {pontosDisponiveis.length === 0 ? (
+                      <div className="text-center py-8">
+                        <p className="text-white-500">Este parceiro não possui pontos de coleta aprovados.</p>
+                      </div>
+                    ) : (
+                      pontosDisponiveis.map((ponto) => (
+                        <button
+                          key={ponto.id}
+                          onClick={() => { setPontoSelecionado(ponto); setStepCriar("dados_solicitacao"); }}
+                          className="w-full text-left p-3 rounded-lg border border-white-100 hover:border-green-primary hover:bg-green-50 transition-all group cursor-pointer"
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold text-sm text-black-primary">{ponto.nomePontoColeta}</p>
+                              <p className="text-xs text-white-500 flex items-start gap-1 mt-1">
+                                <MapPin className="w-3 h-3" />
+                                {formatarEnderecoPonto(ponto)}
+                              </p>
+                              <p className="text-xs text-white-400 mt-1">Capacidade: {ponto.capacidadeBombona} L</p>
+                            </div>
+                            <div className="ml-3 flex-shrink-0">
+                              <span className="text-xs font-medium text-green-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                                Selecionar →
+                              </span>
+                            </div>
+                          </div>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {stepCriar === "dados_solicitacao" && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="p-3 bg-white-50 rounded-lg border border-white-100">
+                      <span className="text-xs text-white-500 block">Parceiro</span>
+                      <p className="text-sm font-semibold text-black-primary">
+                        {parceiroSelecionado && obterNomeExibicaoParceiro(parceiroSelecionado)}
+                      </p>
+                      <button onClick={() => setStepCriar("selecionar_parceiro")} className="text-xs text-green-primary hover:underline mt-1 cursor-pointer" disabled={salvando}>
+                        Trocar parceiro
+                      </button>
+                    </div>
+                    <div className="p-3 bg-white-50 rounded-lg border border-white-100">
+                      <span className="text-xs text-white-500 block">Ponto de Coleta</span>
+                      <p className="text-sm font-semibold text-black-primary">
+                        {pontoSelecionado ? pontoSelecionado.nomePontoColeta : "Nenhum ponto selecionado"}
+                      </p>
+                      {pontoSelecionado && (
+                        <button onClick={() => setStepCriar("selecionar_ponto")} className="text-xs text-green-primary hover:underline mt-1 cursor-pointer" disabled={salvando}>
+                          Trocar ponto
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {pontoSelecionado ? (
+                    <>
+                      <label className="block">
+                        <span className="text-xs text-white-600 font-medium">Volume Informado (Litros) *</span>
+                        <input
+                          type="number"
+                          min={1}
+                          value={volumeInformado}
+                          onChange={(e) => setVolumeInformado(Number(e.target.value))}
+                          className="w-full border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary bg-white"
+                          disabled={salvando}
+                        />
+                      </label>
+
+                      <label className="block">
+                        <span className="text-xs text-white-600 font-medium">Observações (opcional)</span>
+                        <textarea
+                          rows={3}
+                          placeholder="Observações sobre a solicitação..."
+                          value={observacaoCriar}
+                          onChange={(e) => setObservacaoCriar(e.target.value)}
+                          className="w-full border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary resize-none"
+                          disabled={salvando}
+                        />
+                      </label>
+
+                      <div className="flex gap-3 pt-2">
+                        <Button variant="danger" size="sm" onClick={fecharModalCriar} disabled={salvando} fullWidth>
+                          Cancelar
+                        </Button>
+                        <Button variant="primary" size="sm" loading={salvando} onClick={handleCriarSolicitacaoAdminSubmit} fullWidth disabled={salvando}>
+                          Criar Solicitação
+                        </Button>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-white-500">Selecione um ponto de coleta para continuar.</p>
+                      <Button variant="primary" size="sm" onClick={() => setStepCriar("selecionar_ponto")} className="mt-4">
+                        Voltar para seleção de pontos
+                      </Button>
                     </div>
                   )}
                 </div>
               )}
+            </div>
+          </div>
+        )}
 
-              {modal.tipo === "concluir" && (
-                <label className="block mb-4">
-                  <span className="text-sm text-gray-700 font-medium">Volume coletado (litros)</span>
+        {/* MODAL: AGENDAR COLETA */}
+        {modal.tipo === "agendar" && modal.solicitacao && (
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl animate-slide-down">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-bold text-lg text-green-primary">
+                  Agendar coleta — #{modal.solicitacao.id}
+                </h2>
+                <button onClick={fecharModal} className="text-red-primary hover:text-red-hover cursor-pointer" disabled={salvando}>
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="space-y-4 mb-4">
+                <label className="block">
+                  <span className="text-sm text-gray-700 font-medium">Data da Coleta</span>
                   <input
-                    type="number"
-                    min={1}
-                    placeholder="Ex: 50"
-                    value={volumeColetado}
-                    onChange={(e) => setVolumeColetado(e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
+                    type="date"
+                    value={dataAgendamento}
+                    onChange={(e) => setDataAgendamento(e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1 text-sm focus:outline-none focus:border-green-primary bg-white cursor-pointer"
                   />
                 </label>
-              )}
+
+                {dataAgendamento && (
+                  <div>
+                    <span className="text-sm text-gray-700 font-medium block mb-2">Selecione o Turno e Horário (Blocos de 1h)</span>
+                    <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
+                      {TURNOS_AGENDAMENTO.map((grupo) => (
+                        <div key={grupo.turno} className="border border-gray-100 p-2.5 rounded-lg bg-gray-50">
+                          <span className="text-xs font-bold text-green-700 uppercase"> {grupo.turno}</span>
+                          <div className="grid grid-cols-2 gap-2 mt-2">
+                            {grupo.slots.map((slot) => {
+                              const isSelected = horarioSelecionado === slot;
+                              return (
+                                <button
+                                  key={slot}
+                                  type="button"
+                                  onClick={() => setHorarioSelecionado(slot)}
+                                  className={`py-2 px-3 text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
+                                    isSelected
+                                      ? 'bg-green-600 text-white border-green-600 shadow-sm'
+                                      : 'bg-white text-gray-700 border-gray-200 hover:border-green-400'
+                                  }`}
+                                >
+                                  {slot}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
 
               <div className="flex gap-3">
-                <Button
-                  variant="danger"
-                  size="sm"
-                  onClick={fecharModal}
-                  disabled={salvando}
-                  fullWidth
-                >
+                <Button variant="danger" size="sm" onClick={fecharModal} disabled={salvando} fullWidth>
                   Cancelar
                 </Button>
                 <Button
@@ -539,11 +839,7 @@ function Requests() {
                   size="sm"
                   loading={salvando}
                   onClick={confirmarModal}
-                  disabled={
-                    salvando ||
-                    (modal.tipo === "agendar" && (!dataAgendamento || !horarioSelecionado)) ||
-                    (modal.tipo === "concluir" && !volumeColetado)
-                  }
+                  disabled={salvando || !dataAgendamento || !horarioSelecionado}
                   fullWidth
                 >
                   Confirmar
@@ -553,6 +849,49 @@ function Requests() {
           </div>
         )}
 
+        {/* MODAL: CONCLUIR COLETA */}
+        {modal.tipo === "concluir" && modal.solicitacao && (
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl animate-slide-down">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-bold text-lg text-green-primary">Concluir coleta — #{modal.solicitacao.id}</h2>
+                <button onClick={fecharModal} className="text-red-primary hover:text-red-hover cursor-pointer" disabled={salvando}>
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <label className="block mb-4">
+                <span className="text-sm text-gray-700 font-medium">Volume coletado (litros)</span>
+                <input
+                  type="number"
+                  min={1}
+                  placeholder="Ex: 50"
+                  value={volumeColetado}
+                  onChange={(e) => setVolumeColetado(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
+                />
+              </label>
+
+              <div className="flex gap-3">
+                <Button variant="danger" size="sm" onClick={fecharModal} disabled={salvando} fullWidth>
+                  Cancelar
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  loading={salvando}
+                  onClick={confirmarModal}
+                  disabled={!volumeColetado || salvando}
+                  fullWidth
+                >
+                  Confirmar
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL: DETALHES DA SOLICITAÇÃO */}
         {modal.tipo === "detalhes" && modal.solicitacao && (
           <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl p-6 w-full max-w-lg shadow-xl animate-slide-down max-h-[90vh] overflow-y-auto">
@@ -584,13 +923,13 @@ function Requests() {
                   <h3 className="text-xs font-bold text-green-primary uppercase tracking-wider mb-2 flex items-center gap-1.5">
                     <User className="w-3.5 h-3.5" /> Solicitante / Parceiro
                   </h3>
-                  <p className="text-sm font-semibold text-black-primary">{modal.solicitacao.parceiro.razaoSocial}</p>
-                  {modal.solicitacao.parceiro.email && (
+                  <p className="text-sm font-semibold text-black-primary">{modal.solicitacao.parceiro?.razaoSocial || modal.solicitacao.parceiro?.nome || "—"}</p>
+                  {modal.solicitacao.parceiro?.email && (
                     <p className="text-xs text-white-500 flex items-center gap-1 mt-1">
                       <Mail className="w-3 h-3" /> {modal.solicitacao.parceiro.email}
                     </p>
                   )}
-                  {modal.solicitacao.parceiro.telefone && (
+                  {modal.solicitacao.parceiro?.telefone && (
                     <p className="text-xs text-white-500 flex items-center gap-1 mt-1">
                       <Phone className="w-3 h-3" /> {modal.solicitacao.parceiro.telefone}
                     </p>
@@ -601,21 +940,21 @@ function Requests() {
                   <h3 className="text-xs font-bold text-green-primary uppercase tracking-wider mb-2 flex items-center gap-1.5">
                     <Building2 className="w-3.5 h-3.5" /> Ponto de Coleta
                   </h3>
-                  <p className="text-sm font-semibold text-black-primary">{modal.solicitacao.pontoColeta.nomePontoColeta}</p>
+                  <p className="text-sm font-semibold text-black-primary">{modal.solicitacao.pontoColeta?.nomePontoColeta || "—"}</p>
                   <p className="text-xs text-white-500 flex items-start gap-1 mt-1">
                     <MapPin className="w-3.5 h-3.5 shrink-0 mt-0.5 text-green-primary" /> 
                     <span>{formatarEndereco(modal.solicitacao.pontoColeta)}</span>
                   </p>
                   <div className="mt-2 pt-2 border-t border-white-100 flex items-center justify-between text-xs">
-                    <span className="text-white-500">Capacidade da bombona:</span>
-                    <span className="font-semibold text-black-primary">{modal.solicitacao.pontoColeta.capacidadeBombona} Litros</span>
+                    <span className="text-white-500">Volume Informado:</span>
+                    <span className="font-semibold text-black-primary">{modal.solicitacao.volumeInformado || modal.solicitacao.pontoColeta?.capacidadeBombona || "—"} Litros</span>
                   </div>
                 </div>
 
                 {modal.solicitacao?.observacoes && (
                   <div className="bg-white-primary border border-white-100 rounded-lg p-3">
                     <span className="text-xs font-bold text-green-primary uppercase tracking-wider block mb-1">
-                      Observações do Parceiro:
+                      Observações:
                     </span>
                     <p className="text-sm text-white-500 italic">
                       "{modal.solicitacao.observacoes}"
@@ -647,12 +986,7 @@ function Requests() {
               </div>
               
               <div className="mt-6">
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={fecharModal}
-                  fullWidth
-                >
+                <Button variant="primary" size="sm" onClick={fecharModal} fullWidth>
                   Fechar
                 </Button>
               </div>
