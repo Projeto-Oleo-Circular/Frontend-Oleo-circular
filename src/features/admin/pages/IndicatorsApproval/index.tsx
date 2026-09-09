@@ -1,5 +1,3 @@
-// src/features/admin/pages/IndicatorsApproval/IndicatorsApproval.tsx
-
 import {
   useCallback,
   useEffect,
@@ -15,9 +13,8 @@ import {
   ChevronRight,
   Edit3,
   ExternalLink,
+  Eye,
   Handshake,
-  Mail,
-  Phone,
   Plus,
   Search,
   Trash2,
@@ -175,7 +172,7 @@ function formatarTelefone(
       "($1) $2"
     )
     .replace(
-      /(\d{5})(\d)/,
+      /^(\d{5})(\d)/,
       "$1-$2"
     );
 }
@@ -205,7 +202,7 @@ function formatarTelefoneInput(
       "($1) $2"
     )
     .replace(
-      /(\d{5})(\d)/,
+      /^(\d{5})(\d)/,
       "$1-$2"
     );
 }
@@ -223,6 +220,304 @@ function obterLabelTipo(
   };
 
   return labels[tipo];
+}
+
+// ============================================================
+// MODAL DETALHES
+// ============================================================
+
+interface DetalhesModalProps {
+  indicador: ParceiroIndicador | null;
+  onClose: () => void;
+  onEditar: (indicador: ParceiroIndicador) => void;
+  onExcluir: (indicador: ParceiroIndicador) => void;
+}
+
+function DetalhesModal({
+  indicador,
+  onClose,
+  onEditar,
+  onExcluir,
+}: DetalhesModalProps) {
+  if (!indicador) {
+    return null;
+  }
+
+  return (
+    <div
+      className="
+        fixed
+        inset-0
+        z-[9999]
+        bg-black/40
+        backdrop-blur-xs
+        flex
+        items-center
+        justify-center
+        p-4
+      "
+    >
+      <div
+        className="
+          bg-white
+          rounded-xl
+          p-6
+          w-full
+          max-w-lg
+          shadow-xl
+          animate-slide-down
+          max-h-[90vh]
+          overflow-y-auto
+        "
+      >
+        {/* CABEÇALHO */}
+        <div
+          className="
+            flex
+            items-start
+            justify-between
+            gap-4
+            pb-4
+            mb-5
+            border-b
+            border-white-100
+          "
+        >
+          <div className="flex items-center gap-3">
+            <div
+              className="
+                w-10
+                h-10
+                rounded-lg
+                bg-green-100
+                flex
+                items-center
+                justify-center
+                shrink-0
+              "
+            >
+              <Building2
+                className="
+                  w-5
+                  h-5
+                  text-green-primary
+                "
+              />
+            </div>
+            <div>
+              <h2
+                className="
+                  font-bold
+                  text-lg
+                  text-green-primary
+                "
+              >
+                Detalhes do Parceiro
+              </h2>
+              <p
+                className="
+                  text-xs
+                  text-white-500
+                "
+              >
+                ID #{indicador.id}
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="
+              text-red-primary
+              hover:text-red-hover
+              cursor-pointer
+            "
+          >
+            <X
+              className="
+                w-5
+                h-5
+              "
+            />
+          </button>
+        </div>
+
+        {/* CORPO DOS DETALHES */}
+        <div className="space-y-4 mb-6">
+          <div>
+            <span className="text-xs font-semibold text-white-500 uppercase tracking-wider">
+              Nome
+            </span>
+            <p className="text-sm font-semibold text-black-primary mt-0.5">
+              {indicador.nome}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <span className="text-xs font-semibold text-white-500 uppercase tracking-wider">
+                Tipo
+              </span>
+              <p className="text-sm font-medium text-black-primary mt-0.5">
+                {obterLabelTipo(indicador.tipo)}
+              </p>
+            </div>
+
+            <div>
+              <span className="text-xs font-semibold text-white-500 uppercase tracking-wider">
+                Status
+              </span>
+              <div className="mt-0.5">
+                {indicador.ativo ? (
+                  <span
+                    className="
+                      inline-flex
+                      items-center
+                      gap-1.5
+                      px-2.5
+                      py-0.5
+                      rounded-full
+                      bg-green-100
+                      text-green-primary
+                      text-xs
+                      font-semibold
+                    "
+                  >
+                    <span className="w-1.5 h-1.5 bg-green-primary rounded-full" />
+                    Ativo
+                  </span>
+                ) : (
+                  <span
+                    className="
+                      inline-flex
+                      items-center
+                      gap-1.5
+                      px-2.5
+                      py-0.5
+                      rounded-full
+                      bg-red-100
+                      text-red-primary
+                      text-xs
+                      font-semibold
+                    "
+                  >
+                    <span className="w-1.5 h-1.5 bg-red-primary rounded-full" />
+                    Inativo
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <span className="text-xs font-semibold text-white-500 uppercase tracking-wider">
+              CNPJ
+            </span>
+            <p className="text-sm font-medium text-black-primary mt-0.5">
+              {formatarCNPJ(indicador.cnpj)}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <span className="text-xs font-semibold text-white-500 uppercase tracking-wider">
+                E-mail
+              </span>
+              <p className="text-sm font-medium text-black-primary mt-0.5">
+                {indicador.email || "—"}
+              </p>
+            </div>
+
+            <div>
+              <span className="text-xs font-semibold text-white-500 uppercase tracking-wider">
+                Telefone
+              </span>
+              <p className="text-sm font-medium text-black-primary mt-0.5">
+                {formatarTelefone(indicador.telefone)}
+              </p>
+            </div>
+          </div>
+
+          <div>
+            <span className="text-xs font-semibold text-white-500 uppercase tracking-wider">
+              Site
+            </span>
+            <div className="mt-0.5">
+              {indicador.site ? (
+                <a
+                  href={indicador.site}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="
+                    text-sm
+                    text-green-primary
+                    hover:underline
+                    inline-flex
+                    items-center
+                    gap-1
+                  "
+                >
+                  {indicador.site}
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              ) : (
+                <p className="text-sm font-medium text-black-primary">—</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* BOTÕES DE AÇÃO (EDITAR / EXCLUIR / FECHAR) */}
+        <div
+          className="
+            flex
+            items-center
+            justify-between
+            pt-4
+            border-t
+            border-white-100
+          "
+        >
+          <div className="flex gap-2">
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={() => {
+                onClose();
+                onExcluir(indicador);
+              }}
+              className="flex items-center gap-1.5"
+            >
+              <Trash2 className="w-4 h-4" />
+              Excluir
+            </Button>
+
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                onClose();
+                onEditar(indicador);
+              }}
+              className="flex items-center gap-1.5"
+            >
+              <Edit3 className="w-4 h-4" />
+              Editar
+            </Button>
+          </div>
+
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={onClose}
+          >
+            Fechar
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 // ============================================================
@@ -1224,6 +1519,11 @@ export function ParceirosIndicadores() {
       ParceiroIndicador | null
     >(null);
 
+  const [
+    indicadorDetalhes,
+    setIndicadorDetalhes,
+  ] = useState<ParceiroIndicador | null>(null);
+
   // ==========================================================
   // OPÇÕES DE FILTRO
   // ==========================================================
@@ -1333,17 +1633,31 @@ export function ParceirosIndicadores() {
             indicador.tipo ===
             "COOPERATIVA"
         ).length;
+      const ongs =
+        indicadores.filter(
+          (indicador) =>
+            indicador.tipo ===
+            "ONG"
+        ).length; 
+     const associacoes =
+        indicadores.filter(
+          (indicador) =>
+            indicador.tipo ===
+            "ASSOCIACAO"
+        ).length;
 
       return {
         total,
         ativos,
         inativos,
         cooperativas,
+        ongs,
+        associacoes,
       };
     }, [indicadores]);
 
   // ==========================================================
-  // FILTRO
+  // FILTRO E ORDENAÇÃO (Ativos primeiro, mantendo inativos)
   // ==========================================================
 
   const indicadoresFiltrados =
@@ -1353,7 +1667,7 @@ export function ParceirosIndicadores() {
           .trim()
           .toLowerCase();
 
-      return indicadores.filter(
+      const filtrados = indicadores.filter(
         (indicador) => {
           const busca =
             !termo ||
@@ -1400,6 +1714,11 @@ export function ParceirosIndicadores() {
           );
         }
       );
+
+      return filtrados.sort((a, b) => {
+        if (a.ativo === b.ativo) return 0;
+        return a.ativo ? -1 : 1;
+      });
     }, [
       indicadores,
       termoBusca,
@@ -1815,7 +2134,8 @@ export function ParceirosIndicadores() {
           className="
             grid
             grid-cols-2
-            sm:grid-cols-4
+            sm:grid-cols-3
+            lg:grid-cols-6
             gap-4
             mb-6
           "
@@ -1884,7 +2204,49 @@ export function ParceirosIndicadores() {
           />
 
           <SummaryCard
-            label="Total de Indicadores"
+            label="Associações"
+            value={
+              contagens.associacoes
+            }
+            subtext="Cadastradas"
+            labelColor="text-green-primary"
+            iconBgColor="bg-green-100"
+            icon={
+              <Building2
+                className="
+                  w-5
+                  h-5
+                  sm:w-6
+                  sm:h-6
+                  text-green-primary
+                "
+              />
+            }
+          />
+
+          <SummaryCard
+            label="ONGs"
+            value={
+              contagens.ongs
+            }
+            subtext="Cadastradas"
+            labelColor="text-green-primary"
+            iconBgColor="bg-green-100"
+            icon={
+              <User
+                className="
+                  w-5
+                  h-5
+                  sm:w-6
+                  sm:h-6
+                  text-green-primary
+                "
+              />
+            }
+          />
+
+          <SummaryCard
+            label="Total"
             value={
               contagens.total
             }
@@ -2036,7 +2398,7 @@ export function ParceirosIndicadores() {
                 <th
                   className="
                     p-3
-                    w-32
+                    w-36
                   "
                 >
                   Ações
@@ -2222,7 +2584,7 @@ export function ParceirosIndicadores() {
                         )}
                       </td>
 
-                      {/* CONTATO */}
+                      {/* CONTATO (Sem ícones) */}
 
                       <td
                         className="
@@ -2234,19 +2596,8 @@ export function ParceirosIndicadores() {
                             text-black-primary
                             text-sm
                             font-medium
-                            flex
-                            items-center
-                            gap-1.5
                           "
                         >
-                          <Mail
-                            className="
-                              w-3.5
-                              h-3.5
-                              text-white-400
-                            "
-                          />
-
                           {indicador.email ||
                             "—"}
                         </p>
@@ -2256,18 +2607,8 @@ export function ParceirosIndicadores() {
                             text-xs
                             text-white-500
                             mt-1
-                            flex
-                            items-center
-                            gap-1.5
                           "
                         >
-                          <Phone
-                            className="
-                              w-3.5
-                              h-3.5
-                            "
-                          />
-
                           {formatarTelefone(
                             indicador.telefone
                           )}
@@ -2352,6 +2693,31 @@ export function ParceirosIndicadores() {
                             gap-2
                           "
                         >
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setIndicadorDetalhes(indicador)
+                            }
+                            className="
+                              p-1.5
+                              rounded-lg
+                              border
+                              border-green-primary
+                              text-green-primary
+                              hover:bg-green-100
+                              transition-colors
+                              cursor-pointer
+                            "
+                            title="Ver Detalhes"
+                          >
+                            <Eye
+                              className="
+                                w-4
+                                h-4
+                              "
+                            />
+                          </button>
+
                           <button
                             type="button"
                             onClick={() =>
@@ -2503,6 +2869,17 @@ export function ParceirosIndicadores() {
             </button>
           </div>
         )}
+
+        {/* ================================================= */}
+        {/* MODAL DETALHES                                   */}
+        {/* ================================================= */}
+
+        <DetalhesModal
+          indicador={indicadorDetalhes}
+          onClose={() => setIndicadorDetalhes(null)}
+          onEditar={(ind) => abrirModalEditar(ind)}
+          onExcluir={(ind) => setIndicadorExclusao(ind)}
+        />
 
         {/* ================================================= */}
         {/* MODAL CRIAR / EDITAR                             */}

@@ -205,18 +205,24 @@ export function PartnersApproval() {
       return parceiro.parceiroIndicador.nome;
     }
 
-    if (parceiro.parceiroIndicadorId) {
+    if (
+      parceiro.parceiroIndicadorId !== null &&
+      parceiro.parceiroIndicadorId !== undefined
+    ) {
       const encontrado = indicadores.find(
         (ind) => String(ind.id) === String(parceiro.parceiroIndicadorId)
       );
-      if (encontrado) return encontrado.nome;
+
+      if (encontrado) {
+        return encontrado.nome;
+      }
     }
 
-    if (parceiro.outroParceiro) {
+    if (parceiro.outroParceiro?.trim()) {
       return parceiro.outroParceiro;
     }
 
-    return "Admin";
+    return "CataUnidos";
   };
 
   const handleAbrirModalCriar = () => {
@@ -228,42 +234,58 @@ export function PartnersApproval() {
     try {
       const temIndicador = Boolean(dados.parceiroIndicadorId);
 
-      await authService.register({
-        tipoPessoa: dados.tipoPessoa,
-        tipoParceiro: dados.tipoParceiro,
-        razaoSocial: dados.razaoSocial,
-        nome: dados.nome,
-        email: dados.email,
-        senha: dados.senha,
-        documento: dados.documento,
-        telefone: dados.telefone,
-        porte: dados.porte,
-        aceiteMarketing: dados.aceiteMarketing,
-        responsavelLegal: dados.responsavelLegal,
-        responsavelLegalCpf: dados.responsavelLegalCpf,
-        cep: dados.cep,
-        logradouro: dados.logradouro,
-        numero: dados.numero,
-        cidade: dados.cidade,
-        bairro: dados.bairro,
-        estado: dados.estado,
-        complemento: dados.complemento,
-        categoria: dados.categoria,
-        expectativaGeracao: dados.expectativaGeracao,
-        capacidadeBombona: dados.capacidadeBombona,
-        nivelAtualPct: dados.nivelAtualPct,
-        statusBombona: dados.statusBombona,
-        redesSociais: dados.redesSociais,
-        site: dados.site,
-        aceiteDivulgacao: dados.aceiteDivulgacao,
-        parceiroIndicadorId: temIndicador ? Number(dados.parceiroIndicadorId) : null,
-        outroParceiro: dados.outroParceiro,
-        comoConheceu: temIndicador ? (dados.comoConheceu || "Parceiro Indicador") : "Criado pelo Administrador",
-        observacao: dados.observacao,
-        longitude: dados.longitude,
-        latitude: dados.latitude,
-      });
+     await authService.register({
+  tipoPessoa: dados.tipoPessoa,
+  tipoParceiro: dados.tipoParceiro,
+  razaoSocial: dados.razaoSocial,
+  nome: dados.nome,
+  email: dados.email,
+  senha: dados.senha,
+  documento: dados.documento,
+  telefone: dados.telefone,
 
+  porte: dados.porte,
+
+  aceiteMarketing: dados.aceiteMarketing,
+
+  responsavelLegal: dados.responsavelLegal,
+  responsavelLegalCpf: dados.responsavelLegalCpf,
+
+  cep: dados.cep,
+  logradouro: dados.logradouro,
+  numero: dados.numero,
+  cidade: dados.cidade,
+  bairro: dados.bairro,
+  estado: dados.estado,
+  complemento: dados.complemento,
+
+  categoria: dados.categoria,
+
+  expectativaGeracao: dados.expectativaGeracao,
+  capacidadeBombona: dados.capacidadeBombona,
+  nivelAtualPct: dados.nivelAtualPct,
+  statusBombona: dados.statusBombona,
+
+  redesSociais: dados.redesSociais,
+
+  site: dados.site,
+  aceiteDivulgacao: dados.aceiteDivulgacao,
+
+  // O repository resolve automaticamente
+  // para Admin/Cataunidos.
+  parceiroIndicadorId: null,
+  outroParceiro: null,
+
+  comoConheceu: "Criado pelo Administrador",
+
+  observacao: dados.observacao,
+
+  longitude: dados.longitude,
+  latitude: dados.latitude,
+
+  // IMPORTANTE
+  criadoPorAdmin: true,
+});
       await Promise.all([carregarParceiros(), carregarContagensParceiros()]);
       setIsModalCriarOpen(false);
     } catch (error) {
@@ -823,9 +845,23 @@ export function PartnersApproval() {
                         Tipo: <strong>{modal.parceiro.tipoPessoa}</strong> ({modal.parceiro.tipoParceiro})
                       </p>
 
-                      <p className="text-xs text-white-500 mt-0.5">
-                        Parceiro Indicador: <strong>{obterNomeParceiroIndicador(modal.parceiro)}</strong>
-                      </p>
+                      <div className="mt-3 pt-3 border-t border-white-100 space-y-1">
+                        <p className="text-xs text-white-500">
+                          Parceiro Indicador:{" "}
+                          <strong className="text-black-primary">
+                            {obterNomeParceiroIndicador(modal.parceiro)}
+                          </strong>
+                        </p>
+
+                        <p className="text-xs text-white-500">
+                          Como conheceu o Óleo Circular:{" "}
+                          <strong className="text-black-primary">
+                            {modal.parceiro.comoConheceu?.trim()
+                              ? modal.parceiro.comoConheceu
+                              : "—"}
+                          </strong>
+                        </p>
+                      </div>
 
                       <p className="text-xs text-white-500 mt-0.5">
                         CPF/CNPJ: {modal.parceiro.documento || "—"}

@@ -21,10 +21,56 @@ import FeedbackCt from "./Comunitario/FeedbackCt";
 import VolumeSo from "./Solidario/VolumeSo";
 import AboutProjectSo from "./Solidario/AboutProjectSo";
 import FeedbackSo from "./Solidario/FeedbackSo";
-import InfoParceiro from "../../../../components/ui/InfoParceiro";
 
+import InfoParceiro from "../../../../components/ui/InfoParceiro";
 import Checkbox from "../../../../components/ui/Checkbox";
 import Button from "../../../../components/ui/Button";
+
+interface RedeSocial {
+  tipo: string;
+  valor: string;
+}
+
+interface AdditionalData {
+  tipoPessoa: string;
+  tipoParceiro: string;
+
+  razaoSocial: string;
+  nome: string;
+  documento: string;
+
+  redesSociais: RedeSocial[];
+
+  aceiteMarketing: boolean;
+
+  responsavelLegal: string;
+  responsavelLegalCpf: string;
+
+  parceiroIndicadorId: number | null;
+
+  outroParceiro: string | null;
+  comoConheceu: string;
+  observacao: string;
+
+  cep: string;
+  logradouro: string;
+  numero: string;
+  bairro: string;
+  cidade: string;
+  estado: string;
+  complemento: string;
+
+  latitude: number;
+  longitude: number;
+
+  expectativaGeracao: number;
+  capacidadeBombona: number;
+  nivelAtualPct: number;
+  statusBombona: string;
+
+  categoria: number;
+  criadoPorAdmin?: boolean;
+}
 
 const validatePhone = (phone: string): boolean => {
   const cleaned = phone.replace(/\D/g, "");
@@ -47,6 +93,7 @@ const STEPS: Record<string, string[]> = {
 function Register() {
   const navigate = useNavigate();
   const { addToast } = useToast();
+
   const [loading, setLoading] = useState(false);
 
   const [step, setStep] = useState(0);
@@ -62,73 +109,127 @@ function Register() {
     aceiteMarketing: "",
   });
 
-  // Dados da etapa inicial de credenciais/contato (Primeira Tela)
   const [formData, setFormData] = useState({
-    nome: "", // Nome Fantasia (se PJ) ou Nome Pessoal (se PF)
+    nome: "",
     email: "",
     senha: "",
     confirmarSenha: "",
     telefone: "",
   });
 
-  const [additionalData, setAdditionalData] = useState({
-    tipoPessoa: "JURIDICA", // "JURIDICA" | "FISICA"
-    tipoParceiro: "INSTITUCIONAL",
-    razaoSocial: "", 
-    nome: "", 
-    documento: "",
-    redesSociais: "",
-    aceiteMarketing: false,
+  const [additionalData, setAdditionalData] =
+    useState<AdditionalData>({
+      tipoPessoa: "JURIDICA",
+      tipoParceiro: "INSTITUCIONAL",
 
-    // Responsável Legal
-    responsavelLegal: "",
-    responsavelLegalCpf: "",
+      razaoSocial: "",
+      nome: "",
+      documento: "",
 
-    // Indicador e Sobre o Projeto (CAMPOS ADICIONADOS AQUI)
-    parceiroIndicadorId: "",
-    outroParceiro: "",
-    comoConheceu: "",
-    observacao: "",
+      // CORRIGIDO: agora é array
+      redesSociais: [],
 
-    // Endereço
-    cep: "",
-    logradouro: "",
-    numero: "",
-    bairro: "",
-    cidade: "",
-    estado: "",
-    complemento: "",
-    latitude: 0,
-    longitude: 0,
-    // Métricas
-    expectativaGeracao: 0,
-    capacidadeBombona: 0,
-    nivelAtualPct: 0,
-    statusBombona: "VAZIA",
+      aceiteMarketing: false,
 
-    // Categoria
-    categoria: 0,
-  });
+      responsavelLegal: "",
+      responsavelLegalCpf: "",
+
+      parceiroIndicadorId: null,
+      outroParceiro: null,
+      comoConheceu: "",
+      observacao: "",
+
+      cep: "",
+      logradouro: "",
+      numero: "",
+      bairro: "",
+      cidade: "",
+      estado: "",
+      complemento: "",
+      latitude: 0,
+      longitude: 0,
+
+      expectativaGeracao: 0,
+      capacidadeBombona: 0,
+      nivelAtualPct: 0,
+      statusBombona: "VAZIA",
+
+      categoria: 0,
+    });
 
   const formatPhone = (value: string): string => {
     const cleaned = value.replace(/\D/g, "");
     const limited = cleaned.slice(0, 11);
-    if (limited.length <= 2) return limited;
-    else if (limited.length <= 6)
+
+    if (limited.length <= 2) {
+      return limited;
+    }
+
+    if (limited.length <= 6) {
       return `(${limited.slice(0, 2)}) ${limited.slice(2)}`;
-    else if (limited.length <= 10)
-      return `(${limited.slice(0, 2)}) ${limited.slice(2, 6)}-${limited.slice(
+    }
+
+    if (limited.length <= 10) {
+      return `(${limited.slice(0, 2)}) ${limited.slice(
+        2,
         6
-      )}`;
-    else
-      return `(${limited.slice(0, 2)}) ${limited.slice(2, 7)}-${limited.slice(
-        7,
-        11
-      )}`;
+      )}-${limited.slice(6)}`;
+    }
+
+    return `(${limited.slice(0, 2)}) ${limited.slice(
+      2,
+      7
+    )}-${limited.slice(7, 11)}`;
+  };
+
+  const formatarRedesSociais = (redes: unknown): string[] => {
+    if (!redes) {
+      return [];
+    }
+
+    if (Array.isArray(redes)) {
+      return redes
+        .map((rede: any) => {
+          if (typeof rede === "string") {
+            return rede.trim();
+          }
+
+          if (
+            rede &&
+            typeof rede === "object" &&
+            typeof rede.valor === "string"
+          ) {
+            const valor = rede.valor.trim();
+
+            if (!valor) {
+              return "";
+            }
+
+            const tipo =
+              typeof rede.tipo === "string" && rede.tipo.trim()
+                ? rede.tipo.trim()
+                : "outra";
+
+            return `${tipo}: ${valor}`;
+          }
+
+          return "";
+        })
+        .filter((rede): rede is string => Boolean(rede));
+    }
+
+    if (typeof redes === "string") {
+      const valor = redes.trim();
+
+      return valor ? [valor] : [];
+    }
+
+    return [];
   };
 
   const validateForm = () => {
     let hasError = false;
+
     const errors = {
       nome: "",
       email: "",
@@ -138,17 +239,22 @@ function Register() {
       aceiteMarketing: "",
     };
 
-    if (!formData.nome) {
+    if (!formData.nome.trim()) {
       errors.nome = "Nome é obrigatório";
       hasError = true;
     }
-    if (!formData.email) {
+
+    if (!formData.email.trim()) {
       errors.email = "E-mail é obrigatório";
       hasError = true;
-    } else if (!formData.email.includes("@") || !formData.email.includes(".")) {
+    } else if (
+      !formData.email.includes("@") ||
+      !formData.email.includes(".")
+    ) {
       errors.email = "E-mail inválido";
       hasError = true;
     }
+
     if (!formData.senha) {
       errors.senha = "Senha é obrigatória";
       hasError = true;
@@ -156,6 +262,7 @@ function Register() {
       errors.senha = "Senha deve ter no mínimo 6 caracteres";
       hasError = true;
     }
+
     if (!formData.confirmarSenha) {
       errors.confirmarSenha = "Confirme sua senha";
       hasError = true;
@@ -163,6 +270,7 @@ function Register() {
       errors.confirmarSenha = "As senhas não coincidem";
       hasError = true;
     }
+
     if (!formData.telefone) {
       errors.telefone = "Telefone é obrigatório";
       hasError = true;
@@ -170,6 +278,7 @@ function Register() {
       errors.telefone = "Telefone inválido";
       hasError = true;
     }
+
     if (!additionalData.aceiteMarketing) {
       errors.aceiteMarketing =
         "Você precisa aceitar os Termos de Uso e Política de Privacidade";
@@ -177,10 +286,10 @@ function Register() {
     }
 
     setFieldErrors(errors);
+
     return !hasError;
   };
 
-  // Montagem final do Payload respeitando a distinção FISICA vs JURIDICA
   const getCompleteRegisterData = (): RegisterCredentials => {
     const categoriaId = Number(additionalData.categoria);
 
@@ -189,96 +298,135 @@ function Register() {
     }
 
     const isJuridica = additionalData.tipoPessoa === "JURIDICA";
+
     const nomeExibicaoInicial = formData.nome.trim();
+
     const razaoSocialOuFormal =
       additionalData.razaoSocial?.trim() || nomeExibicaoInicial;
 
+    const redesSociaisFormatadas = formatarRedesSociais(
+      additionalData.redesSociais
+    );
+
     return {
       tipoPessoa: additionalData.tipoPessoa || "JURIDICA",
+
       tipoParceiro: profile
         ? (profile.toUpperCase() as "GERADOR" | "INSTITUCIONAL")
         : "INSTITUCIONAL",
 
       razaoSocial: razaoSocialOuFormal,
+
       nome: nomeExibicaoInicial,
 
       email: formData.email.trim(),
+
       senha: formData.senha,
+
       documento: additionalData.documento.replace(/\D/g, ""),
+
       telefone: formData.telefone.replace(/\D/g, ""),
 
-      redesSociais: additionalData.redesSociais.trim()
-        ? [additionalData.redesSociais.trim()]
-        : [],
+      redesSociais: redesSociaisFormatadas,
 
       aceiteMarketing: Boolean(additionalData.aceiteMarketing),
 
-      parceiroIndicadorId: additionalData.parceiroIndicadorId
-        ? String(additionalData.parceiroIndicadorId)
-        : null,
-      outroParceiro: additionalData.outroParceiro
-        ? additionalData.outroParceiro.trim()
-        : null,
-      comoConheceu: additionalData.comoConheceu
-        ? additionalData.comoConheceu.trim()
-        : "",
-      observacao: additionalData.observacao
-        ? additionalData.observacao.trim()
-        : "",
+      parceiroIndicadorId:
+        additionalData.parceiroIndicadorId !== null &&
+        additionalData.parceiroIndicadorId !== undefined &&
+        String(additionalData.parceiroIndicadorId).trim() !== ""
+          ? String(additionalData.parceiroIndicadorId)
+          : null,
+
+      outroParceiro:
+        typeof additionalData.outroParceiro === "string" &&
+        additionalData.outroParceiro.trim()
+          ? additionalData.outroParceiro.trim()
+          : null,
+
+      comoConheceu:
+        typeof additionalData.comoConheceu === "string"
+          ? additionalData.comoConheceu.trim()
+          : "",
+
+      observacao:
+        typeof additionalData.observacao === "string"
+          ? additionalData.observacao.trim()
+          : "",
 
       responsavelLegal: isJuridica
         ? additionalData.responsavelLegal?.trim() || undefined
         : razaoSocialOuFormal,
 
       responsavelLegalCpf: isJuridica
-        ? additionalData.responsavelLegalCpf?.replace(/\D/g, "") || undefined
+        ? additionalData.responsavelLegalCpf?.replace(/\D/g, "") ||
+          undefined
         : additionalData.documento.replace(/\D/g, ""),
 
       cep: additionalData.cep.replace(/\D/g, ""),
+
       logradouro: additionalData.logradouro.trim(),
+
       numero: additionalData.numero.trim(),
+
       bairro: additionalData.bairro.trim(),
+
       cidade: additionalData.cidade.trim(),
+
       estado: additionalData.estado.trim(),
+
       complemento: additionalData.complemento?.trim() || undefined,
-      latitude: additionalData ? additionalData.latitude : 0,
-      longitude:additionalData ? additionalData.longitude: 0,
+
+      latitude: Number(additionalData.latitude) || 0,
+
+      longitude: Number(additionalData.longitude) || 0,
 
       expectativaGeracao:
         Number(
-          additionalData.expectativaGeracao || additionalData.capacidadeBombona
+          additionalData.expectativaGeracao ||
+            additionalData.capacidadeBombona
         ) || 0,
-      capacidadeBombona: Number(additionalData.capacidadeBombona) || 0,
 
-      nivelAtualPct: Number(additionalData.nivelAtualPct) || 0,
-      statusBombona: additionalData.statusBombona || "VAZIA",
+      capacidadeBombona:
+        Number(additionalData.capacidadeBombona) || 0,
+
+      nivelAtualPct:
+        Number(additionalData.nivelAtualPct) || 0,
+
+      statusBombona:
+        additionalData.statusBombona || "VAZIA",
 
       categoria: categoriaId,
     };
   };
 
   const handleRegister = async () => {
-    if (!validateForm()) return;
+    if (!validateForm()) {
+      return;
+    }
 
     try {
       setLoading(true);
 
-      const disponibilidade = await authService.verificarDisponibilidade({
-        email: formData.email,
-      });
+      const disponibilidade =
+        await authService.verificarDisponibilidade({
+          email: formData.email.trim(),
+        });
 
       if (!disponibilidade.emailDisponivel) {
         setFieldErrors((prev) => ({
           ...prev,
           email: "Este e-mail já está cadastrado",
         }));
+
         return;
       }
 
       setStep(1);
     } catch (error: any) {
       addToast(
-        error.response?.data?.message || "Erro ao verificar disponibilidade",
+        error.response?.data?.message ||
+          "Erro ao verificar disponibilidade",
         "error"
       );
     } finally {
@@ -287,102 +435,238 @@ function Register() {
   };
 
   const handleFinalSubmit = async () => {
+  try {
     setLoading(true);
-    try {
-      const registerData = getCompleteRegisterData();
-      await authService.register(registerData);
-    } catch (err: any) {
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
+
+    const registerData = getCompleteRegisterData();
+
+    console.log(
+      "Payload enviado para cadastro:",
+      registerData
+    );
+
+    await authService.register(registerData);
+  } catch (err: any) {
+    console.error(
+      "Erro ao finalizar cadastro:",
+      err
+    );
+
+    console.error(
+      "Resposta do backend:",
+      err?.response?.data
+    );
+
+    console.error(
+      "Status:",
+      err?.response?.status
+    );
+
+    console.error(
+      "Erros de validação:",
+      err?.response?.data?.errors
+    );
+
+    addToast(
+      err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        "Erro ao realizar cadastro",
+      "error"
+    );
+
+    throw err;
+  } finally {
+    setLoading(false);
+  }
+};
 
   const getSteps = (): string[] => {
-    if (!profile) return ["profile"];
+    if (!profile) {
+      return ["profile"];
+    }
+
     return STEPS[profile] || ["profile"];
   };
 
-  const currentStep = step === 0 ? null : getSteps()[stepIndex];
-  const totalSteps = getSteps().length;
+  const currentStep =
+    step === 0
+      ? null
+      : getSteps()[stepIndex];
+
+  const totalSteps =
+    getSteps().length;
 
   const onNext = () => {
     if (step === 0) {
       handleRegister();
-    } else {
-      setStepIndex((prev) => prev + 1);
+      return;
     }
+
+    setStepIndex((prev) => prev + 1);
   };
 
   const onBack = () => {
     if (step === 0) {
       navigate("/login");
-    } else if (stepIndex === 0) {
+      return;
+    }
+
+    if (stepIndex === 0) {
       setStep(0);
       setStepIndex(0);
       setProfile(null);
-    } else {
-      setStepIndex((prev) => prev - 1);
+      return;
     }
+
+    setStepIndex((prev) => prev - 1);
   };
 
-  const onSelectProfile = (selectedProfile: string) => {
+  const onSelectProfile = (
+    selectedProfile: string
+  ) => {
     setProfile(selectedProfile);
+
     setStepIndex(1);
+
+    setAdditionalData((prev) => ({
+      ...prev,
+      tipoParceiro:
+        selectedProfile.toUpperCase(),
+    }));
   };
 
   const handleInputChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement
+    >
   ) => {
-    const target = e.target as HTMLInputElement;
-    const { name, value } = target;
+    const { name, value } = e.target;
+
     if (name === "telefone") {
-      setFormData((prev) => ({ ...prev, [name]: formatPhone(value) }));
+      setFormData((prev) => ({
+        ...prev,
+        [name]: formatPhone(value),
+      }));
     } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
     }
-    if (fieldErrors[name as keyof typeof fieldErrors]) {
-      setFieldErrors((prev) => ({ ...prev, [name]: "" }));
+
+    if (
+      fieldErrors[
+        name as keyof typeof fieldErrors
+      ]
+    ) {
+      setFieldErrors((prev) => ({
+        ...prev,
+        [name]: "",
+      }));
     }
   };
 
-  const handleCheckboxChange = (checked: boolean) => {
-    setAdditionalData((prev) => ({ ...prev, aceiteMarketing: checked }));
+  const handleCheckboxChange = (
+    checked: boolean
+  ) => {
+    setAdditionalData((prev) => ({
+      ...prev,
+      aceiteMarketing: checked,
+    }));
+
     if (fieldErrors.aceiteMarketing) {
-      setFieldErrors((prev) => ({ ...prev, aceiteMarketing: "" }));
+      setFieldErrors((prev) => ({
+        ...prev,
+        aceiteMarketing: "",
+      }));
     }
   };
 
-  const handleStepDataChange = (data: any) => {
+  const handleStepDataChange = (
+    data: any
+  ) => {
     setAdditionalData((prev) => {
-      const normalizedData = { ...data };
+      const normalizedData: any = {
+        ...data,
+      };
 
-      if (data.expectativaGeracao !== undefined) {
-        normalizedData.capacidadeBombona = data.expectativaGeracao;
+      if (
+        data.redesSociais !== undefined
+      ) {
+        if (
+          Array.isArray(data.redesSociais)
+        ) {
+          normalizedData.redesSociais =
+            data.redesSociais;
+        } else if (
+          typeof data.redesSociais ===
+            "string" &&
+          data.redesSociais.trim()
+        ) {
+          normalizedData.redesSociais = [
+            {
+              tipo: "outra",
+              valor:
+                data.redesSociais.trim(),
+            },
+          ];
+        } else {
+          normalizedData.redesSociais =
+            [];
+        }
       }
 
-      if (data.categoriaId !== undefined) {
-        normalizedData.categoria = Number(data.categoriaId);
+      if (
+        data.expectativaGeracao !==
+        undefined
+      ) {
+        normalizedData.capacidadeBombona =
+          data.expectativaGeracao;
       }
 
-      return { ...prev, ...normalizedData };
+      if (
+        data.categoriaId !== undefined
+      ) {
+        normalizedData.categoria =
+          Number(data.categoriaId);
+      }
+
+      return {
+        ...prev,
+        ...normalizedData,
+      };
     });
   };
 
-  const getFirstName = (fullName: string): string => {
-    if (!fullName || fullName.trim() === "") return "Usuário";
-    return fullName.trim().split(" ")[0];
+  const getFirstName = (
+    fullName: string
+  ): string => {
+    if (
+      !fullName ||
+      fullName.trim() === ""
+    ) {
+      return "Usuário";
+    }
+
+    return fullName
+      .trim()
+      .split(" ")[0];
   };
 
   const renderStep = () => {
-    const userName = getFirstName(formData.nome);
-    const displayStep = stepIndex + 1;
+    const userName =
+      getFirstName(formData.nome);
+
+    const displayStep =
+      stepIndex + 1;
 
     switch (currentStep) {
       case "profile":
         return (
           <StepProfile
-            onSelectProfile={onSelectProfile}
+            onSelectProfile={
+              onSelectProfile
+            }
             onBack={onBack}
             step={displayStep}
             userName={userName}
@@ -390,7 +674,9 @@ function Register() {
         );
 
       case "info":
-        if (!profile) return null;
+        if (!profile) {
+          return null;
+        }
 
         return (
           <InfoParceiro
@@ -399,8 +685,12 @@ function Register() {
             step={displayStep}
             totalSteps={totalSteps}
             userName={userName}
-            onDataChange={handleStepDataChange}
-            initialData={additionalData}
+            onDataChange={
+              handleStepDataChange
+            }
+            initialData={
+              additionalData
+            }
             profile={profile}
           />
         );
@@ -413,13 +703,19 @@ function Register() {
             step={displayStep}
             totalSteps={totalSteps}
             userName={userName}
-            onDataChange={handleStepDataChange}
-            initialData={additionalData}
+            onDataChange={
+              handleStepDataChange
+            }
+            initialData={
+              additionalData
+            }
           />
         );
 
       case "volume":
-        if (profile === "institucional")
+        if (
+          profile === "institucional"
+        ) {
           return (
             <VolumeIns
               onNext={onNext}
@@ -427,11 +723,19 @@ function Register() {
               step={displayStep}
               totalSteps={totalSteps}
               userName={userName}
-              onDataChange={handleStepDataChange}
-              initialData={additionalData}
+              onDataChange={
+                handleStepDataChange
+              }
+              initialData={
+                additionalData
+              }
             />
           );
-        if (profile === "comunitario")
+        }
+
+        if (
+          profile === "comunitario"
+        ) {
           return (
             <VolumeCt
               onNext={onNext}
@@ -439,11 +743,19 @@ function Register() {
               step={displayStep}
               totalSteps={totalSteps}
               userName={userName}
-              onDataChange={handleStepDataChange}
-              initialData={additionalData}
+              onDataChange={
+                handleStepDataChange
+              }
+              initialData={
+                additionalData
+              }
             />
           );
-        if (profile === "solidario")
+        }
+
+        if (
+          profile === "solidario"
+        ) {
           return (
             <VolumeSo
               onNext={onNext}
@@ -451,14 +763,22 @@ function Register() {
               step={displayStep}
               totalSteps={totalSteps}
               userName={userName}
-              onDataChange={handleStepDataChange}
-              initialData={additionalData}
+              onDataChange={
+                handleStepDataChange
+              }
+              initialData={
+                additionalData
+              }
             />
           );
+        }
+
         return null;
 
       case "about":
-        if (profile === "institucional")
+        if (
+          profile === "institucional"
+        ) {
           return (
             <AboutProjectIns
               onNext={onNext}
@@ -466,11 +786,19 @@ function Register() {
               step={displayStep}
               totalSteps={totalSteps}
               userName={userName}
-              onDataChange={handleStepDataChange}
-              initialData={additionalData}
+              onDataChange={
+                handleStepDataChange
+              }
+              initialData={
+                additionalData
+              }
             />
           );
-        if (profile === "comunitario")
+        }
+
+        if (
+          profile === "comunitario"
+        ) {
           return (
             <AboutProjectCt
               onNext={onNext}
@@ -478,11 +806,19 @@ function Register() {
               step={displayStep}
               totalSteps={totalSteps}
               userName={userName}
-              onDataChange={handleStepDataChange}
-              initialData={additionalData}
+              onDataChange={
+                handleStepDataChange
+              }
+              initialData={
+                additionalData
+              }
             />
           );
-        if (profile === "solidario")
+        }
+
+        if (
+          profile === "solidario"
+        ) {
           return (
             <AboutProjectSo
               onNext={onNext}
@@ -490,43 +826,73 @@ function Register() {
               step={displayStep}
               totalSteps={totalSteps}
               userName={userName}
-              onDataChange={handleStepDataChange}
-              initialData={additionalData}
+              onDataChange={
+                handleStepDataChange
+              }
+              initialData={
+                additionalData
+              }
             />
           );
+        }
+
         return null;
 
       case "feedback":
-        if (profile === "institucional")
+        if (
+          profile === "institucional"
+        ) {
           return (
             <FeedbackIns
-              onSubmit={handleFinalSubmit}
+              onSubmit={
+                handleFinalSubmit
+              }
               step={displayStep}
-              totalSteps={totalSteps}
+              totalSteps={
+                totalSteps
+              }
               userName={userName}
               loading={loading}
             />
           );
-        if (profile === "comunitario")
+        }
+
+        if (
+          profile === "comunitario"
+        ) {
           return (
             <FeedbackCt
-              onSubmit={handleFinalSubmit}
+              onSubmit={
+                handleFinalSubmit
+              }
               step={displayStep}
-              totalSteps={totalSteps}
+              totalSteps={
+                totalSteps
+              }
               userName={userName}
               loading={loading}
             />
           );
-        if (profile === "solidario")
+        }
+
+        if (
+          profile === "solidario"
+        ) {
           return (
             <FeedbackSo
-              onSubmit={handleFinalSubmit}
+              onSubmit={
+                handleFinalSubmit
+              }
               step={displayStep}
-              totalSteps={totalSteps}
+              totalSteps={
+                totalSteps
+              }
               userName={userName}
               loading={loading}
             />
           );
+        }
+
         return null;
 
       default:
@@ -537,7 +903,10 @@ function Register() {
   if (step === 0) {
     return (
       <div className="flex flex-col h-screen">
-        <HeaderCadastro title="Criar Conta" onBack={onBack} />
+        <HeaderCadastro
+          title="Criar Conta"
+          onBack={onBack}
+        />
 
         <div className="flex flex-1 overflow-hidden">
           <aside className="hidden md:flex md:w-1/2 relative">
@@ -548,13 +917,40 @@ function Register() {
             />
           </aside>
 
-          <main className="flex flex-col items-center w-full md:w-1/2 px-5 sm:px-8 md:px-12 bg-background overflow-y-auto">
-            <div className="flex flex-col items-center w-full max-w-sm mt-6 sm:mt-8 md:mt-10 mb-4 sm:mb-6">
+          <main
+            className="
+              flex
+              flex-col
+              items-center
+              w-full
+              md:w-1/2
+              px-5
+              sm:px-8
+              md:px-12
+              bg-background
+              overflow-y-auto
+            "
+          >
+            <div
+              className="
+                flex
+                flex-col
+                items-center
+                w-full
+                max-w-sm
+                mt-6
+                sm:mt-8
+                md:mt-10
+                mb-4
+                sm:mb-6
+              "
+            >
               <img
                 src="/assets/logo-horizontal.svg"
                 alt="Logo Óleo Circular"
                 className="h-20 sm:h-24 md:h-32 w-auto"
               />
+
               <p className="text-xs sm:text-sm text-black-100 font-medium mt-2 text-center px-2">
                 Plataforma de Coleta Solidária
               </p>
@@ -564,6 +960,7 @@ function Register() {
               <p className="text-xs font-extrabold text-white-500 tracking-widest mb-3">
                 DADOS DE ACESSO
               </p>
+
               <div className="bg-white rounded-xl shadow-sm mb-4 overflow-hidden">
                 <Input
                   type="text"
@@ -571,58 +968,89 @@ function Register() {
                   placeholder="Seu nome"
                   name="nome"
                   value={formData.nome}
-                  onChange={handleInputChange}
+                  onChange={
+                    handleInputChange
+                  }
                   noBorder
-                  error={fieldErrors.nome}
+                  error={
+                    fieldErrors.nome
+                  }
                 />
+
                 <hr className="border-white-100" />
+
                 <Input
                   type="email"
                   icon="email"
                   placeholder="Seu e-mail"
                   name="email"
                   value={formData.email}
-                  onChange={handleInputChange}
+                  onChange={
+                    handleInputChange
+                  }
                   noBorder
-                  error={fieldErrors.email}
+                  error={
+                    fieldErrors.email
+                  }
                 />
+
                 <hr className="border-white-100" />
+
                 <Input
                   type="password"
                   icon="cadeado"
                   placeholder="Sua senha"
                   name="senha"
                   value={formData.senha}
-                  onChange={handleInputChange}
+                  onChange={
+                    handleInputChange
+                  }
                   noBorder
-                  error={fieldErrors.senha}
+                  error={
+                    fieldErrors.senha
+                  }
                 />
+
                 <hr className="border-white-100" />
+
                 <Input
                   type="password"
                   icon="cadeado"
                   placeholder="Confirme sua senha"
                   name="confirmarSenha"
-                  value={formData.confirmarSenha}
-                  onChange={handleInputChange}
+                  value={
+                    formData.confirmarSenha
+                  }
+                  onChange={
+                    handleInputChange
+                  }
                   noBorder
-                  error={fieldErrors.confirmarSenha}
+                  error={
+                    fieldErrors.confirmarSenha
+                  }
                 />
               </div>
 
               <p className="text-xs font-extrabold text-white-500 tracking-widest mb-3 mt-6 sm:mt-8">
                 CONTATO
               </p>
+
               <div className="bg-white rounded-xl shadow-sm mb-4 overflow-hidden">
                 <Input
                   type="tel"
                   icon="phone"
                   placeholder="Telefone / WhatsApp"
                   name="telefone"
-                  value={formData.telefone}
-                  onChange={handleInputChange}
+                  value={
+                    formData.telefone
+                  }
+                  onChange={
+                    handleInputChange
+                  }
                   noBorder
-                  error={fieldErrors.telefone}
+                  error={
+                    fieldErrors.telefone
+                  }
                 />
               </div>
 
@@ -630,9 +1058,14 @@ function Register() {
                 <div className="flex items-center gap-2">
                   <Checkbox
                     id="aceiteMarketing"
-                    checked={additionalData.aceiteMarketing}
-                    onChange={handleCheckboxChange}
+                    checked={
+                      additionalData.aceiteMarketing
+                    }
+                    onChange={
+                      handleCheckboxChange
+                    }
                   />
+
                   <label
                     htmlFor="aceiteMarketing"
                     className="text-xs sm:text-sm text-black-200 cursor-pointer"
@@ -654,27 +1087,36 @@ function Register() {
                       className="text-green-primary font-bold underline"
                       onClick={(e) => {
                         e.preventDefault();
-                        navigate("/privacidade");
+                        navigate(
+                          "/privacidade"
+                        );
                       }}
                     >
                       Política de Privacidade
                     </button>
                   </label>
                 </div>
+
                 {fieldErrors.aceiteMarketing && (
                   <p className="text-red-500 text-xs mt-1 font-medium">
-                    {fieldErrors.aceiteMarketing}
+                    {
+                      fieldErrors.aceiteMarketing
+                    }
                   </p>
                 )}
               </div>
 
               <Button
                 type="button"
-                onClick={handleRegister}
+                onClick={
+                  handleRegister
+                }
                 disabled={loading}
                 variant="primary"
               >
-                {loading ? "Verificando..." : "Avançar"}
+                {loading
+                  ? "Verificando..."
+                  : "Avançar"}
               </Button>
             </div>
 

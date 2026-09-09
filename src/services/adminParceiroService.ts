@@ -22,6 +22,7 @@ export interface Parceiro {
     tipo?: string;
   } | null;
   outroParceiro?: string | null;
+  comoConheceu?: string;
 }
 
 

@@ -67,6 +67,7 @@ export interface RegisterCredentials {
   observacao?: string;
   longitude?: number;
   latitude?: number;
+  criadoPorAdmin?: boolean;
 }
 
 interface RegisterResponse {
