@@ -43,13 +43,13 @@ function FeedbackCt({
             </header>
 
             <div className="flex flex-1 overflow-hidden">
-                <aside className="hidden md:flex md:w-1/2 relative">
+                <aside className="hidden md:flex md:w-1/2 bg-[#1b6b3b] relative overflow-hidden">
                     <img 
-                        src="/assets/Imagem 1.jpg" 
+                        src="/assets/imagem-lateral-parceiro.png" 
                         alt="Projeto Óleo Circular" 
-                        className="w-full h-full object-cover object-center" 
+                        className="absolute bottom-0 left-0 w-auto h-full max-h-full object-contain object-left-bottom" 
                     />
-                </aside>
+                    </aside>
 
                 <main className="flex flex-col w-full md:w-1/2 bg-background overflow-y-auto">
                     <div className="flex-1 flex flex-col px-4 sm:px-6 md:px-8 lg:px-12">

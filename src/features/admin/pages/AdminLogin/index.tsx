@@ -70,17 +70,29 @@ function AdminLogin() {
     <div className="flex flex-col h-screen">
       <HeaderPublic />
 
-      {/* 2. ToastContainer removido daqui pois é injetado globalmente pelo ToastProvider */}
-
       <div className="flex flex-1 overflow-hidden">
-        <aside className="hidden md:flex md:w-1/2 relative">
-          <img
-            src="/assets/ImagemAdmin1.jpeg"
-            alt="Projeto Óleo Circular"
-            className="w-full h-full object-cover object-center"
+        {/* Painel Lateral com a Imagem e a Frase */}
+        <aside className="hidden md:flex md:w-1/2 bg-[#EC8C23] relative overflow-hidden flex-col justify-between p-6 sm:p-8 lg:p-12">
+          {/* Frase Responsiva com escala fluida via clamp() */}
+          <h1 
+            style={{ 
+              fontFamily: "'League Spartan', sans-serif",
+              fontSize: 'clamp(1.9rem, 3.2vw, 2.8rem)' 
+            }} 
+            className="text-white-primary font-bold text-center tracking-wide w-full px-6 z-10 leading-snug"
+          >
+            Área exclusiva para administradores
+          </h1>
+
+          {/* Imagem Lateral com altura responsiva */}
+          <img 
+            src="/assets/imagem-lateral-admin.png" 
+            alt="Projeto Óleo Circular" 
+            className="absolute bottom-0 left-0 w-auto h-[55%] sm:h-[60%] lg:h-[68%] max-h-full object-contain object-left-bottom pointer-events-none" 
           />
         </aside>
 
+        {/* Formulário de Login */}
         <main className="flex flex-col items-center w-full md:w-1/2 px-5 sm:px-8 md:px-12 bg-background overflow-y-auto">
           <div className="flex flex-col items-center w-full max-w-sm mt-8 sm:mt-10 md:mt-12 mb-4 sm:mb-6 md:mb-8">
             <img

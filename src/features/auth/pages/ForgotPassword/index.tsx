@@ -71,13 +71,13 @@ function ForgotPassword() {
             <HeaderPublic />
 
             <div className="flex flex-1 overflow-hidden">
-                <aside className="hidden md:flex md:w-1/2 relative">
+                <aside className="hidden md:flex md:w-1/2 bg-[#1b6b3b] relative overflow-hidden">
                     <img 
-                        src="/assets/Imagem 2.jpg" 
+                        src="/assets/imagem-lateral-parceiro.png" 
                         alt="Projeto Óleo Circular" 
-                        className="w-full h-full object-cover object-center" 
+                        className="absolute bottom-0 left-0 w-auto h-full max-h-full object-contain object-left-bottom" 
                     />
-                </aside>
+                    </aside>
 
                 <main className="flex flex-col items-center w-full md:w-1/2 px-5 sm:px-8 md:px-12 bg-background overflow-y-auto">
                     <div className="flex flex-col items-center w-full max-w-sm mt-8 sm:mt-10 md:mt-12 mb-4 sm:mb-6">

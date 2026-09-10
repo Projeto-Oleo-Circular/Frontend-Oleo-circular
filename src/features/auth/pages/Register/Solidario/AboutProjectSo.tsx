@@ -566,11 +566,11 @@ function AboutProjectIns({
       <div className="flex flex-1 overflow-hidden">
 
         {/* IMAGEM */}
-        <aside className="hidden md:flex md:w-1/2 relative">
-          <img
-            src="/assets/Imagem 3.jpg"
-            alt="Projeto Óleo Circular"
-            className="w-full h-full object-cover object-center"
+        <aside className="hidden md:flex md:w-1/2 bg-[#1b6b3b] relative overflow-hidden">
+          <img 
+            src="/assets/imagem-lateral-parceiro.png" 
+            alt="Projeto Óleo Circular" 
+            className="absolute bottom-0 left-0 w-auto h-full max-h-full object-contain object-left-bottom" 
           />
         </aside>
 
