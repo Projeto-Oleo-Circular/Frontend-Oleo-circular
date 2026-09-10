@@ -227,8 +227,8 @@ function ImpactoCard({
 
         {/* CO2 */}
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 shrink-0 rounded-full bg-gray-100 flex items-center justify-center">
-            <Cloud className="w-4 h-4 text-gray-700" />
+          <div className="w-8 h-8 shrink-0 rounded-full bg-white-100 flex items-center justify-center">
+            <Cloud className="w-4 h-4 text-white-700" />
           </div>
 
           <div>

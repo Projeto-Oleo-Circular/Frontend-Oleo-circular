@@ -17,7 +17,6 @@ import {
   Frown,
   type LucideIcon,
 } from "lucide-react";
-import HeaderPublic from "../../../../components/layout/HeaderPublic";
 import Button from "../../../../components/ui/Button";
 import { publicPontosService, type PontoColetaPublico } from "../../../../services/pontosColetaService";
 
@@ -50,7 +49,6 @@ const TILE_LAYERS = {
 // ============================================
 type CategoriaPontoColeta = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
-// Mapeamento por número (agora com componente de ícone em vez de emoji)
 const CATEGORIA_MAP: Record<CategoriaPontoColeta, { label: string; icon: LucideIcon; color: string }> = {
   1: { label: "Cozinha Industrial", icon: ChefHat, color: "#E67E22" },
   2: { label: "Empresa / Indústria", icon: Factory, color: "#2C3E50" },
@@ -62,7 +60,6 @@ const CATEGORIA_MAP: Record<CategoriaPontoColeta, { label: string; icon: LucideI
   8: { label: "Doador Avulso", icon: HeartHandshake, color: "#1ABC9C" },
 };
 
-// Mapeamento reverso: label -> número
 const CATEGORIA_LABEL_TO_NUMBER: Record<string, CategoriaPontoColeta> = {
   "Cozinha Industrial": 1,
   "Empresa / Indústria": 2,
@@ -74,23 +71,17 @@ const CATEGORIA_LABEL_TO_NUMBER: Record<string, CategoriaPontoColeta> = {
   "Doador Avulso": 8,
 };
 
-// Função para obter categoria a partir do número OU label
 const getCategoriaInfo = (categoria: string | number) => {
-  // Se for string, tenta converter pelo label
   if (typeof categoria === 'string') {
     const num = CATEGORIA_LABEL_TO_NUMBER[categoria];
     if (num) {
       return CATEGORIA_MAP[num];
     }
-    // Se não encontrar, retorna o default (Doador Avulso)
     return CATEGORIA_MAP[8];
   }
-  
-  // Se for número, usa diretamente
   return CATEGORIA_MAP[categoria as CategoriaPontoColeta] || CATEGORIA_MAP[8];
 };
 
-// Função para obter o número da categoria (normaliza)
 const getCategoriaNumero = (categoria: string | number): CategoriaPontoColeta => {
   if (typeof categoria === 'string') {
     return CATEGORIA_LABEL_TO_NUMBER[categoria] || 8;
@@ -98,13 +89,11 @@ const getCategoriaNumero = (categoria: string | number): CategoriaPontoColeta =>
   return categoria as CategoriaPontoColeta;
 };
 
-// Estender o tipo PontoColetaPublico com campos calculados
 interface EstabelecimentoCompleto extends PontoColetaPublico {
   categoriaInfo: { label: string; icon: LucideIcon; color: string };
   categoriaNumero: CategoriaPontoColeta;
 }
 
-// Componente para controlar o mapa
 function MapController({ center }: { center: [number, number] }) {
   const map = useMap();
   useEffect(() => {
@@ -116,11 +105,9 @@ function MapController({ center }: { center: [number, number] }) {
 export default function LandingPageEstabelecimentos() {
   const navigate = useNavigate();
   
-  // Estados
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isAddPointModalOpen, setIsAddPointModalOpen] = useState(false);
   const [currentTile, setCurrentTile] = useState<TileStyle>('standard');
   const [isLayerMenuOpen, setIsLayerMenuOpen] = useState(false);
   const [mapCenter, setMapCenter] = useState<[number, number]>([-15.2483, -40.2481]);
@@ -129,7 +116,6 @@ export default function LandingPageEstabelecimentos() {
   const [categoriaFiltro, setCategoriaFiltro] = useState<CategoriaPontoColeta | "TODAS">("TODAS");
   const [erro, setErro] = useState<string | null>(null);
 
-  // Função para carregar estabelecimentos da API pública
   const carregarEstabelecimentos = async () => {
     try {
       setCarregando(true);
@@ -139,7 +125,6 @@ export default function LandingPageEstabelecimentos() {
         limit: 100,
       });
 
-      // Processa e enriquece os dados
       const estabelecimentosProcessados: EstabelecimentoCompleto[] = response.items.map((ponto) => {
         const categoriaNumero = getCategoriaNumero(ponto.categoria);
         return {
@@ -151,7 +136,6 @@ export default function LandingPageEstabelecimentos() {
 
       setEstabelecimentos(estabelecimentosProcessados);
 
-      // Se tiver pontos, centraliza o mapa no primeiro com coordenadas
       if (estabelecimentosProcessados.length > 0) {
         const primeiroComCoordenadas = estabelecimentosProcessados.find(
           e => e.localizacao
@@ -176,11 +160,9 @@ export default function LandingPageEstabelecimentos() {
     carregarEstabelecimentos();
   }, []);
 
-  // Filtros
   const estabelecimentosFiltrados = useMemo(() => {
     let resultado = estabelecimentos;
 
-    // Filtro por texto (nome, endereço)
     if (searchQuery.trim()) {
       const termo = searchQuery.toLowerCase().trim();
       resultado = resultado.filter((item) => {
@@ -192,7 +174,6 @@ export default function LandingPageEstabelecimentos() {
       });
     }
 
-    // Filtro por categoria (usando o número normalizado)
     if (categoriaFiltro !== "TODAS") {
       resultado = resultado.filter((item) => {
         return item.categoriaNumero === categoriaFiltro;
@@ -202,7 +183,6 @@ export default function LandingPageEstabelecimentos() {
     return resultado;
   }, [estabelecimentos, searchQuery, categoriaFiltro]);
 
-  // Busca por endereço
   const handleSearchNominatim = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!searchQuery.trim()) return;
@@ -235,7 +215,6 @@ export default function LandingPageEstabelecimentos() {
     }
   };
 
-  // Geolocalização
   const handleGeoLocation = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -249,7 +228,6 @@ export default function LandingPageEstabelecimentos() {
     }
   };
 
-  // Contagem por categoria
   const contagemCategorias = useMemo(() => {
     const contagem: Record<number, number> = {};
     
@@ -261,21 +239,18 @@ export default function LandingPageEstabelecimentos() {
     return contagem;
   }, [estabelecimentos]);
 
-  // Abrir modal de adicionar ponto
-  const handleAddPointClick = () => {
-    setIsAddPointModalOpen(true);
-    setIsMenuOpen(false);
-  };
-
   return (
     <div className="flex flex-col h-screen overflow-hidden relative bg-background">
-      <HeaderPublic />
-
       <main className="flex-1 relative w-full h-full">
-        {/* Barra de Busca */}
+        
+        {/* ============================================================== */}
+        {/* BARRA SUPERIOR E CONTROLES (Search, Logo, Botões)              */}
+        {/* ============================================================== */}
+
+        {/* 1. BARRA DE BUSCA (Sempre no topo absoluto) */}
         <form 
           onSubmit={handleSearchNominatim}
-          className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] w-[92%] sm:w-full max-w-md px-2 sm:px-0"
+          className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] w-[92%] md:w-[400px] lg:w-[500px]"
         >
           <div className="flex items-center bg-white rounded-2xl shadow-lg px-4 py-2.5 sm:py-3 border border-white-100">
             <button type="submit" disabled={isSearching} className="mr-2.5 text-white-500 hover:text-green-primary transition-colors">
@@ -297,7 +272,39 @@ export default function LandingPageEstabelecimentos() {
           </div>
         </form>
 
-        {/* Mapa */}
+        {/* 2. LOGO FLUTUANTE (Mobile: Desce para top-20 | Desktop: Fica no top-4) */}
+        <div className="absolute top-20 md:top-4 left-4 z-[1000]">
+          <img 
+            src="/assets/logo-horizontal.svg" // Ajuste a extensão para .png se necessário
+            alt="Óleo Circular" 
+            className="h-12 sm:h-14 md:h-16 w-auto drop-shadow-md bg-white/95 backdrop-blur-sm p-1.5 sm:p-2 rounded-xl border border-white-100" 
+          />
+        </div>
+
+        {/* 3. BOTÕES DE AUTENTICAÇÃO (Mobile: Desce e empilha | Desktop: Fica no top-4 lado a lado) */}
+        <div className="absolute top-20 md:top-4 right-4 z-[1000] flex flex-row items-center gap-2">
+          <Button 
+            variant="primary"
+            fullWidth={false}
+            onClick={() => navigate("/register")}
+            className="shadow-md !py-2 !px-3 md:!px-4 !text-xs md:!text-sm whitespace-nowrap"
+          >
+            Criar Conta
+          </Button>
+          <Button 
+            variant="secondary"
+            fullWidth={false}
+            onClick={() => navigate("/login")}
+            className="shadow-md !py-2 !px-3 md:!px-4 !text-xs md:!text-sm whitespace-nowrap"
+          >
+            Entrar
+          </Button>
+        </div>
+
+
+        {/* ============================================================== */}
+        {/* MAPA E MARCADORES                                              */}
+        {/* ============================================================== */}
         <MapContainer
           center={mapCenter}
           zoom={14}
@@ -318,7 +325,6 @@ export default function LandingPageEstabelecimentos() {
             const { latitude, longitude } = estabelecimento.localizacao;
             const { icon: CategoriaIcon, color, label } = estabelecimento.categoriaInfo;
 
-            // Ícone customizado por categoria (SVG do lucide-react renderizado como marcador)
             const iconMarkup = renderToStaticMarkup(
               <CategoriaIcon color="#ffffff" size={18} strokeWidth={2.25} />
             );
@@ -380,8 +386,6 @@ export default function LandingPageEstabelecimentos() {
                           {estabelecimento.endereco.bairro}, {estabelecimento.endereco.cidade} {estabelecimento.endereco.estado || ""}
                         </span>
                       </p>
-
-                      
                     </div>
                   </div>
                 </Popup>
@@ -390,7 +394,11 @@ export default function LandingPageEstabelecimentos() {
           })}
         </MapContainer>
 
-        {/* Botões de Controle do Mapa */}
+        {/* ============================================================== */}
+        {/* LEGENDA E CONTROLES INFERIORES                                 */}
+        {/* ============================================================== */}
+
+        {/* Botões de Controle do Mapa (Localização e Camadas) */}
         <div className="absolute bottom-4 sm:bottom-6 left-4 z-[1000] flex flex-col gap-2.5 sm:gap-3">
           <button
             onClick={handleGeoLocation}
@@ -404,7 +412,6 @@ export default function LandingPageEstabelecimentos() {
             </svg>
           </button>
 
-          {/* Seletor de Camada */}
           <div className="relative">
             {isLayerMenuOpen && (
               <div className="absolute bottom-14 sm:bottom-16 left-0 bg-white rounded-2xl shadow-xl p-2 border border-white-100 flex flex-col gap-1.5 w-40 sm:w-44 animate-in fade-in slide-in-from-bottom-2 duration-150">
@@ -459,7 +466,7 @@ export default function LandingPageEstabelecimentos() {
               onClick={() => setCategoriaFiltro("TODAS")}
               className={`text-xs px-2.5 py-1 rounded-full transition-all ${
                 categoriaFiltro === "TODAS"
-                  ? "bg-green-primary text-white font-bold"
+                  ? "bg-green-primary text-white-primary font-bold"
                   : "bg-white-100 text-white-600 hover:bg-white-200"
               }`}
             >
@@ -527,7 +534,7 @@ export default function LandingPageEstabelecimentos() {
           })}
         </div>
 
-        {/* Botões Flutuantes Direita */}
+        {/* Botão de Menu Flutuante (Direita Inferior) */}
         <div className="absolute bottom-4 sm:bottom-6 right-4 z-[1002] flex flex-col gap-2.5 sm:gap-3 items-end">
           <button
             onClick={() => setIsMenuOpen((prev) => !prev)}
@@ -539,20 +546,9 @@ export default function LandingPageEstabelecimentos() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-
-          <button
-            onClick={handleAddPointClick}
-            type="button"
-            className="w-12 h-12 sm:w-14 sm:h-14 bg-teal-primary hover:bg-teal-hover rounded-full flex items-center justify-center shadow-xl text-white cursor-pointer active:scale-95 transition-all"
-            title="Adicionar Ponto"
-          >
-            <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6v12m6-6H6" />
-            </svg>
-          </button>
         </div>
 
-        {/* Menu Lateral */}
+        {/* Modal de Menu Lateral */}
         {isMenuOpen && (
           <div className="absolute bottom-[140px] sm:bottom-[160px] right-4 z-[1001] w-64 sm:w-72 bg-white rounded-[24px] sm:rounded-[28px] shadow-xl p-4 sm:p-6 border border-white-100 animate-in fade-in slide-in-from-bottom-3 duration-200">
             <span className="text-[10px] sm:text-xs font-bold text-white-600 tracking-wider uppercase px-1 mb-3 sm:mb-4 block">
@@ -596,47 +592,7 @@ export default function LandingPageEstabelecimentos() {
           </div>
         )}
 
-        {/* Modal de Adicionar Ponto */}
-        {isAddPointModalOpen && (
-          <div className="fixed inset-0 z-[2000] flex items-end justify-center bg-black/40 backdrop-blur-[2px] animate-in fade-in duration-200">
-            <div className="absolute inset-0" onClick={() => setIsAddPointModalOpen(false)} />
-            <div className="relative w-full max-w-none bg-white rounded-t-[32px] sm:rounded-t-[36px] rounded-b-none px-6 sm:px-12 md:px-16 pt-5 sm:pt-8 pb-8 shadow-2xl z-10 animate-in slide-in-from-bottom duration-300">
-              <div 
-                onClick={() => setIsAddPointModalOpen(false)}
-                className="w-12 h-1.5 bg-white-300 rounded-full mx-auto mb-6 cursor-pointer hover:bg-white-400 transition-colors"
-                title="Fechar"
-              />
-              <div className="max-w-3xl mx-auto">
-                <div className="flex items-center gap-4 mb-4 sm:mb-5">
-                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-green-100 flex items-center justify-center shrink-0">
-                    <img src="/assets/icons/ponto-de-coleta.svg" alt="Ícone Ponto" className="w-6 h-6 sm:w-7 sm:h-7" />
-                  </div>
-                  <div>
-                    <h2 className="text-xl sm:text-2xl font-bold text-black-primary leading-tight">
-                      Faça parte do mapa!
-                    </h2>
-                    <p className="text-xs sm:text-sm text-black-200 mt-0.5">
-                      Junte-se à nossa comunidade.
-                    </p>
-                  </div>
-                </div>
-                <p className="text-xs sm:text-sm text-black-200 mb-6 leading-relaxed">
-                  Para adicionar novos pontos de coleta e ajudar as pessoas a descartarem o óleo corretamente, é necessário ter uma conta. É rápido e 100% gratuito!
-                </p>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <Button variant="primary" size="md" onClick={() => navigate("/register")} fullWidth>
-                    Criar Conta
-                  </Button>
-                  <Button variant="secondary" size="md" onClick={() => navigate("/login")} fullWidth>
-                    Entrar na minha conta
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Indicador de Carregamento */}
+        {/* Feedbacks Visuais */}
         {carregando && (
           <div className="absolute inset-0 z-[999] flex items-center justify-center bg-white/60 backdrop-blur-sm">
             <div className="bg-white rounded-xl shadow-lg p-6 flex items-center gap-3">
@@ -646,7 +602,6 @@ export default function LandingPageEstabelecimentos() {
           </div>
         )}
 
-        {/* Mensagem de Erro */}
         {erro && !carregando && (
           <div className="absolute inset-0 z-[999] flex items-center justify-center bg-white/60 backdrop-blur-sm">
             <div className="bg-white rounded-xl shadow-lg p-6 max-w-md text-center">

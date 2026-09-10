@@ -596,7 +596,7 @@ return (
           className={`
             shrink-0
             rounded-full
-            bg-gray-100
+            bg-white-100
             flex
             items-center
             justify-center
@@ -610,8 +610,8 @@ return (
           <Cloud
             className={
               isModal
-                ? "w-4 h-4 text-gray-700"
-                : "w-6 h-6 text-gray-700"
+                ? "w-4 h-4 text-white-700"
+                : "w-6 h-6 text-white-700"
             }
           />
         </div>

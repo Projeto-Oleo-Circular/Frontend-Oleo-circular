@@ -788,21 +788,21 @@ export function Requests() {
 
               <div className="space-y-4 mb-4">
                 <label className="block">
-                  <span className="text-sm text-gray-700 font-medium">Data da Coleta</span>
+                  <span className="text-sm text-white-700 font-medium">Data da Coleta</span>
                   <input
                     type="date"
                     value={dataAgendamento}
                     onChange={(e) => setDataAgendamento(e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1 text-sm focus:outline-none focus:border-green-primary bg-white cursor-pointer"
+                    className="w-full border border-white-300 rounded-lg px-3 py-2 mt-1 text-sm focus:outline-none focus:border-green-primary bg-white cursor-pointer"
                   />
                 </label>
 
                 {dataAgendamento && (
                   <div>
-                    <span className="text-sm text-gray-700 font-medium block mb-2">Selecione o Turno e Horário (Blocos de 1h)</span>
+                    <span className="text-sm text-white-700 font-medium block mb-2">Selecione o Turno e Horário (Blocos de 1h)</span>
                     <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
                       {TURNOS_AGENDAMENTO.map((grupo) => (
-                        <div key={grupo.turno} className="border border-gray-100 p-2.5 rounded-lg bg-gray-50">
+                        <div key={grupo.turno} className="border border-white-100 p-2.5 rounded-lg bg-white-50">
                           <span className="text-xs font-bold text-green-700 uppercase"> {grupo.turno}</span>
                           <div className="grid grid-cols-2 gap-2 mt-2">
                             {grupo.slots.map((slot) => {
@@ -815,7 +815,7 @@ export function Requests() {
                                   className={`py-2 px-3 text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
                                     isSelected
                                       ? 'bg-green-600 text-white border-green-600 shadow-sm'
-                                      : 'bg-white text-gray-700 border-gray-200 hover:border-green-400'
+                                      : 'bg-white text-white-700 border-white-200 hover:border-green-400'
                                   }`}
                                 >
                                   {slot}
@@ -861,14 +861,14 @@ export function Requests() {
               </div>
 
               <label className="block mb-4">
-                <span className="text-sm text-gray-700 font-medium">Volume coletado (litros)</span>
+                <span className="text-sm text-white-700 font-medium">Volume coletado (litros)</span>
                 <input
                   type="number"
                   min={1}
                   placeholder="Ex: 50"
                   value={volumeColetado}
                   onChange={(e) => setVolumeColetado(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
+                  className="w-full border border-white-300 rounded-lg px-3 py-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
                 />
               </label>
 
