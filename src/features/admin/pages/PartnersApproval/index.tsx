@@ -1,4 +1,4 @@
-// PartnersApproval.tsx
+// src/pages/Admin/PartnersApproval/index.tsx
 
 import { useEffect, useState, useCallback } from "react";
 import {
@@ -232,60 +232,42 @@ export function PartnersApproval() {
   const handleCriarParceiro = async (dados: NovoParceiroPayload) => {
     setSalvando(true);
     try {
-      const temIndicador = Boolean(dados.parceiroIndicadorId);
-
      await authService.register({
-  tipoPessoa: dados.tipoPessoa,
-  tipoParceiro: dados.tipoParceiro,
-  razaoSocial: dados.razaoSocial,
-  nome: dados.nome,
-  email: dados.email,
-  senha: dados.senha,
-  documento: dados.documento,
-  telefone: dados.telefone,
-
-  porte: dados.porte,
-
-  aceiteMarketing: dados.aceiteMarketing,
-
-  responsavelLegal: dados.responsavelLegal,
-  responsavelLegalCpf: dados.responsavelLegalCpf,
-
-  cep: dados.cep,
-  logradouro: dados.logradouro,
-  numero: dados.numero,
-  cidade: dados.cidade,
-  bairro: dados.bairro,
-  estado: dados.estado,
-  complemento: dados.complemento,
-
-  categoria: dados.categoria,
-
-  expectativaGeracao: dados.expectativaGeracao,
-  capacidadeBombona: dados.capacidadeBombona,
-  nivelAtualPct: dados.nivelAtualPct,
-  statusBombona: dados.statusBombona,
-
-  redesSociais: dados.redesSociais,
-
-  site: dados.site,
-  aceiteDivulgacao: dados.aceiteDivulgacao,
-
-  // O repository resolve automaticamente
-  // para Admin/Cataunidos.
-  parceiroIndicadorId: null,
-  outroParceiro: null,
-
-  comoConheceu: "Criado pelo Administrador",
-
-  observacao: dados.observacao,
-
-  longitude: dados.longitude,
-  latitude: dados.latitude,
-
-  // IMPORTANTE
-  criadoPorAdmin: true,
-});
+       tipoPessoa: dados.tipoPessoa,
+       tipoParceiro: dados.tipoParceiro,
+       razaoSocial: dados.razaoSocial,
+       nome: dados.nome,
+       email: dados.email,
+       senha: dados.senha,
+       documento: dados.documento,
+       telefone: dados.telefone,
+       porte: dados.porte,
+       aceiteMarketing: dados.aceiteMarketing,
+       responsavelLegal: dados.responsavelLegal,
+       responsavelLegalCpf: dados.responsavelLegalCpf,
+       cep: dados.cep,
+       logradouro: dados.logradouro,
+       numero: dados.numero,
+       cidade: dados.cidade,
+       bairro: dados.bairro,
+       estado: dados.estado,
+       complemento: dados.complemento,
+       categoria: dados.categoria,
+       expectativaGeracao: dados.expectativaGeracao,
+       capacidadeBombona: dados.capacidadeBombona,
+       nivelAtualPct: dados.nivelAtualPct,
+       statusBombona: dados.statusBombona,
+       redesSociais: dados.redesSociais,
+       site: dados.site,
+       aceiteDivulgacao: dados.aceiteDivulgacao,
+       parceiroIndicadorId: null,
+       outroParceiro: null,
+       comoConheceu: "Criado pelo Administrador",
+       observacao: dados.observacao,
+       longitude: dados.longitude,
+       latitude: dados.latitude,
+       criadoPorAdmin: true,
+     });
       await Promise.all([carregarParceiros(), carregarContagensParceiros()]);
       setIsModalCriarOpen(false);
     } catch (error) {
@@ -354,10 +336,6 @@ export function PartnersApproval() {
     }
   };
 
-  // ==========================================================
-  // FUNÇÕES DE EDIÇÃO
-  // ==========================================================
-
   const handleEditarParceiro = () => {
     if (modal.parceiro) {
       setParceiroEditando({ ...modal.parceiro });
@@ -373,7 +351,6 @@ export function PartnersApproval() {
   const handleSalvarEdicao = async () => {
     if (!parceiroEditando) return;
 
-    // Validação básica
     if (!parceiroEditando.email) {
       alert("O e-mail é obrigatório.");
       return;
@@ -381,7 +358,6 @@ export function PartnersApproval() {
 
     setSalvando(true);
     try {
-      // Usando o método atualizarParceiro do serviço
       await adminParceiroService.atualizarParceiro(parceiroEditando.id, {
         razaoSocial: parceiroEditando.razaoSocial,
         nome: parceiroEditando.nome,
@@ -393,7 +369,6 @@ export function PartnersApproval() {
 
       await Promise.all([carregarParceiros(), carregarContagensParceiros()]);
       
-      // Atualiza o modal com os dados editados
       setModal((prev) => ({
         ...prev,
         parceiro: { ...parceiroEditando },
@@ -500,7 +475,7 @@ export function PartnersApproval() {
               variant="primary"
               size="sm"
               onClick={handleAbrirModalCriar}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-full"
             >
               <Plus className="w-3.5 h-3.5" />
               Novo Parceiro
@@ -670,22 +645,22 @@ export function PartnersApproval() {
                 />
               </label>
 
-              <div className="flex gap-3">
-                <Button
-                  variant="danger"
-                  size="sm"
+              <div className="mt-6 flex gap-2">
+                <button
+                  type="button"
                   onClick={fecharModal}
                   disabled={salvando}
-                  fullWidth
+                  className="w-full py-2 px-4 text-xs font-semibold rounded-full border border-green-primary text-green-primary bg-white hover:bg-green-50 transition-colors cursor-pointer disabled:opacity-50"
                 >
                   Cancelar
-                </Button>
+                </button>
                 <Button
                   variant="primary"
                   size="sm"
                   loading={salvando}
                   onClick={processarAcaoModal}
                   fullWidth
+                  className="rounded-full"
                 >
                   Confirmar
                 </Button>
@@ -694,13 +669,10 @@ export function PartnersApproval() {
           </div>
         )}
 
-        {/* ============================================================ */}
-        {/* MODAL DETALHES COM EDIÇÃO - SEM O BOTÃO X                    */}
-        {/* ============================================================ */}
+        {/* MODAL DETALHES COM EDIÇÃO */}
         {modal.tipo === "detalhes" && modal.parceiro && (
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl p-6 w-full max-w-lg shadow-xl animate-slide-down max-h-[90vh] overflow-y-auto">
-              {/* CABEÇALHO - SEM O BOTÃO X */}
+           <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl p-6 w-full max-w-xl shadow-xl animate-slide-down max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between pb-3 border-b border-white-100 mb-4">
                 <div>
                   <h2 className="font-bold text-xl text-green-primary">
@@ -712,7 +684,6 @@ export function PartnersApproval() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  {/* Botão de Editar - apenas quando NÃO está em modo edição */}
                   {!modoEdicao && (
                     <button
                       onClick={handleEditarParceiro}
@@ -757,7 +728,6 @@ export function PartnersApproval() {
 
                   {modoEdicao && parceiroEditando ? (
                     <div className="space-y-2">
-                      {/* Nome/Razão Social */}
                       <div>
                         <label className="text-xs text-white-500">
                           {modal.parceiro.tipoPessoa === "JURIDICA" 
@@ -778,7 +748,6 @@ export function PartnersApproval() {
                         />
                       </div>
 
-                      {/* Email */}
                       <div>
                         <label className="text-xs text-white-500">E-mail</label>
                         <input
@@ -789,7 +758,6 @@ export function PartnersApproval() {
                         />
                       </div>
 
-                      {/* Telefone */}
                       <div>
                         <label className="text-xs text-white-500">Telefone</label>
                         <input
@@ -800,7 +768,6 @@ export function PartnersApproval() {
                         />
                       </div>
 
-                      {/* Documento */}
                       <div>
                         <label className="text-xs text-white-500">CPF/CNPJ</label>
                         <input
@@ -811,7 +778,6 @@ export function PartnersApproval() {
                         />
                       </div>
 
-                      {/* Responsável Legal */}
                       <div>
                         <label className="text-xs text-white-500">Responsável Legal</label>
                         <input
@@ -921,7 +887,7 @@ export function PartnersApproval() {
                   </div>
                 )}
 
-                {/* IMPACTO AMBIENTAL - SOMENTE PARCEIRO APROVADO */}
+                {/* IMPACTO AMBIENTAL */}
                 {modal.parceiro.statusAprovacaoParceiro === "APROVADO" && !modoEdicao && (
                   <div className="border border-green-100 rounded-lg overflow-hidden">
                     <button
@@ -956,18 +922,21 @@ export function PartnersApproval() {
                 )}
               </div>
 
-              {/* BOTÕES - Modo Edição */}
-              {modoEdicao ? (
+              {/* BOTÕES DE AÇÃO */}
+             {modoEdicao ? (
                 <div className="flex gap-3 mt-6 pt-4 border-t border-white-100">
-                  <Button
-                    variant="danger"
+                 <Button
+                    variant="secondary"
                     size="sm"
                     onClick={handleCancelarEdicao}
                     disabled={salvando}
                     fullWidth
+                    className="rounded-full border border-green-primary text-green-primary bg-white hover:bg-green-50"
                   >
                     Cancelar
                   </Button>
+                  
+                
                   <Button
                     variant="primary"
                     size="sm"
@@ -979,13 +948,13 @@ export function PartnersApproval() {
                   </Button>
                 </div>
               ) : (
-                /* BOTÃO FECHAR - Modo Visualização */
                 <div className="mt-6 pt-4 border-t border-white-100">
                   <Button
                     variant="primary"
                     size="sm"
                     onClick={fecharModal}
                     fullWidth
+                    className="rounded-full"
                   >
                     Fechar
                   </Button>

@@ -87,14 +87,6 @@ function obterNomeResponsavel(ponto: PontoColetaAdmin): string {
   return parceiro.responsavelLegal || parceiro.responsavelLegalNome || parceiro.nome || "—";
 }
 
-// Helper para obter nome de exibição do parceiro
-function obterNomeExibicaoParceiro(parceiro: Parceiro): string {
-  if (parceiro.tipoParceiro === "SOLIDARIO") {
-    return parceiro.nome || "—";
-  }
-  return parceiro.razaoSocial || parceiro.nome || "—";
-}
-
 export function PointsApproval() {
   const [pontos, setPontos] = useState<PontoColetaAdmin[]>([]);
   const [totalPages, setTotalPages] = useState(1);
@@ -351,6 +343,7 @@ export function PointsApproval() {
       setSalvando(false);
     }
   };
+
   const processarAcaoModal = async () => {
     if (!modal.tipo || !modal.ponto) return;
 
@@ -682,8 +675,20 @@ export function PointsApproval() {
                     ID do ponto: #{modal.ponto.id}
                   </p>
                 </div>
-                
-                    
+
+                <div className="flex items-center gap-2">
+                  {!editandoPonto && (
+                    <button
+                      onClick={() => setEditandoPonto(true)}
+                      className="p-2 rounded-lg border border-green-500 text-green-500 hover:bg-green-50 transition-colors cursor-pointer"
+                      title="Editar Ponto"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                  )}
+                  
+                 
+                </div>
               </div>
 
               {editandoPonto ? (
@@ -836,7 +841,6 @@ export function PointsApproval() {
                       onClick={handleSalvarEdicao}
                       fullWidth
                     >
-                      <Save className="w-4 h-4 mr-1.5 inline" />
                       Salvar Alterações
                     </Button>
                   </div>

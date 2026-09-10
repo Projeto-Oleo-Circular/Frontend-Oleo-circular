@@ -235,14 +235,7 @@ function IndicadorModal({
                 : "Cadastre uma nova associação, cooperativa ou ONG."}
             </p>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={salvando}
-            className="text-red-primary hover:text-red-hover cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -364,14 +357,15 @@ function IndicadorModal({
 
           <div className="flex gap-3 justify-end mt-6 pt-4 border-t border-white-100">
             <Button
-              type="button"
-              variant="danger"
-              size="sm"
-              onClick={onClose}
-              disabled={salvando}
-            >
-              Cancelar
-            </Button>
+                    variant="secondary"
+                    size="sm"
+                    onClick={onClose}
+                    disabled={salvando}
+                    fullWidth
+                    className="rounded-full border border-green-primary text-green-primary bg-white hover:bg-green-50"
+                  >
+                    Cancelar
+                  </Button>
             <Button type="submit" variant="primary" size="sm" loading={salvando}>
               {indicador ? "Salvar Alterações" : "Cadastrar Indicador"}
             </Button>

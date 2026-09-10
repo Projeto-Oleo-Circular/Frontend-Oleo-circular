@@ -647,7 +647,7 @@ export function CriarParceiroModal({
           
           {!tipoSelecionado ? (
             <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2.5">
-              ⚠️ Selecione o tipo de parceiro acima para habilitar as categorias correspondentes.
+               Selecione o tipo de parceiro acima para habilitar as categorias correspondentes.
             </p>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-48 overflow-y-auto pr-1">
@@ -692,7 +692,16 @@ export function CriarParceiroModal({
                 disabled={loading}
               />
             </label>
-
+<label className="block">
+              <span className="text-xs text-white-600 font-medium">Capacidade de Bombona (Litros)</span>
+              <input
+                type="number"
+                value={novoParceiro.capacidadeBombona}
+                onChange={(e) => atualizarCampo("capacidadeBombona", Number(e.target.value))}
+                className="w-full bg-white border border-white-200 rounded-xl p-2.5 mt-1 text-sm focus:outline-none focus:border-green-primary"
+                disabled={loading}
+              />
+            </label>
             <label className="block">
               <span className="text-xs text-white-600 font-medium">Expectativa de Geração (Litros/Mês)</span>
               <input
@@ -1019,7 +1028,6 @@ export function CriarParceiroModal({
                 className="flex-1 ml-auto"
               >
                 Próximo
-                <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             ) : (
               <Button
