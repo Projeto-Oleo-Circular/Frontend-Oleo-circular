@@ -25,6 +25,8 @@ import {
 } from "lucide-react";
 
 import Button from "../ui/Button";
+import Input from "../ui/Input"; // Importado o componente Input customizado
+import ProgressBar from "../ui/ProgressBar"; // Importado o componente de barra de progresso
 import AddressMapPicker, { type AddressMapValue } from "../ui/AddressMapPicker";
 
 import {
@@ -498,32 +500,6 @@ export function CriarParceiroModal({
     onClose();
   };
 
-  const renderStepIndicator = () => (
-    <div className="flex items-center justify-center gap-4 mb-6">
-      <div className="flex items-center gap-2">
-        <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${currentStep === 1 ? "bg-green-primary text-white" : "bg-green-100 text-green-primary"}`}>
-          1
-        </div>
-        <span className={`text-xs font-medium ${currentStep === 1 ? "text-green-primary font-semibold" : "text-white-400"}`}>
-          Perfil & Categoria
-        </span>
-      </div>
-
-      <div className="w-10 h-0.5 bg-white-200">
-        <div className={`h-full bg-green-primary transition-all duration-300 ${currentStep === 2 ? "w-full" : "w-0"}`} />
-      </div>
-
-      <div className="flex items-center gap-2">
-        <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${currentStep === 2 ? "bg-green-primary text-white" : "bg-white-100 text-white-400"}`}>
-          2
-        </div>
-        <span className={`text-xs font-medium ${currentStep === 2 ? "text-green-primary font-semibold" : "text-white-400"}`}>
-          Endereço & Contato
-        </span>
-      </div>
-    </div>
-  );
-
   const renderPasso1 = () => {
     const categoriasPermitidas = getCategoriasPermitidas();
     const tipoSelecionado = novoParceiro.tipoParceiro;
@@ -535,29 +511,24 @@ export function CriarParceiroModal({
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <label className="block">
-              <span className="text-xs text-white-600 font-medium">E-mail de Acesso *</span>
-              <input
+              <span className="text-xs text-white-600 font-medium mb-1 block">E-mail de Acesso *</span>
+              <Input
                 type="email"
                 value={novoParceiro.email}
                 onChange={(e) => atualizarCampo("email", e.target.value)}
                 placeholder="nome@exemplo.com"
-                className="w-full bg-white border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
                 disabled={loading}
-                required
               />
             </label>
 
             <label className="block">
-              <span className="text-xs text-white-600 font-medium">Senha *</span>
-              <input
+              <span className="text-xs text-white-600 font-medium mb-1 block">Senha *</span>
+              <Input
                 type="password"
                 value={novoParceiro.senha}
                 onChange={(e) => atualizarCampo("senha", e.target.value)}
                 placeholder="Mínimo 6 caracteres"
-                className="w-full bg-white border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
                 disabled={loading}
-                required
-                minLength={6}
               />
             </label>
           </div>
@@ -568,7 +539,7 @@ export function CriarParceiroModal({
               <select
                 value={novoParceiro.tipoPessoa}
                 onChange={(e) => atualizarCampo("tipoPessoa", e.target.value)}
-                className="w-full bg-white border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
+                className="w-full bg-white border border-white-200 rounded-xl p-2.5 mt-1 text-sm focus:outline-none focus:border-green-primary"
                 disabled={loading}
                 required
               >
@@ -585,7 +556,7 @@ export function CriarParceiroModal({
                 value={novoParceiro.documento}
                 onChange={(e) => atualizarCampo("documento", e.target.value)}
                 placeholder="000.000.000-00 ou 00.000..."
-                className="w-full bg-white border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
+                className="w-full bg-white border border-white-200 rounded-xl p-2.5 mt-1 text-sm focus:outline-none focus:border-green-primary"
                 disabled={loading}
                 required
               />
@@ -601,7 +572,7 @@ export function CriarParceiroModal({
                   value={novoParceiro.razaoSocial}
                   onChange={(e) => atualizarCampo("razaoSocial", e.target.value)}
                   placeholder="Razão Social"
-                  className="w-full bg-white border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
+                  className="w-full bg-white border border-white-200 rounded-xl p-2.5 mt-1 text-sm focus:outline-none focus:border-green-primary"
                   disabled={loading}
                   required
                 />
@@ -614,7 +585,7 @@ export function CriarParceiroModal({
                   value={novoParceiro.nome || ""}
                   onChange={(e) => atualizarCampo("nome", e.target.value)}
                   placeholder="Nome Fantasia"
-                  className="w-full bg-white border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
+                  className="w-full bg-white border border-white-200 rounded-xl p-2.5 mt-1 text-sm focus:outline-none focus:border-green-primary"
                   disabled={loading}
                 />
               </label>
@@ -628,7 +599,7 @@ export function CriarParceiroModal({
                   value={novoParceiro.nome || ""}
                   onChange={(e) => atualizarCampo("nome", e.target.value)}
                   placeholder="Nome completo"
-                  className="w-full bg-white border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
+                  className="w-full bg-white border border-white-200 rounded-xl p-2.5 mt-1 text-sm focus:outline-none focus:border-green-primary"
                   disabled={loading}
                   required
                 />
@@ -717,7 +688,7 @@ export function CriarParceiroModal({
                 value={novoParceiro.responsavelLegal || ""}
                 onChange={(e) => atualizarCampo("responsavelLegal", e.target.value)}
                 placeholder="Nome completo"
-                className="w-full bg-white border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
+                className="w-full bg-white border border-white-200 rounded-xl p-2.5 mt-1 text-sm focus:outline-none focus:border-green-primary"
                 disabled={loading}
               />
             </label>
@@ -728,7 +699,7 @@ export function CriarParceiroModal({
                 type="number"
                 value={novoParceiro.expectativaGeracao}
                 onChange={(e) => atualizarCampo("expectativaGeracao", Number(e.target.value))}
-                className="w-full bg-white border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
+                className="w-full bg-white border border-white-200 rounded-xl p-2.5 mt-1 text-sm focus:outline-none focus:border-green-primary"
                 disabled={loading}
               />
             </label>
@@ -743,7 +714,7 @@ export function CriarParceiroModal({
                   const val = e.target.value;
                   atualizarCampo("parceiroIndicadorId", val ? Number(val) : null);
                 }}
-                className="w-full bg-white border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
+                className="w-full bg-white border border-white-200 rounded-xl p-2.5 mt-1 text-sm focus:outline-none focus:border-green-primary"
                 disabled={loading}
               >
                 <option value="">Nenhum (Criado pelo Administrador)</option>
@@ -771,7 +742,7 @@ export function CriarParceiroModal({
               value={novoParceiro.cep}
               onChange={(e) => atualizarCampo("cep", e.target.value)}
               placeholder="00000-000"
-              className="w-full bg-white border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
+              className="w-full bg-white border border-white-200 rounded-xl p-2.5 mt-1 text-sm focus:outline-none focus:border-green-primary"
               disabled={loading}
             />
           </label>
@@ -783,7 +754,7 @@ export function CriarParceiroModal({
               value={novoParceiro.logradouro}
               onChange={(e) => atualizarCampo("logradouro", e.target.value)}
               placeholder="Rua, Avenida..."
-              className="w-full bg-white border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
+              className="w-full bg-white border border-white-200 rounded-xl p-2.5 mt-1 text-sm focus:outline-none focus:border-green-primary"
               disabled={loading}
             />
           </label>
@@ -797,7 +768,7 @@ export function CriarParceiroModal({
               value={novoParceiro.numero}
               onChange={(e) => atualizarCampo("numero", e.target.value)}
               placeholder="123"
-              className="w-full bg-white border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
+              className="w-full bg-white border border-white-200 rounded-xl p-2.5 mt-1 text-sm focus:outline-none focus:border-green-primary"
               disabled={loading}
               required
             />
@@ -810,7 +781,7 @@ export function CriarParceiroModal({
               value={novoParceiro.complemento || ""}
               onChange={(e) => atualizarCampo("complemento", e.target.value)}
               placeholder="Apto, Sala, Bloco..."
-              className="w-full bg-white border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
+              className="w-full bg-white border border-white-200 rounded-xl p-2.5 mt-1 text-sm focus:outline-none focus:border-green-primary"
               disabled={loading}
             />
           </label>
@@ -824,7 +795,7 @@ export function CriarParceiroModal({
               value={novoParceiro.bairro}
               onChange={(e) => atualizarCampo("bairro", e.target.value)}
               placeholder="Bairro"
-              className="w-full bg-white border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
+              className="w-full bg-white border border-white-200 rounded-xl p-2.5 mt-1 text-sm focus:outline-none focus:border-green-primary"
               disabled={loading}
             />
           </label>
@@ -836,7 +807,7 @@ export function CriarParceiroModal({
               value={novoParceiro.cidade}
               onChange={(e) => atualizarCampo("cidade", e.target.value)}
               placeholder="Cidade"
-              className="w-full bg-white border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
+              className="w-full bg-white border border-white-200 rounded-xl p-2.5 mt-1 text-sm focus:outline-none focus:border-green-primary"
               disabled={loading}
             />
           </label>
@@ -846,7 +817,7 @@ export function CriarParceiroModal({
             <select
               value={novoParceiro.estado || ""}
               onChange={(e) => atualizarCampo("estado", e.target.value)}
-              className="w-full bg-white border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
+              className="w-full bg-white border border-white-200 rounded-xl p-2.5 mt-1 text-sm focus:outline-none focus:border-green-primary"
               disabled={loading}
             >
               <option value="">Selecionar</option>
@@ -887,7 +858,7 @@ export function CriarParceiroModal({
               value={novoParceiro.telefone || ""}
               onChange={(e) => atualizarCampo("telefone", e.target.value)}
               placeholder="(31) 99999-9999"
-              className="w-full bg-white border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
+              className="w-full bg-white border border-white-200 rounded-xl p-2.5 mt-1 text-sm focus:outline-none focus:border-green-primary"
               disabled={loading}
             />
           </label>
@@ -899,7 +870,7 @@ export function CriarParceiroModal({
               value={novoParceiro.site || ""}
               onChange={(e) => atualizarCampo("site", e.target.value)}
               placeholder="https://..."
-              className="w-full bg-white border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
+              className="w-full bg-white border border-white-200 rounded-xl p-2.5 mt-1 text-sm focus:outline-none focus:border-green-primary"
               disabled={loading}
             />
           </label>
@@ -919,13 +890,13 @@ export function CriarParceiroModal({
                 }
               }}
               placeholder="instagram.com/..."
-              className="flex-1 bg-white border border-white-200 rounded-lg p-2 text-sm focus:outline-none focus:border-green-primary"
+              className="flex-1 bg-white border border-white-200 rounded-xl p-2.5 text-sm focus:outline-none focus:border-green-primary"
               disabled={loading}
             />
             <button
               type="button"
               onClick={adicionarRedeSocial}
-              className="px-3 rounded-lg border border-green-primary text-green-primary text-sm hover:bg-green-100 transition-colors cursor-pointer"
+              className="px-3 rounded-xl border border-green-primary text-green-primary text-sm hover:bg-green-100 transition-colors cursor-pointer"
               disabled={loading}
             >
               <Plus className="w-4 h-4" />
@@ -977,7 +948,7 @@ export function CriarParceiroModal({
             onChange={(e) => atualizarCampo("observacao", e.target.value)}
             placeholder="Observações adicionais..."
             rows={2}
-            className="w-full bg-white border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary resize-none"
+            className="w-full bg-white border border-white-200 rounded-xl p-2.5 mt-1 text-sm focus:outline-none focus:border-green-primary resize-none"
             disabled={loading}
           />
         </label>
@@ -1004,7 +975,10 @@ export function CriarParceiroModal({
           </button>
         </div>
 
-        {renderStepIndicator()}
+        {/* Substituído o indicador numérico antigo pelo ProgressBar */}
+        <div className="mb-6">
+          <ProgressBar step={currentStep} totalSteps={2} />
+        </div>
 
         {erroFormulario && (
           <div className="mb-4 rounded-lg border border-red-primary/30 bg-red-50 px-3 py-2 text-xs text-red-primary">
@@ -1017,6 +991,7 @@ export function CriarParceiroModal({
             {currentStep === 1 ? renderPasso1() : renderPasso2()}
           </div>
 
+          {/* Utilizando o componente Button customizado */}
           <div className="flex flex-col sm:flex-row gap-3 mt-6 pt-4 border-t border-white-100">
             {currentStep === 2 && (
               <Button
@@ -1025,7 +1000,8 @@ export function CriarParceiroModal({
                 size="sm"
                 onClick={passoAnterior}
                 disabled={loading}
-                fullWidth
+                fullWidth={false}
+                className="flex-1"
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
                 Voltar
@@ -1039,7 +1015,8 @@ export function CriarParceiroModal({
                 size="sm"
                 onClick={proximoPasso}
                 disabled={loading}
-                fullWidth
+                fullWidth={false}
+                className="flex-1 ml-auto"
               >
                 Próximo
                 <ChevronRight className="w-4 h-4 ml-1" />
@@ -1050,7 +1027,9 @@ export function CriarParceiroModal({
                 variant="primary"
                 size="sm"
                 loading={loading}
-                fullWidth
+                disabled={loading}
+                fullWidth={false}
+                className="flex-1"
               >
                 Salvar Parceiro
               </Button>

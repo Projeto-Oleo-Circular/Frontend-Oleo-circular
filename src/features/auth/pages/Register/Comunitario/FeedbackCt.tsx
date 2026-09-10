@@ -7,27 +7,16 @@ interface Props {
     step: number
     totalSteps: number
     userName?: string
-    onSubmit?: () => Promise<void>
-    loading?: boolean
 }
 
 function FeedbackCt({  
     step, 
     totalSteps, 
     userName = 'Usuário',
-    onSubmit,
-    loading = false,
 }: Props) {
     const navigate = useNavigate()
-    const [isSubmitting, setIsSubmitting] = useState(false)
 
-    const handleSubmit = async () => {
-        if (isSubmitting || loading) return
-
-        setIsSubmitting(true)
-        if (onSubmit) {
-            await onSubmit()
-        }
+    const handleGoToLogin = () => {
         navigate("/login")
     }
 
@@ -83,13 +72,12 @@ function FeedbackCt({
 
                             <Button
                                 type="button"
-                                onClick={handleSubmit}
+                                onClick={handleGoToLogin}
                                 variant="primary"
                                 fullWidth={false}
                                 className="w-full max-w-xs sm:max-w-sm mt-4 sm:mt-6"
-                                disabled={loading || isSubmitting}
                             >
-                                {isSubmitting ? 'Finalizando...' : 'Ir para o Login'}
+                                Ir para o Login
                             </Button>
                         </div>
                     </div>

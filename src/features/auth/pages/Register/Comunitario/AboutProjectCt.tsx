@@ -13,6 +13,8 @@ interface Props {
   userName?: string;
   onDataChange?: (data: any) => void;
   initialData?: any;
+  onSubmit?: () => Promise<void>;
+  loading?: boolean;
 }
 
 type TipoOrigem = "PARCEIRO" | "CANAL";
@@ -180,6 +182,8 @@ function AboutProjectIns({
   userName = "Usuário",
   onDataChange,
   initialData = {},
+  onSubmit,
+  loading = false,
 }: Props) {
   const [opcoesParceiros, setOpcoesParceiros] = useState<
     OpcaoComoConheceu[]
@@ -503,7 +507,7 @@ function AboutProjectIns({
   /**
    * Avança para próxima etapa.
    */
-  const handleNext = () => {
+  const handleNext = async () => {
     if (!validateForm()) {
       return;
     }
@@ -553,7 +557,17 @@ function AboutProjectIns({
       observacao: observation.trim(),
     });
 
-    onNext();
+    if (onSubmit) {
+      try {
+        await onSubmit();
+        onNext(); // Só avança para o feedback se der certo
+      } catch (err) {
+        // O erro já é tratado no toast pelo Register, aqui apenas evitamos avançar
+        console.error("Falha ao registrar:", err);
+      }
+    } else {
+      onNext();
+    }
   };
 
   return (
@@ -1039,8 +1053,9 @@ function AboutProjectIns({
                 onClick={handleNext}
                 variant="primary"
                 fullWidth
+                disabled={loading}
               >
-                Avançar
+                {loading ? "Cadastrando..." : "Concluir"}
               </Button>
 
               <Button

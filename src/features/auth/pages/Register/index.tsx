@@ -792,6 +792,8 @@ function Register() {
               initialData={
                 additionalData
               }
+              onSubmit={handleFinalSubmit}
+              loading={loading}
             />
           );
         }
@@ -812,6 +814,8 @@ function Register() {
               initialData={
                 additionalData
               }
+              onSubmit={handleFinalSubmit}
+              loading={loading}
             />
           );
         }
@@ -832,10 +836,11 @@ function Register() {
               initialData={
                 additionalData
               }
+              onSubmit={handleFinalSubmit}
+              loading={loading}
             />
           );
         }
-
         return null;
 
       case "feedback":
@@ -844,15 +849,11 @@ function Register() {
         ) {
           return (
             <FeedbackIns
-              onSubmit={
-                handleFinalSubmit
-              }
               step={displayStep}
               totalSteps={
                 totalSteps
               }
               userName={userName}
-              loading={loading}
             />
           );
         }
@@ -862,15 +863,11 @@ function Register() {
         ) {
           return (
             <FeedbackCt
-              onSubmit={
-                handleFinalSubmit
-              }
               step={displayStep}
               totalSteps={
                 totalSteps
               }
               userName={userName}
-              loading={loading}
             />
           );
         }
@@ -880,15 +877,11 @@ function Register() {
         ) {
           return (
             <FeedbackSo
-              onSubmit={
-                handleFinalSubmit
-              }
               step={displayStep}
               totalSteps={
                 totalSteps
               }
               userName={userName}
-              loading={loading}
             />
           );
         }
