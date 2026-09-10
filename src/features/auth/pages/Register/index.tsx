@@ -1073,7 +1073,7 @@ function Register() {
                     Aceito os{" "}
                     <button
                       type="button"
-                      className="text-green-primary font-bold underline"
+                      className="text-green-primary font-bold underline cursor-pointer"
                       onClick={(e) => {
                         e.preventDefault();
                         navigate("/termos");
@@ -1084,7 +1084,7 @@ function Register() {
                     e a{" "}
                     <button
                       type="button"
-                      className="text-green-primary font-bold underline"
+                      className="text-green-primary font-bold underline cursor-pointer"
                       onClick={(e) => {
                         e.preventDefault();
                         navigate(
