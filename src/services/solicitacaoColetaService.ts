@@ -2,6 +2,7 @@ import api from './api'
 import { pontosColetaService } from './pontosColetaService'
 
 export interface SolicitacaoColeta {
+    mensagem: string
     id: number
     pontoColetaId: number
     status: 'AGUARDANDO' | 'AGENDADA' | 'EM_ROTA' | 'CONCLUIDA' | 'REPROVADA'

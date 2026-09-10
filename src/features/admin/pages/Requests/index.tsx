@@ -6,10 +6,25 @@ import {
   type SolicitacaoColeta,
   type StatusSolicitacao,
 } from "../../../../services/AdminSolicitacaoService";
+import { solicitacaoColetaService } from "../../../../services/solicitacaoColetaService";
 import StatusBadge from "../../../../components/ui/StatusBadge";
 import AdminTopNav from "../../../../components/layout/AdminTopNav";
 import AdminFilterDropdown, { FilterOption } from "../../../../components/ui/AdminFilterDropdown";
-import { Clock, CalendarCheck, Truck, CheckCircle2, X, Eye, MapPin, User, Building2, Phone, Mail, Plus, Search } from "lucide-react";
+import {
+  Clock,
+  CalendarCheck,
+  Truck,
+  CheckCircle2,
+  X,
+  Eye,
+  MapPin,
+  User,
+  Building2,
+  Phone,
+  Mail,
+  Plus,
+  Search,
+} from "lucide-react";
 import SummaryCard from "../../../../components/ui/SummaryCard";
 import Button from "../../../../components/ui/Button";
 import Pagination from "../../../../components/ui/Pagination";
@@ -20,6 +35,7 @@ import {
 } from "../../../../services/authService";
 import { adminPontosService, type PontoColetaAdmin } from "../../../../services/adminPontosService";
 import { adminParceiroService, type Parceiro } from "../../../../services/adminParceiroService";
+import { useToast } from "../../../../hooks/useToast";
 
 interface Contagens {
   aguardando: number;
@@ -34,24 +50,24 @@ type StepCriar = "selecionar_parceiro" | "selecionar_ponto" | "dados_solicitacao
 
 const TURNOS_AGENDAMENTO = [
   {
-    turno: 'Manhã',
-    slots: ['08:00 - 09:00', '09:00 - 10:00', '10:00 - 11:00', '11:00 - 12:00']
+    turno: "Manhã",
+    slots: ["08:00 - 09:00", "09:00 - 10:00", "10:00 - 11:00", "11:00 - 12:00"],
   },
   {
-    turno: 'Tarde',
-    slots: ['13:00 - 14:00', '14:00 - 15:00', '15:00 - 16:00', '16:00 - 17:00']
+    turno: "Tarde",
+    slots: ["13:00 - 14:00", "14:00 - 15:00", "15:00 - 16:00", "16:00 - 17:00"],
   },
   {
-    turno: 'Noite',
-    slots: ['18:00 - 19:00', '19:00 - 20:00', '20:00 - 21:00', '21:00 - 22:00']
-  }
+    turno: "Noite",
+    slots: ["18:00 - 19:00", "19:00 - 20:00", "20:00 - 21:00", "21:00 - 22:00"],
+  },
 ];
 
 function formatarData(iso: string | null): string {
   if (!iso) return "—";
   const data = new Date(iso);
   if (isNaN(data.getTime())) return "—";
-  
+
   const dataFormatada = data.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
   const horaFormatada = data.toLocaleTimeString("pt-BR", {
     hour: "2-digit",
@@ -64,7 +80,7 @@ function formatarData(iso: string | null): string {
 
 function formatarAgendamentoCompleto(isoData: string | null): string {
   if (!isoData) return "—";
-  
+
   const data = new Date(isoData);
   if (isNaN(data.getTime())) return "—";
 
@@ -78,7 +94,7 @@ function formatarAgendamentoCompleto(isoData: string | null): string {
 
   const [h] = horaInicio.split(":").map(Number);
   const horaFimNum = h + 1;
-  const horaFim = `${String(horaFimNum).padStart(2, '0')}:00`;
+  const horaFim = `${String(horaFimNum).padStart(2, "0")}:00`;
 
   let turno = "";
   if (h >= 8 && h < 12) turno = "Manhã";
@@ -107,7 +123,34 @@ function formatarEnderecoPonto(ponto: PontoColetaAdmin): string {
   return ponto.estado ? `${base}/${ponto.estado}` : base;
 }
 
+/**
+ * Extrai uma mensagem legível de erros vindos do backend (axios) ou de Error genéricos.
+ */
+function extrairMensagemErro(error: unknown, fallback: string): string {
+  if (!error) return fallback;
+
+  if (typeof error === "object") {
+    const err = error as {
+      response?: { data?: { message?: string; error?: string } };
+      message?: string;
+    };
+
+    return (
+      err.response?.data?.message ||
+      err.response?.data?.error ||
+      err.message ||
+      fallback
+    );
+  }
+
+  if (typeof error === "string") return error;
+
+  return fallback;
+}
+
 export function Requests() {
+  const { addToast } = useToast();
+
   const [itens, setItens] = useState<SolicitacaoColeta[]>([]);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
@@ -117,7 +160,7 @@ export function Requests() {
   const [loading, setLoading] = useState(true);
   const historicoSemanalTotal = [10, 15, 8, 22, 18, 30, 25];
   const [indicadores, setIndicadores] = useState<ParceiroIndicador[]>([]);
-  
+
   // Modais
   const [isModalCriarOpen, setIsModalCriarOpen] = useState(false);
   const [stepCriar, setStepCriar] = useState<StepCriar>("selecionar_parceiro");
@@ -163,10 +206,14 @@ export function Requests() {
       setTotalItems(resposta.total);
     } catch (error) {
       console.error("Erro ao carregar solicitações:", error);
+      addToast({
+        type: "error",
+        message: extrairMensagemErro(error, "Erro ao carregar solicitações."),
+      });
     } finally {
       setLoading(false);
     }
-  }, [page, limit, statusFiltro]);
+  }, [page, limit, statusFiltro, addToast]);
 
   const carregarContagens = useCallback(async () => {
     try {
@@ -226,6 +273,10 @@ export function Requests() {
       setParceirosList(itensArr);
     } catch (error) {
       console.error("Erro ao carregar parceiros:", error);
+      addToast({
+        type: "error",
+        message: extrairMensagemErro(error, "Erro ao carregar parceiros."),
+      });
     } finally {
       setCarregandoParceiros(false);
     }
@@ -241,7 +292,7 @@ export function Requests() {
       });
       const pontosFiltrados = (resposta.items || []).filter((p) => p.parceiro?.id === parceiro.id);
       setPontosDisponiveis(pontosFiltrados);
-      
+
       if (pontosFiltrados.length === 0) {
         setStepCriar("dados_solicitacao");
         setObservacaoCriar("Este parceiro não possui pontos de coleta aprovados.");
@@ -250,6 +301,10 @@ export function Requests() {
       }
     } catch (error) {
       console.error("Erro ao carregar pontos:", error);
+      addToast({
+        type: "error",
+        message: extrairMensagemErro(error, "Erro ao carregar pontos de coleta."),
+      });
     } finally {
       setCarregandoParceiros(false);
     }
@@ -267,13 +322,36 @@ export function Requests() {
   };
 
   const handleCriarSolicitacaoAdminSubmit = async () => {
-    if (!pontoSelecionado) return;
+    if (!pontoSelecionado) {
+      addToast({
+        type: "warning",
+        message: "Selecione um ponto de coleta antes de continuar.",
+      });
+      return;
+    }
+
+    if (!volumeInformado || volumeInformado <= 0) {
+      addToast({
+        type: "warning",
+        message: "Informe um volume válido (maior que zero).",
+      });
+      return;
+    }
+
     setSalvando(true);
+
     try {
-      await SolicitacoesService.criar({
+      const resposta = await solicitacaoColetaService.criarSolicitacao({
         pontoColetaId: pontoSelecionado.id,
         volumeInformado: Number(volumeInformado),
         observacoes: observacaoCriar || undefined,
+      });
+
+      addToast({
+        type: "success",
+        message:
+          resposta?.mensagem ||
+          "Solicitação criada com sucesso!",
       });
 
       fecharModalCriar();
@@ -282,6 +360,13 @@ export function Requests() {
       await Promise.all([carregarLista(), carregarContagens()]);
     } catch (error) {
       console.error("Erro ao criar solicitação via admin:", error);
+      addToast({
+        type: "error",
+        message: extrairMensagemErro(
+          error,
+          "Não foi possível criar a solicitação. Tente novamente.",
+        ),
+      });
     } finally {
       setSalvando(false);
     }
@@ -290,7 +375,7 @@ export function Requests() {
   const obterNomeParceiroIndicador = (solicitacao: SolicitacaoColeta): string => {
     if (solicitacao.parceiro?.parceiroIndicadorId) {
       const encontrado = indicadores.find(
-        (ind) => String(ind.id) === String(solicitacao.parceiro?.parceiroIndicadorId)
+        (ind) => String(ind.id) === String(solicitacao.parceiro?.parceiroIndicadorId),
       );
       if (encontrado) return encontrado.nome;
     }
@@ -306,13 +391,24 @@ export function Requests() {
 
   const fecharModal = () => setModal({ tipo: null, solicitacao: null });
 
-  const confirmarTransicaoSimples = async (solicitacao: SolicitacaoColeta, novoStatus: StatusSolicitacao) => {
+  const confirmarTransicaoSimples = async (
+    solicitacao: SolicitacaoColeta,
+    novoStatus: StatusSolicitacao,
+  ) => {
     setSalvando(true);
     try {
       await adminSolicitacoesService.atualizarStatus(solicitacao.id, { status: novoStatus });
+      addToast({
+        type: "success",
+        message: `Solicitação #${solicitacao.id} atualizada para "${novoStatus}".`,
+      });
       await Promise.all([carregarLista(), carregarContagens()]);
     } catch (error) {
       console.error("Erro ao atualizar status:", error);
+      addToast({
+        type: "error",
+        message: extrairMensagemErro(error, "Erro ao atualizar status da solicitação."),
+      });
     } finally {
       setSalvando(false);
     }
@@ -321,25 +417,41 @@ export function Requests() {
   const confirmarModal = async () => {
     if (!modal.solicitacao || !modal.tipo) return;
     setSalvando(true);
+
     try {
       if (modal.tipo === "agendar") {
-        const horaInicio = horarioSelecionado.split(" - ")[0]; 
+        const horaInicio = horarioSelecionado.split(" - ")[0];
         const dataHoraLocal = `${dataAgendamento} ${horaInicio}:00`;
 
         await adminSolicitacoesService.atualizarStatus(modal.solicitacao.id, {
           status: "AGENDADA",
-          dataAgendamento: dataHoraLocal, 
+          dataAgendamento: dataHoraLocal,
+        });
+
+        addToast({
+          type: "success",
+          message: `Coleta #${modal.solicitacao.id} agendada com sucesso.`,
         });
       } else if (modal.tipo === "concluir") {
         await adminSolicitacoesService.atualizarStatus(modal.solicitacao.id, {
           status: "CONCLUIDA",
           volumeColetado: Number(volumeColetado),
         });
+
+        addToast({
+          type: "success",
+          message: `Coleta #${modal.solicitacao.id} concluída com sucesso.`,
+        });
       }
+
       await Promise.all([carregarLista(), carregarContagens()]);
       fecharModal();
     } catch (error) {
       console.error("Erro ao atualizar status:", error);
+      addToast({
+        type: "error",
+        message: extrairMensagemErro(error, "Erro ao atualizar status da solicitação."),
+      });
     } finally {
       setSalvando(false);
     }
@@ -373,7 +485,7 @@ export function Requests() {
             Concluir
           </button>
         )}
-        
+
         <button
           onClick={() => abrirModal("detalhes", solicitacao)}
           className="p-1.5 rounded-lg border border-white-200 text-white-600 hover:text-black-primary hover:bg-green-100 transition-colors cursor-pointer"
@@ -392,7 +504,12 @@ export function Requests() {
     const razao = p.razaoSocial?.toLowerCase() || "";
     const email = p.email?.toLowerCase() || "";
     const documento = p.documento || "";
-    return nome.includes(termo) || razao.includes(termo) || email.includes(termo) || documento.includes(termo);
+    return (
+      nome.includes(termo) ||
+      razao.includes(termo) ||
+      email.includes(termo) ||
+      documento.includes(termo)
+    );
   });
 
   return (
@@ -477,7 +594,7 @@ export function Requests() {
               variant="primary"
               size="sm"
               onClick={() => setIsModalCriarOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-full"
             >
               <Plus className="w-3.5 h-3.5" />
               Nova Solicitação
@@ -515,20 +632,30 @@ export function Requests() {
                 </tr>
               ) : (
                 itens.map((s) => (
-                  <tr key={s.id} className="border-b border-white-100 last:border-0 hover:bg-white-50 transition-colors">
+                  <tr
+                    key={s.id}
+                    className="border-b border-white-100 last:border-0 hover:bg-white-50 transition-colors"
+                  >
                     <td className="p-4 text-sm font-medium text-black-primary">#{s.id}</td>
-                    
+
                     <td className="p-4">
-                      <p className="font-medium text-sm text-black-primary">{s.parceiro?.razaoSocial || s.parceiro?.nome || "—"}</p>
+                      <p className="font-medium text-sm text-black-primary">
+                        {s.parceiro?.razaoSocial || s.parceiro?.nome || "—"}
+                      </p>
                       {s.parceiro?.documento && (
                         <p className="text-xs text-white-500 mt-0.5">{s.parceiro.documento}</p>
                       )}
                     </td>
 
-                    <td className="p-4 text-sm text-black-primary font-medium whitespace-nowrap">{formatarData(s.dataSolicitacao)}</td>
-                    
+                    <td className="p-4 text-sm text-black-primary font-medium whitespace-nowrap">
+                      {formatarData(s.dataSolicitacao)}
+                    </td>
+
                     <td className="p-4 text-black-primary font-medium max-w-xs">
-                      <div className="flex items-start gap-1.5" title={formatarEndereco(s.pontoColeta)}>
+                      <div
+                        className="flex items-start gap-1.5"
+                        title={formatarEndereco(s.pontoColeta)}
+                      >
                         <MapPin className="w-4 h-4 shrink-0 text-green-primary mt-0.5" />
                         <span className="text-sm leading-relaxed truncate">
                           {formatarEndereco(s.pontoColeta)}
@@ -539,11 +666,15 @@ export function Requests() {
                     <td className="p-4 text-sm font-medium text-black-primary">
                       {obterNomeParceiroIndicador(s)}
                     </td>
-                    
-                    <td className="p-4 text-sm text-black-primary font-medium">{s.pontoColeta?.nomePontoColeta || "—"}</td>
-                    
-                    <td className="p-4 text-sm text-black-primary font-medium whitespace-nowrap">{s.volumeInformado || s.pontoColeta?.capacidadeBombona || "—"} L</td>
-                    
+
+                    <td className="p-4 text-sm text-black-primary font-medium">
+                      {s.pontoColeta?.nomePontoColeta || "—"}
+                    </td>
+
+                    <td className="p-4 text-sm text-black-primary font-medium whitespace-nowrap">
+                      {s.volumeInformado || s.pontoColeta?.capacidadeBombona || "—"} L
+                    </td>
+
                     <td className="p-4 whitespace-nowrap">
                       <StatusBadge status={s.status} />
                     </td>
@@ -579,12 +710,18 @@ export function Requests() {
                     {stepCriar === "dados_solicitacao" && "Nova Solicitação de Coleta"}
                   </h2>
                   <p className="text-xs text-white-500">
-                    {stepCriar === "selecionar_parceiro" && "Escolha o parceiro que fará a solicitação"}
-                    {stepCriar === "selecionar_ponto" && "Escolha um dos pontos de coleta do parceiro"}
+                    {stepCriar === "selecionar_parceiro" &&
+                      "Escolha o parceiro que fará a solicitação"}
+                    {stepCriar === "selecionar_ponto" &&
+                      "Escolha um dos pontos de coleta do parceiro"}
                     {stepCriar === "dados_solicitacao" && "Preencha os dados da solicitação"}
                   </p>
                 </div>
-                <button onClick={fecharModalCriar} className="text-red-primary hover:text-red-hover cursor-pointer" disabled={salvando}>
+                <button
+                  onClick={fecharModalCriar}
+                  className="text-red-primary hover:text-red-hover cursor-pointer"
+                  disabled={salvando}
+                >
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -610,7 +747,9 @@ export function Requests() {
                     ) : parceirosFiltrados.length === 0 ? (
                       <div className="flex items-center justify-center h-40">
                         <p className="text-white-500 text-sm">
-                          {buscaParceiro ? "Nenhum parceiro encontrado." : "Nenhum parceiro aprovado disponível."}
+                          {buscaParceiro
+                            ? "Nenhum parceiro encontrado."
+                            : "Nenhum parceiro aprovado disponível."}
                         </p>
                       </div>
                     ) : (
@@ -657,10 +796,20 @@ export function Requests() {
                     <div className="flex items-center gap-2">
                       <User className="w-4 h-4 text-green-primary" />
                       <span className="text-sm text-black-primary">
-                        Parceiro: <strong>{parceiroSelecionado && obterNomeExibicaoParceiro(parceiroSelecionado)}</strong>
+                        Parceiro:{" "}
+                        <strong>
+                          {parceiroSelecionado && obterNomeExibicaoParceiro(parceiroSelecionado)}
+                        </strong>
                       </span>
                     </div>
-                    <button onClick={() => { setStepCriar("selecionar_parceiro"); setPontoSelecionado(null); }} className="text-xs text-green-primary hover:underline cursor-pointer" disabled={salvando}>
+                    <button
+                      onClick={() => {
+                        setStepCriar("selecionar_parceiro");
+                        setPontoSelecionado(null);
+                      }}
+                      className="text-xs text-green-primary hover:underline cursor-pointer"
+                      disabled={salvando}
+                    >
                       Trocar
                     </button>
                   </div>
@@ -668,23 +817,32 @@ export function Requests() {
                   <div className="max-h-[400px] overflow-y-auto space-y-2">
                     {pontosDisponiveis.length === 0 ? (
                       <div className="text-center py-8">
-                        <p className="text-white-500">Este parceiro não possui pontos de coleta aprovados.</p>
+                        <p className="text-white-500">
+                          Este parceiro não possui pontos de coleta aprovados.
+                        </p>
                       </div>
                     ) : (
                       pontosDisponiveis.map((ponto) => (
                         <button
                           key={ponto.id}
-                          onClick={() => { setPontoSelecionado(ponto); setStepCriar("dados_solicitacao"); }}
+                          onClick={() => {
+                            setPontoSelecionado(ponto);
+                            setStepCriar("dados_solicitacao");
+                          }}
                           className="w-full text-left p-3 rounded-lg border border-white-100 hover:border-green-primary hover:bg-green-50 transition-all group cursor-pointer"
                         >
                           <div className="flex items-start justify-between">
                             <div className="flex-1 min-w-0">
-                              <p className="font-semibold text-sm text-black-primary">{ponto.nomePontoColeta}</p>
+                              <p className="font-semibold text-sm text-black-primary">
+                                {ponto.nomePontoColeta}
+                              </p>
                               <p className="text-xs text-white-500 flex items-start gap-1 mt-1">
                                 <MapPin className="w-3 h-3" />
                                 {formatarEnderecoPonto(ponto)}
                               </p>
-                              <p className="text-xs text-white-400 mt-1">Capacidade: {ponto.capacidadeBombona} L</p>
+                              <p className="text-xs text-white-400 mt-1">
+                                Capacidade: {ponto.capacidadeBombona} L
+                              </p>
                             </div>
                             <div className="ml-3 flex-shrink-0">
                               <span className="text-xs font-medium text-green-primary opacity-0 group-hover:opacity-100 transition-opacity">
@@ -707,17 +865,27 @@ export function Requests() {
                       <p className="text-sm font-semibold text-black-primary">
                         {parceiroSelecionado && obterNomeExibicaoParceiro(parceiroSelecionado)}
                       </p>
-                      <button onClick={() => setStepCriar("selecionar_parceiro")} className="text-xs text-green-primary hover:underline mt-1 cursor-pointer" disabled={salvando}>
+                      <button
+                        onClick={() => setStepCriar("selecionar_parceiro")}
+                        className="text-xs text-green-primary hover:underline mt-1 cursor-pointer"
+                        disabled={salvando}
+                      >
                         Trocar parceiro
                       </button>
                     </div>
                     <div className="p-3 bg-white-50 rounded-lg border border-white-100">
                       <span className="text-xs text-white-500 block">Ponto de Coleta</span>
                       <p className="text-sm font-semibold text-black-primary">
-                        {pontoSelecionado ? pontoSelecionado.nomePontoColeta : "Nenhum ponto selecionado"}
+                        {pontoSelecionado
+                          ? pontoSelecionado.nomePontoColeta
+                          : "Nenhum ponto selecionado"}
                       </p>
                       {pontoSelecionado && (
-                        <button onClick={() => setStepCriar("selecionar_ponto")} className="text-xs text-green-primary hover:underline mt-1 cursor-pointer" disabled={salvando}>
+                        <button
+                          onClick={() => setStepCriar("selecionar_ponto")}
+                          className="text-xs text-green-primary hover:underline mt-1 cursor-pointer"
+                          disabled={salvando}
+                        >
                           Trocar ponto
                         </button>
                       )}
@@ -727,7 +895,9 @@ export function Requests() {
                   {pontoSelecionado ? (
                     <>
                       <label className="block">
-                        <span className="text-xs text-white-600 font-medium">Volume Informado (Litros) *</span>
+                        <span className="text-xs text-white-600 font-medium">
+                          Volume Informado (Litros) *
+                        </span>
                         <input
                           type="number"
                           min={1}
@@ -739,7 +909,9 @@ export function Requests() {
                       </label>
 
                       <label className="block">
-                        <span className="text-xs text-white-600 font-medium">Observações (opcional)</span>
+                        <span className="text-xs text-white-600 font-medium">
+                          Observações (opcional)
+                        </span>
                         <textarea
                           rows={3}
                           placeholder="Observações sobre a solicitação..."
@@ -751,18 +923,40 @@ export function Requests() {
                       </label>
 
                       <div className="flex gap-3 pt-2">
-                        <Button variant="danger" size="sm" onClick={fecharModalCriar} disabled={salvando} fullWidth>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={fecharModalCriar}
+                          disabled={salvando}
+                          fullWidth
+                          className="rounded-full border border-green-primary text-green-primary bg-white hover:bg-green-50"
+                        >
                           Cancelar
                         </Button>
-                        <Button variant="primary" size="sm" loading={salvando} onClick={handleCriarSolicitacaoAdminSubmit} fullWidth disabled={salvando}>
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          loading={salvando}
+                          onClick={handleCriarSolicitacaoAdminSubmit}
+                          fullWidth
+                          disabled={salvando}
+                          className="rounded-full"
+                        >
                           Criar Solicitação
                         </Button>
                       </div>
                     </>
                   ) : (
                     <div className="text-center py-8">
-                      <p className="text-white-500">Selecione um ponto de coleta para continuar.</p>
-                      <Button variant="primary" size="sm" onClick={() => setStepCriar("selecionar_ponto")} className="mt-4">
+                      <p className="text-white-500">
+                        Selecione um ponto de coleta para continuar.
+                      </p>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={() => setStepCriar("selecionar_ponto")}
+                        className="mt-4 rounded-full"
+                      >
                         Voltar para seleção de pontos
                       </Button>
                     </div>
@@ -781,7 +975,11 @@ export function Requests() {
                 <h2 className="font-bold text-lg text-green-primary">
                   Agendar coleta — #{modal.solicitacao.id}
                 </h2>
-                <button onClick={fecharModal} className="text-red-primary hover:text-red-hover cursor-pointer" disabled={salvando}>
+                <button
+                  onClick={fecharModal}
+                  className="text-red-primary hover:text-red-hover cursor-pointer"
+                  disabled={salvando}
+                >
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -799,11 +997,19 @@ export function Requests() {
 
                 {dataAgendamento && (
                   <div>
-                    <span className="text-sm text-white-700 font-medium block mb-2">Selecione o Turno e Horário (Blocos de 1h)</span>
+                    <span className="text-sm text-white-700 font-medium block mb-2">
+                      Selecione o Turno e Horário (Blocos de 1h)
+                    </span>
                     <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
                       {TURNOS_AGENDAMENTO.map((grupo) => (
-                        <div key={grupo.turno} className="border border-white-100 p-2.5 rounded-lg bg-white-50">
-                          <span className="text-xs font-bold text-green-700 uppercase"> {grupo.turno}</span>
+                        <div
+                          key={grupo.turno}
+                          className="border border-white-100 p-2.5 rounded-lg bg-white-50"
+                        >
+                          <span className="text-xs font-bold text-green-700 uppercase">
+                            {" "}
+                            {grupo.turno}
+                          </span>
                           <div className="grid grid-cols-2 gap-2 mt-2">
                             {grupo.slots.map((slot) => {
                               const isSelected = horarioSelecionado === slot;
@@ -814,8 +1020,8 @@ export function Requests() {
                                   onClick={() => setHorarioSelecionado(slot)}
                                   className={`py-2 px-3 text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
                                     isSelected
-                                      ? 'bg-green-600 text-white border-green-600 shadow-sm'
-                                      : 'bg-white text-white-700 border-white-200 hover:border-green-400'
+                                      ? "bg-green-600 text-white border-green-600 shadow-sm"
+                                      : "bg-white text-white-700 border-white-200 hover:border-green-400"
                                   }`}
                                 >
                                   {slot}
@@ -831,7 +1037,14 @@ export function Requests() {
               </div>
 
               <div className="flex gap-3">
-                <Button variant="danger" size="sm" onClick={fecharModal} disabled={salvando} fullWidth>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={fecharModal}
+                  disabled={salvando}
+                  fullWidth
+                  className="rounded-full border border-green-primary text-green-primary bg-white hover:bg-green-50"
+                >
                   Cancelar
                 </Button>
                 <Button
@@ -841,6 +1054,7 @@ export function Requests() {
                   onClick={confirmarModal}
                   disabled={salvando || !dataAgendamento || !horarioSelecionado}
                   fullWidth
+                  className="rounded-full"
                 >
                   Confirmar
                 </Button>
@@ -854,14 +1068,22 @@ export function Requests() {
           <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl animate-slide-down">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="font-bold text-lg text-green-primary">Concluir coleta — #{modal.solicitacao.id}</h2>
-                <button onClick={fecharModal} className="text-red-primary hover:text-red-hover cursor-pointer" disabled={salvando}>
+                <h2 className="font-bold text-lg text-green-primary">
+                  Concluir coleta — #{modal.solicitacao.id}
+                </h2>
+                <button
+                  onClick={fecharModal}
+                  className="text-red-primary hover:text-red-hover cursor-pointer"
+                  disabled={salvando}
+                >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
               <label className="block mb-4">
-                <span className="text-sm text-white-700 font-medium">Volume coletado (litros)</span>
+                <span className="text-sm text-white-700 font-medium">
+                  Volume coletado (litros)
+                </span>
                 <input
                   type="number"
                   min={1}
@@ -873,7 +1095,14 @@ export function Requests() {
               </label>
 
               <div className="flex gap-3">
-                <Button variant="danger" size="sm" onClick={fecharModal} disabled={salvando} fullWidth>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={fecharModal}
+                  disabled={salvando}
+                  fullWidth
+                  className="rounded-full border border-green-primary text-green-primary bg-white hover:bg-green-50"
+                >
                   Cancelar
                 </Button>
                 <Button
@@ -883,6 +1112,7 @@ export function Requests() {
                   onClick={confirmarModal}
                   disabled={!volumeColetado || salvando}
                   fullWidth
+                  className="rounded-full"
                 >
                   Confirmar
                 </Button>
@@ -897,10 +1127,17 @@ export function Requests() {
             <div className="bg-white rounded-xl p-6 w-full max-w-lg shadow-xl animate-slide-down max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between pb-3 border-b border-white-100 mb-4">
                 <div>
-                  <h2 className="font-bold text-xl text-orange-primary">Detalhes da Solicitação</h2>
-                  <p className="text-xs text-white-500">ID da solicitação: #{modal.solicitacao.id}</p>
+                  <h2 className="font-bold text-xl text-orange-primary">
+                    Detalhes da Solicitação
+                  </h2>
+                  <p className="text-xs text-white-500">
+                    ID da solicitação: #{modal.solicitacao.id}
+                  </p>
                 </div>
-                <button onClick={fecharModal} className="text-white-500 hover:text-black-primary cursor-pointer">
+                <button
+                  onClick={fecharModal}
+                  className="text-white-500 hover:text-black-primary cursor-pointer"
+                >
                   <X className="w-5 h-5 text-red-primary" />
                 </button>
               </div>
@@ -923,7 +1160,11 @@ export function Requests() {
                   <h3 className="text-xs font-bold text-green-primary uppercase tracking-wider mb-2 flex items-center gap-1.5">
                     <User className="w-3.5 h-3.5" /> Solicitante / Parceiro
                   </h3>
-                  <p className="text-sm font-semibold text-black-primary">{modal.solicitacao.parceiro?.razaoSocial || modal.solicitacao.parceiro?.nome || "—"}</p>
+                  <p className="text-sm font-semibold text-black-primary">
+                    {modal.solicitacao.parceiro?.razaoSocial ||
+                      modal.solicitacao.parceiro?.nome ||
+                      "—"}
+                  </p>
                   {modal.solicitacao.parceiro?.email && (
                     <p className="text-xs text-white-500 flex items-center gap-1 mt-1">
                       <Mail className="w-3 h-3" /> {modal.solicitacao.parceiro.email}
@@ -940,14 +1181,21 @@ export function Requests() {
                   <h3 className="text-xs font-bold text-green-primary uppercase tracking-wider mb-2 flex items-center gap-1.5">
                     <Building2 className="w-3.5 h-3.5" /> Ponto de Coleta
                   </h3>
-                  <p className="text-sm font-semibold text-black-primary">{modal.solicitacao.pontoColeta?.nomePontoColeta || "—"}</p>
+                  <p className="text-sm font-semibold text-black-primary">
+                    {modal.solicitacao.pontoColeta?.nomePontoColeta || "—"}
+                  </p>
                   <p className="text-xs text-white-500 flex items-start gap-1 mt-1">
-                    <MapPin className="w-3.5 h-3.5 shrink-0 mt-0.5 text-green-primary" /> 
+                    <MapPin className="w-3.5 h-3.5 shrink-0 mt-0.5 text-green-primary" />
                     <span>{formatarEndereco(modal.solicitacao.pontoColeta)}</span>
                   </p>
                   <div className="mt-2 pt-2 border-t border-white-100 flex items-center justify-between text-xs">
                     <span className="text-white-500">Volume Informado:</span>
-                    <span className="font-semibold text-black-primary">{modal.solicitacao.volumeInformado || modal.solicitacao.pontoColeta?.capacidadeBombona || "—"} Litros</span>
+                    <span className="font-semibold text-black-primary">
+                      {modal.solicitacao.volumeInformado ||
+                        modal.solicitacao.pontoColeta?.capacidadeBombona ||
+                        "—"}{" "}
+                      Litros
+                    </span>
                   </div>
                 </div>
 
@@ -961,7 +1209,7 @@ export function Requests() {
                     </p>
                   </div>
                 )}
-                
+
                 {(modal.solicitacao.dataAgendamento || modal.solicitacao.volumeColetado) && (
                   <div className="border border-white-100 rounded-lg p-3 bg-green-primary/5">
                     <h3 className="text-xs font-bold text-green-primary uppercase tracking-wider mb-2">
@@ -978,15 +1226,23 @@ export function Requests() {
                     {modal.solicitacao.volumeColetado && (
                       <div className="flex justify-between text-xs py-1">
                         <span className="text-white-500">Volume Real Coletado:</span>
-                        <span className="font-bold text-green-primary">{modal.solicitacao.volumeColetado} Litros</span>
+                        <span className="font-bold text-green-primary">
+                          {modal.solicitacao.volumeColetado} Litros
+                        </span>
                       </div>
                     )}
                   </div>
                 )}
               </div>
-              
+
               <div className="mt-6">
-                <Button variant="primary" size="sm" onClick={fecharModal} fullWidth>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={fecharModal}
+                  className="rounded-full"
+                  fullWidth
+                >
                   Fechar
                 </Button>
               </div>
