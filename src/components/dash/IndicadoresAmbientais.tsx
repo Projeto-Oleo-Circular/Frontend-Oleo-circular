@@ -6,6 +6,7 @@ import {
   Fuel,
   Cloud,
   Recycle,
+  Zap,
 } from "lucide-react";
 
 import {
@@ -28,12 +29,9 @@ type VarianteIndicadores = "dashboard" | "modal";
 
 interface IndicadoresAmbientaisProps {
   tipo: TipoImpacto;
-
   parceiroId?: number;
   pontoId?: number;
-
   titulo?: string;
-
   variant?: VarianteIndicadores;
 }
 
@@ -69,20 +67,10 @@ export function IndicadoresAmbientais({
       let resultado: ImpactoAmbientalBase;
 
       switch (tipo) {
-
-        // ==============================================
-        // ADMIN - GERAL
-        // ==============================================
-
         case "admin-geral":
           resultado =
             await impactoAmbientalService.getGeralAdmin();
-
           break;
-
-        // ==============================================
-        // ADMIN - PARCEIRO
-        // ==============================================
 
         case "admin-parceiro":
           if (!parceiroId) {
@@ -90,17 +78,11 @@ export function IndicadoresAmbientais({
               "ID do parceiro não informado"
             );
           }
-
           resultado =
             await impactoAmbientalService.getParceiroAdmin(
               parceiroId
             );
-
           break;
-
-        // ==============================================
-        // ADMIN - PONTO
-        // ==============================================
 
         case "admin-ponto":
           if (!pontoId) {
@@ -108,27 +90,16 @@ export function IndicadoresAmbientais({
               "ID do ponto não informado"
             );
           }
-
           resultado =
             await impactoAmbientalService.getPontoAdmin(
               pontoId
             );
-
           break;
-
-        // ==============================================
-        // PARCEIRO - GERAL
-        // ==============================================
 
         case "parceiro-geral":
           resultado =
             await impactoAmbientalService.getMeuImpacto();
-
           break;
-
-        // ==============================================
-        // PARCEIRO - PONTO
-        // ==============================================
 
         case "parceiro-ponto":
           if (!pontoId) {
@@ -136,12 +107,10 @@ export function IndicadoresAmbientais({
               "ID do ponto não informado"
             );
           }
-
           resultado =
             await impactoAmbientalService.getMeuPonto(
               pontoId
             );
-
           break;
 
         default:
@@ -151,7 +120,6 @@ export function IndicadoresAmbientais({
       }
 
       setDados(resultado);
-
     } catch (error) {
       console.error(
         "Erro ao carregar impacto ambiental:",
@@ -163,11 +131,9 @@ export function IndicadoresAmbientais({
           ? error.message
           : "Erro ao carregar impacto ambiental"
       );
-
     } finally {
       setLoading(false);
     }
-
   }, [tipo, parceiroId, pontoId]);
 
   // ======================================================
@@ -185,7 +151,6 @@ export function IndicadoresAmbientais({
   if (loading) {
     return (
       <div className="bg-white rounded-xl shadow-sm border border-white-200 p-6 text-center">
-
         <div className="
           w-8
           h-8
@@ -197,11 +162,9 @@ export function IndicadoresAmbientais({
           mx-auto
           mb-2
         " />
-
         <p className="text-white-500 text-sm">
           Carregando impacto gerado...
         </p>
-
       </div>
     );
   }
@@ -222,9 +185,7 @@ export function IndicadoresAmbientais({
         border
         border-red-200
       ">
-
         {erro}
-
         <button
           onClick={fetchImpacto}
           className="
@@ -237,7 +198,6 @@ export function IndicadoresAmbientais({
         >
           Tentar novamente
         </button>
-
       </div>
     );
   }
@@ -295,430 +255,504 @@ export function IndicadoresAmbientais({
   // CONVERSÕES
   // ======================================================
 
-  // Backend retorna KG.
-  // Interface antiga mostrava toneladas.
-  const co2Toneladas =
-    dados.co2EvitadoKg / 1000;
-
   const residuoToneladas =
     dados.residuoDesviadoKg / 1000;
-const isModal = variant === "modal";
+
+  const isModal = variant === "modal";
+
   // ======================================================
   // COMPONENTE
   // ======================================================
 
-return (
-  <div
-    className={`
-      bg-white
-      rounded-xl
-      border
-      border-white-200
-      ${
-        isModal
-          ? "p-3 shadow-none"
-          : "p-6 shadow-sm"
-      }
-    `}
-  >
-    {/* CABEÇALHO */}
+  return (
     <div
       className={`
-        flex
-        items-center
-        justify-between
-        gap-3
-        ${isModal ? "mb-3" : "mb-6"}
+        bg-white
+        rounded-xl
+        border
+        border-white-200
+        w-full
+        ${
+          isModal
+            ? "p-3 shadow-none"
+            : "p-4 sm:p-6 shadow-sm"
+        }
       `}
     >
-      <h2
-        className={`
-          font-bold
-          text-black-primary
-          ${isModal ? "text-sm" : "text-xl"}
-        `}
-      >
-        {titulo}
-      </h2>
-
-      <span
-        className={`
-          text-white-400
-          text-right
-          ${isModal ? "text-[9px]" : "text-xs"}
-        `}
-      >
-        Calculado pelas coletas concluídas
-      </span>
-    </div>
-
-    {/* INDICADORES */}
-    <div
-      className={
-        isModal
-          ? "grid grid-cols-2 gap-2"
-          : "grid grid-cols-5 gap-4"
-      }
-    >
-      {/* OGR COLETADO */}
+      {/* CABEÇALHO */}
       <div
         className={`
           flex
-          items-center
-          bg-white-50
-          rounded-lg
-          border
-          border-white-100
-          ${
-            isModal
-              ? "gap-2 p-2"
-              : "flex-col text-center p-3"
-          }
+          flex-col
+          sm:flex-row
+          sm:items-center
+          justify-between
+          gap-2
+          ${isModal ? "mb-3" : "mb-6"}
         `}
       >
-        <div
+        <h2
           className={`
-            shrink-0
-            rounded-full
-            bg-green-100
-            flex
-            items-center
-            justify-center
-            ${
-              isModal
-                ? "w-8 h-8"
-                : "w-12 h-12 mb-2"
-            }
+            font-bold
+            text-black-primary
+            ${isModal ? "text-sm" : "text-xl"}
           `}
         >
-          <Droplet
-            className={
-              isModal
-                ? "w-4 h-4 text-green-700"
-                : "w-6 h-6 text-green-700"
-            }
-          />
-        </div>
+          {titulo}
+        </h2>
 
-        <div className={isModal ? "min-w-0" : ""}>
-          <p
-            className={`
-              font-bold
-              text-black-primary
-              ${
-                isModal
-                  ? "text-sm leading-tight"
-                  : "text-xl"
-              }
-            `}
-          >
-            {dados.volumeTotalColetado.toLocaleString(
-              "pt-BR",
-              {
-                maximumFractionDigits: 2,
-              }
-            )}
-          </p>
-
-          <p
-            className={
-              isModal
-                ? "text-[10px] text-white-600 leading-tight"
-                : "text-xs text-white-600 font-medium"
-            }
-          >
-            OGR coletado (L)
-          </p>
-        </div>
+        <span
+          className={`
+            text-white-400
+            ${isModal ? "text-[9px]" : "text-xs text-left sm:text-right"}
+          `}
+        >
+          Calculado pelas coletas concluídas
+        </span>
       </div>
 
-      {/* BIODIESEL */}
+      {/* INDICADORES */}
       <div
-        className={`
-          flex
-          items-center
-          bg-white-50
-          rounded-lg
-          border
-          border-white-100
-          ${
-            isModal
-              ? "gap-2 p-2"
-              : "flex-col text-center p-3"
-          }
-        `}
+        className={
+          isModal
+            ? "grid grid-cols-2 gap-2"
+            : "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4"
+        }
       >
+        {/* OGR COLETADO */}
         <div
           className={`
-            shrink-0
-            rounded-full
-            bg-yellow-100
             flex
             items-center
-            justify-center
+            bg-white-50
+            rounded-lg
+            border
+            border-white-100
             ${
               isModal
-                ? "w-8 h-8"
-                : "w-12 h-12 mb-2"
+                ? "gap-2 p-2"
+                : "flex-col text-center p-3"
             }
           `}
         >
-          <Fuel
-            className={
-              isModal
-                ? "w-4 h-4 text-yellow-700"
-                : "w-6 h-6 text-yellow-700"
-            }
-          />
-        </div>
-
-        <div className={isModal ? "min-w-0" : ""}>
-          <p
+          <div
             className={`
-              font-bold
-              text-black-primary
+              shrink-0
+              rounded-full
+              bg-green-100
+              flex
+              items-center
+              justify-center
               ${
                 isModal
-                  ? "text-sm leading-tight"
-                  : "text-xl"
+                  ? "w-8 h-8"
+                  : "w-12 h-12 mb-2"
               }
             `}
           >
-            {dados.biodieselEstimadoLitros.toLocaleString(
-              "pt-BR",
-              {
-                maximumFractionDigits: 2,
+            <Droplet
+              className={
+                isModal
+                  ? "w-4 h-4 text-green-700"
+                  : "w-6 h-6 text-green-700"
               }
-            )}
-          </p>
+            />
+          </div>
 
-          <p
-            className={
-              isModal
-                ? "text-[10px] text-white-600 leading-tight"
-                : "text-xs text-white-600 font-medium"
-            }
-          >
-            Biodiesel estimado (L)
-          </p>
+          <div className={isModal ? "min-w-0" : ""}>
+            <p
+              className={`
+                font-bold
+                text-black-primary
+                truncate
+                ${
+                  isModal
+                    ? "text-sm leading-tight"
+                    : "text-lg sm:text-xl"
+                }
+              `}
+            >
+              {dados.volumeTotalColetado.toLocaleString(
+                "pt-BR",
+                {
+                  maximumFractionDigits: 2,
+                }
+              )}
+            </p>
+
+            <p
+              className={
+                isModal
+                  ? "text-[10px] text-white-600 leading-tight"
+                  : "text-xs text-white-600 font-medium"
+              }
+            >
+              OGR coletado (L)
+            </p>
+          </div>
         </div>
-      </div>
 
-      {/* DIESEL EQUIVALENTE */}
-      <div
-        className={`
-          flex
-          items-center
-          bg-white-50
-          rounded-lg
-          border
-          border-white-100
-          ${
-            isModal
-              ? "gap-2 p-2"
-              : "flex-col text-center p-3"
-          }
-        `}
-      >
+        {/* BIODIESEL */}
         <div
           className={`
-            shrink-0
-            rounded-full
-            bg-blue-100
             flex
             items-center
-            justify-center
+            bg-white-50
+            rounded-lg
+            border
+            border-white-100
             ${
               isModal
-                ? "w-8 h-8"
-                : "w-12 h-12 mb-2"
+                ? "gap-2 p-2"
+                : "flex-col text-center p-3"
             }
           `}
         >
-          <FlaskConical
-            className={
-              isModal
-                ? "w-4 h-4 text-blue-700"
-                : "w-6 h-6 text-blue-700"
-            }
-          />
-        </div>
-
-        <div className={isModal ? "min-w-0" : ""}>
-          <p
+          <div
             className={`
-              font-bold
-              text-black-primary
+              shrink-0
+              rounded-full
+              bg-yellow-100
+              flex
+              items-center
+              justify-center
               ${
                 isModal
-                  ? "text-sm leading-tight"
-                  : "text-xl"
+                  ? "w-8 h-8"
+                  : "w-12 h-12 mb-2"
               }
             `}
           >
-            {dados.dieselEquivalenteLitros.toLocaleString(
-              "pt-BR",
-              {
-                maximumFractionDigits: 2,
+            <Fuel
+              className={
+                isModal
+                  ? "w-4 h-4 text-yellow-700"
+                  : "w-6 h-6 text-yellow-700"
               }
-            )}
-          </p>
+            />
+          </div>
 
-          <p
-            className={
-              isModal
-                ? "text-[10px] text-white-600 leading-tight"
-                : "text-xs text-white-600 font-medium"
-            }
-          >
-            Diesel equivalente (L)
-          </p>
+          <div className={isModal ? "min-w-0" : ""}>
+            <p
+              className={`
+                font-bold
+                text-black-primary
+                truncate
+                ${
+                  isModal
+                    ? "text-sm leading-tight"
+                    : "text-lg sm:text-xl"
+                }
+              `}
+            >
+              {dados.biodieselEstimadoLitros.toLocaleString(
+                "pt-BR",
+                {
+                  maximumFractionDigits: 2,
+                }
+              )}
+            </p>
+
+            <p
+              className={
+                isModal
+                  ? "text-[10px] text-white-600 leading-tight"
+                  : "text-xs text-white-600 font-medium"
+              }
+            >
+              Biodiesel estimado (L)
+            </p>
+          </div>
         </div>
-      </div>
 
-      {/* CO2 EVITADO */}
-      <div
-        className={`
-          flex
-          items-center
-          bg-white-50
-          rounded-lg
-          border
-          border-white-100
-          ${
-            isModal
-              ? "gap-2 p-2"
-              : "flex-col text-center p-3"
-          }
-        `}
-      >
+        {/* DIESEL EQUIVALENTE */}
         <div
           className={`
-            shrink-0
-            rounded-full
-            bg-white-100
             flex
             items-center
-            justify-center
+            bg-white-50
+            rounded-lg
+            border
+            border-white-100
             ${
               isModal
-                ? "w-8 h-8"
-                : "w-12 h-12 mb-2"
+                ? "gap-2 p-2"
+                : "flex-col text-center p-3"
             }
           `}
         >
-          <Cloud
-            className={
-              isModal
-                ? "w-4 h-4 text-white-700"
-                : "w-6 h-6 text-white-700"
-            }
-          />
-        </div>
-
-        <div className={isModal ? "min-w-0" : ""}>
-          <p
+          <div
             className={`
-              font-bold
-              text-black-primary
+              shrink-0
+              rounded-full
+              bg-blue-100
+              flex
+              items-center
+              justify-center
               ${
                 isModal
-                  ? "text-sm leading-tight"
-                  : "text-xl"
+                  ? "w-8 h-8"
+                  : "w-12 h-12 mb-2"
               }
             `}
           >
-            {co2Toneladas.toLocaleString("pt-BR", {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 3,
-            })}
-          </p>
+            <FlaskConical
+              className={
+                isModal
+                  ? "w-4 h-4 text-blue-700"
+                  : "w-6 h-6 text-blue-700"
+              }
+            />
+          </div>
 
-          <p
-            className={
-              isModal
-                ? "text-[10px] text-white-600 leading-tight"
-                : "text-xs text-white-600 font-medium"
-            }
-          >
-            CO₂ evitado (t)
-          </p>
+          <div className={isModal ? "min-w-0" : ""}>
+            <p
+              className={`
+                font-bold
+                text-black-primary
+                truncate
+                ${
+                  isModal
+                    ? "text-sm leading-tight"
+                    : "text-lg sm:text-xl"
+                }
+              `}
+            >
+              {dados.dieselEquivalenteLitros.toLocaleString(
+                "pt-BR",
+                {
+                  maximumFractionDigits: 2,
+                }
+              )}
+            </p>
+
+            <p
+              className={
+                isModal
+                  ? "text-[10px] text-white-600 leading-tight"
+                  : "text-xs text-white-600 font-medium"
+              }
+            >
+              Diesel equivalente (L)
+            </p>
+          </div>
         </div>
-      </div>
 
-      {/* RESÍDUO DESVIADO */}
-      <div
-        className={`
-          flex
-          items-center
-          bg-white-50
-          rounded-lg
-          border
-          border-white-100
-
-          ${
-            isModal
-              ? "col-span-2 justify-center gap-2 p-2"
-              : "flex-col text-center p-3"
-          }
-        `}
-      >
+        {/* ENERGIA DE BIODIESEL (ATUALIZADO COM ÍCONE ZAP) */}
         <div
           className={`
-            shrink-0
-            rounded-full
-            bg-purple-100
             flex
             items-center
-            justify-center
+            bg-white-50
+            rounded-lg
+            border
+            border-white-100
             ${
               isModal
-                ? "w-8 h-8"
-                : "w-12 h-12 mb-2"
+                ? "gap-2 p-2"
+                : "flex-col text-center p-3"
             }
           `}
         >
-          <Recycle
-            className={
-              isModal
-                ? "w-4 h-4 text-purple-700"
-                : "w-6 h-6 text-purple-700"
-            }
-          />
-        </div>
-
-        <div>
-          <p
+          <div
             className={`
-              font-bold
-              text-black-primary
+              shrink-0
+              rounded-full
+              bg-amber-100
+              flex
+              items-center
+              justify-center
               ${
                 isModal
-                  ? "text-sm leading-tight"
-                  : "text-xl"
+                  ? "w-8 h-8"
+                  : "w-12 h-12 mb-2"
               }
             `}
           >
-            {residuoToneladas.toLocaleString(
-              "pt-BR",
-              {
+            <Zap
+              className={
+                isModal
+                  ? "w-4 h-4 text-amber-700"
+                  : "w-6 h-6 text-amber-700"
+              }
+            />
+          </div>
+
+          <div className={isModal ? "min-w-0" : ""}>
+            <p
+              className={`
+                font-bold
+                text-black-primary
+                truncate
+                ${
+                  isModal
+                    ? "text-sm leading-tight"
+                    : "text-lg sm:text-xl"
+                }
+              `}
+            >
+              {dados.energiaBiodieselMj.toLocaleString("pt-BR", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 3,
-              }
-            )}
-          </p>
+              })}
+            </p>
 
-          <p
-            className={
+            <p
+              className={
+                isModal
+                  ? "text-[10px] text-white-600 leading-tight"
+                  : "text-xs text-white-600 font-medium"
+              }
+            >
+              Energia de Biodiesel (MJ)
+            </p>
+          </div>
+        </div>
+
+        {/* CO2 EVITADO */}
+        <div
+          className={`
+            flex
+            items-center
+            bg-white-50
+            rounded-lg
+            border
+            border-white-100
+            ${
               isModal
-                ? "text-[10px] text-white-600 leading-tight"
-                : "text-xs text-white-600 font-medium"
+                ? "gap-2 p-2"
+                : "flex-col text-center p-3"
             }
+          `}
+        >
+          <div
+            className={`
+              shrink-0
+              rounded-full
+              bg-emerald-100
+              flex
+              items-center
+              justify-center
+              ${
+                isModal
+                  ? "w-8 h-8"
+                  : "w-12 h-12 mb-2"
+              }
+            `}
           >
-            Resíduo desviado (t)
-          </p>
+            <Cloud
+              className={
+                isModal
+                  ? "w-4 h-4 text-emerald-700"
+                  : "w-6 h-6 text-emerald-700"
+              }
+            />
+          </div>
+
+          <div className={isModal ? "min-w-0" : ""}>
+            <p
+              className={`
+                font-bold
+                text-black-primary
+                truncate
+                ${
+                  isModal
+                    ? "text-sm leading-tight"
+                    : "text-lg sm:text-xl"
+                }
+              `}
+            >
+              {dados.co2EvitadoKg.toLocaleString("pt-BR", {
+                maximumFractionDigits: 2,
+              })}
+            </p>
+
+            <p
+              className={
+                isModal
+                  ? "text-[10px] text-white-600 leading-tight"
+                  : "text-xs text-white-600 font-medium"
+              }
+            >
+              CO2 evitado (kg)
+            </p>
+          </div>
+        </div>
+
+        {/* RESÍDUO DESVIADO */}
+        <div
+          className={`
+            flex
+            items-center
+            bg-white-50
+            rounded-lg
+            border
+            border-white-100
+            ${
+              isModal
+                ? "col-span-2 justify-center gap-2 p-2"
+                : "flex-col text-center p-3"
+            }
+          `}
+        >
+          <div
+            className={`
+              shrink-0
+              rounded-full
+              bg-purple-100
+              flex
+              items-center
+              justify-center
+              ${
+                isModal
+                  ? "w-8 h-8"
+                  : "w-12 h-12 mb-2"
+              }
+            `}
+          >
+            <Recycle
+              className={
+                isModal
+                  ? "w-4 h-4 text-purple-700"
+                  : "w-6 h-6 text-purple-700"
+              }
+            />
+          </div>
+
+          <div className={isModal ? "min-w-0" : ""}>
+            <p
+              className={`
+                font-bold
+                text-black-primary
+                truncate
+                ${
+                  isModal
+                    ? "text-sm leading-tight"
+                    : "text-lg sm:text-xl"
+                }
+              `}
+            >
+              {residuoToneladas.toLocaleString(
+                "pt-BR",
+                {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 3,
+                }
+              )}
+            </p>
+
+            <p
+              className={
+                isModal
+                  ? "text-[10px] text-white-600 leading-tight"
+                  : "text-xs text-white-600 font-medium"
+              }
+            >
+              Resíduo desviado (t)
+            </p>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-);}
+  );
+}
