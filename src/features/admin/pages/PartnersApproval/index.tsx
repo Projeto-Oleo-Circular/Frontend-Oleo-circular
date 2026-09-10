@@ -716,7 +716,7 @@ export function PartnersApproval() {
                   {!modoEdicao && (
                     <button
                       onClick={handleEditarParceiro}
-                      className="p-2 rounded-lg border border-blue-500 text-blue-500 hover:bg-blue-50 transition-colors cursor-pointer"
+                      className="p-2 rounded-lg border border-green-500 text-green-500 hover:bg-green-50 transition-colors cursor-pointer"
                       title="Editar Parceiro"
                     >
                       <Pencil className="w-4 h-4" />
