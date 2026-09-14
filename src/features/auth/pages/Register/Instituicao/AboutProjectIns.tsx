@@ -13,7 +13,7 @@ interface Props {
   userName?: string;
   onDataChange?: (data: any) => void;
   initialData?: any;
-  onSubmit?: () => Promise<void>;
+  onSubmit?: (data?: any) => Promise<void>;
   loading?: boolean;
 }
 
@@ -543,31 +543,28 @@ function AboutProjectIns({
     /**
      * Payload enviado para o componente pai.
      */
-    onDataChange?.({
-      parceiroIndicadorId:
-        isParceiro &&
-        opcaoSelecionada.parceiroId
-          ? opcaoSelecionada.parceiroId
-          : null,
-
+    const payload = {
+      parceiroIndicadorId: isParceiro && opcaoSelecionada.parceiroId ? opcaoSelecionada.parceiroId : null,
       outroParceiro: null,
-
       comoConheceu,
-
       observacao: observation.trim(),
-    });
-    if (onSubmit) {
-      try {
-        await onSubmit();
-        onNext(); // Só avança para o feedback se der certo
-      } catch (err) {
-        // O erro já é tratado no toast pelo Register, aqui apenas evitamos avançar
-        console.error("Falha ao registrar:", err);
-      }
-    } else {
-      onNext();
-    }
-  };
+    };
+
+    // Atualiza o estado visual
+    onDataChange?.(payload);
+    
+      if (onSubmit) {
+            try {
+              await onSubmit(payload);
+              onNext(); // Só avança para o feedback se der certo
+            } catch (err) {
+              // O erro já é tratado no toast pelo Register, aqui apenas evitamos avançar
+              console.error("Falha ao registrar:", err);
+            }
+          } else {
+            onNext();
+          }
+        };
 
   return (
     <div className="flex flex-col h-screen">

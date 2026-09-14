@@ -290,112 +290,68 @@ function Register() {
     return !hasError;
   };
 
-  const getCompleteRegisterData = (): RegisterCredentials => {
-    const categoriaId = Number(additionalData.categoria);
+  const getCompleteRegisterData = (lastStepData?: any): RegisterCredentials => {
+    
+    // Mescla o que já existia no estado com o que acabou de vir do componente final
+    const finalData = {
+      ...additionalData,
+      ...lastStepData
+    };
 
+    const categoriaId = Number(finalData.categoria);
     if (!categoriaId || categoriaId <= 0) {
       throw new Error("Selecione uma categoria válida.");
     }
 
-    const isJuridica = additionalData.tipoPessoa === "JURIDICA";
-
+    const isJuridica = finalData.tipoPessoa === "JURIDICA";
     const nomeExibicaoInicial = formData.nome.trim();
-
-    const razaoSocialOuFormal =
-      additionalData.razaoSocial?.trim() || nomeExibicaoInicial;
-
-    const redesSociaisFormatadas = formatarRedesSociais(
-      additionalData.redesSociais
-    );
+    const razaoSocialOuFormal = finalData.razaoSocial?.trim() || nomeExibicaoInicial;
+    const redesSociaisFormatadas = formatarRedesSociais(finalData.redesSociais);
 
     return {
-      tipoPessoa: additionalData.tipoPessoa || "JURIDICA",
-
-      tipoParceiro: profile
-        ? (profile.toUpperCase() as "GERADOR" | "INSTITUCIONAL")
-        : "INSTITUCIONAL",
-
-      razaoSocial: razaoSocialOuFormal,
-
+      // DADOS DO FORMDATA
       nome: nomeExibicaoInicial,
-
       email: formData.email.trim(),
-
       senha: formData.senha,
-
-      documento: additionalData.documento.replace(/\D/g, ""),
-
       telefone: formData.telefone.replace(/\D/g, ""),
-
+      
+      // DADOS DO ADDITIONALDATA (Agora usando finalData)
+      tipoPessoa: finalData.tipoPessoa || "JURIDICA",
+      tipoParceiro: profile ? (profile.toUpperCase() as "GERADOR" | "INSTITUCIONAL") : "INSTITUCIONAL",
+      razaoSocial: razaoSocialOuFormal,
+      documento: finalData.documento.replace(/\D/g, ""),
       redesSociais: redesSociaisFormatadas,
-
-      aceiteMarketing: Boolean(additionalData.aceiteMarketing),
-
-      parceiroIndicadorId:
-        additionalData.parceiroIndicadorId !== null &&
-        additionalData.parceiroIndicadorId !== undefined &&
-        String(additionalData.parceiroIndicadorId).trim() !== ""
-          ? String(additionalData.parceiroIndicadorId)
+      aceiteMarketing: Boolean(finalData.aceiteMarketing),
+      
+      // AQUI É ONDE O "COMO CONHECEU" É RESOLVIDO COM SUCESSO:
+      parceiroIndicadorId: finalData.parceiroIndicadorId !== null && finalData.parceiroIndicadorId !== undefined && String(finalData.parceiroIndicadorId).trim() !== ""
+          ? String(finalData.parceiroIndicadorId)
           : null,
-
-      outroParceiro:
-        typeof additionalData.outroParceiro === "string" &&
-        additionalData.outroParceiro.trim()
-          ? additionalData.outroParceiro.trim()
+      outroParceiro: typeof finalData.outroParceiro === "string" && finalData.outroParceiro.trim()
+          ? finalData.outroParceiro.trim()
           : null,
-
-      comoConheceu:
-        typeof additionalData.comoConheceu === "string"
-          ? additionalData.comoConheceu.trim()
+      comoConheceu: typeof finalData.comoConheceu === "string" 
+          ? finalData.comoConheceu.trim() 
+          : "",
+      observacao: typeof finalData.observacao === "string" 
+          ? finalData.observacao.trim() 
           : "",
 
-      observacao:
-        typeof additionalData.observacao === "string"
-          ? additionalData.observacao.trim()
-          : "",
-
-      responsavelLegal: isJuridica
-        ? additionalData.responsavelLegal?.trim() || undefined
-        : razaoSocialOuFormal,
-
-      responsavelLegalCpf: isJuridica
-        ? additionalData.responsavelLegalCpf?.replace(/\D/g, "") ||
-          undefined
-        : additionalData.documento.replace(/\D/g, ""),
-
-      cep: additionalData.cep.replace(/\D/g, ""),
-
-      logradouro: additionalData.logradouro.trim(),
-
-      numero: additionalData.numero.trim(),
-
-      bairro: additionalData.bairro.trim(),
-
-      cidade: additionalData.cidade.trim(),
-
-      estado: additionalData.estado.trim(),
-
-      complemento: additionalData.complemento?.trim() || undefined,
-
-      latitude: Number(additionalData.latitude) || 0,
-
-      longitude: Number(additionalData.longitude) || 0,
-
-      expectativaGeracao:
-        Number(
-          additionalData.expectativaGeracao ||
-            additionalData.capacidadeBombona
-        ) || 0,
-
-      capacidadeBombona:
-        Number(additionalData.capacidadeBombona) || 0,
-
-      nivelAtualPct:
-        Number(additionalData.nivelAtualPct) || 0,
-
-      statusBombona:
-        additionalData.statusBombona || "VAZIA",
-
+      responsavelLegal: isJuridica ? finalData.responsavelLegal?.trim() || undefined : razaoSocialOuFormal,
+      responsavelLegalCpf: isJuridica ? finalData.responsavelLegalCpf?.replace(/\D/g, "") || undefined : finalData.documento.replace(/\D/g, ""),
+      cep: finalData.cep.replace(/\D/g, ""),
+      logradouro: finalData.logradouro.trim(),
+      numero: finalData.numero.trim(),
+      bairro: finalData.bairro.trim(),
+      cidade: finalData.cidade.trim(),
+      estado: finalData.estado.trim(),
+      complemento: finalData.complemento?.trim() || undefined,
+      latitude: Number(finalData.latitude) || 0,
+      longitude: Number(finalData.longitude) || 0,
+      expectativaGeracao: Number(finalData.expectativaGeracao || finalData.capacidadeBombona) || 0,
+      capacidadeBombona: Number(finalData.capacidadeBombona) || 0,
+      nivelAtualPct: Number(finalData.nivelAtualPct) || 0,
+      statusBombona: finalData.statusBombona || "VAZIA",
       categoria: categoriaId,
     };
   };
@@ -434,19 +390,17 @@ function Register() {
     }
   };
 
-  const handleFinalSubmit = async () => {
-  try {
-    setLoading(true);
+  const handleFinalSubmit = async (lastStepData?: any) => {
+    try {
+      setLoading(true);
 
-    const registerData = getCompleteRegisterData();
+      // Passa o dado da última tela para a função que monta o payload
+      const registerData = getCompleteRegisterData(lastStepData); 
 
-    console.log(
-      "Payload enviado para cadastro:",
-      registerData
-    );
-
-    await authService.register(registerData);
-  } catch (err: any) {
+      console.log("Payload enviado para cadastro:", registerData);
+      await authService.register(registerData);
+      
+    } catch (err: any) {
     console.error(
       "Erro ao finalizar cadastro:",
       err

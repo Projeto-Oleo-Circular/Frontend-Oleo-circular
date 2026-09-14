@@ -1,3 +1,5 @@
+// src/pages/Admin/Map/index.tsx (ou o caminho do seu arquivo)
+
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   MapContainer,
@@ -9,7 +11,7 @@ import {
 } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet";
-import { Check, Layers, Loader2, Navigation, Route, Search, X } from "lucide-react";
+import { Check, Layers, Loader2, Navigation, Search, X } from "lucide-react";
 import AdminTopNav from "../../../../components/layout/AdminTopNav";
 import Input from "../../../../components/ui/Input";
 import Button from "../../../../components/ui/Button";
@@ -26,6 +28,9 @@ import {
 } from "../../../../services/AdminSolicitacaoService";
 import Footer from "../../../../components/layout/Footer";
 
+// ======================
+// TIPOS E CONSTANTES
+// ======================
 
 interface ParceiroAdmin {
   id: number;
@@ -45,7 +50,11 @@ interface ParceiroAdmin {
 interface GeocodedPoint extends PontoColetaAdmin {
   latlng?: [number, number];
   geocodingError?: boolean;
-  hasSolicitacao: boolean;
+  /** True se o ponto tem pelo menos uma solicitação em status ativo */
+  hasSolicitacaoAtiva: boolean;
+  /** Apenas solicitações em status ativo (AGUARDANDO, AGENDADA, EM_ROTA) */
+  solicitacoesAtivas: SolicitacaoColeta[];
+  /** Histórico completo (ativas + concluídas) */
   solicitacoes: SolicitacaoColeta[];
 }
 
@@ -63,6 +72,23 @@ interface MapControllerProps {
 
 type FiltroModo = "todos" | "apenas-pontos" | "apenas-solicitacoes";
 type CamadaMapa = "mapa" | "satelite";
+
+/**
+ * Status considerados "ativos" — contam para o badge azul "com solicitação".
+ * CONCLUIDA não entra: quando a coleta é finalizada, o pino volta à cor natural.
+ */
+const STATUS_ATIVOS: readonly SolicitacaoColeta["status"][] = [
+  "AGUARDANDO",
+  "AGENDADA",
+  "EM_ROTA",
+];
+
+const temSolicitacaoAtiva = (solicitacoes: SolicitacaoColeta[]): boolean =>
+  solicitacoes.some((s) => STATUS_ATIVOS.includes(s.status));
+
+// ======================
+// HELPERS GEOGRÁFICOS
+// ======================
 
 const numeroValido = (valor: unknown): number | null => {
   if (valor === null || valor === undefined || valor === "") return null;
@@ -84,7 +110,7 @@ const dentroDoBrasil = (lat: number, lng: number): boolean =>
   lng <= BRASIL_BOUNDS.lngMax;
 
 const obterCoordenadasDoPonto = (
-  ponto: PontoColetaAdmin
+  ponto: PontoColetaAdmin,
 ): [number, number] | null => {
   const registro = ponto as PontoColetaAdmin & Record<string, unknown>;
   const parceiro = (registro.parceiro || {}) as ParceiroAdmin &
@@ -96,7 +122,7 @@ const obterCoordenadasDoPonto = (
       registro.enderecoLatitude ??
       parceiro.latitude ??
       parceiro.lat ??
-      parceiro.enderecoLatitude
+      parceiro.enderecoLatitude,
   );
 
   const longitudeBruta = numeroValido(
@@ -107,7 +133,7 @@ const obterCoordenadasDoPonto = (
       parceiro.longitude ??
       parceiro.lng ??
       parceiro.lon ??
-      parceiro.enderecoLongitude
+      parceiro.enderecoLongitude,
   );
 
   if (
@@ -130,24 +156,34 @@ const obterCoordenadasDoPonto = (
   return [latitudeBruta, longitudeBruta];
 };
 
+// ======================
+// ÍCONE DO PINO
+// ======================
+
+/**
+ * A cor do pino depende SOMENTE do estado real do ponto.
+ * Nunca do filtro selecionado pelo usuário.
+ *
+ * Regras:
+ *  - APROVADO sem solicitação ativa  → verde
+ *  - APROVADO com solicitação ativa  → azul
+ *  - PENDENTE                        → laranja
+ *  - REJEITADO                       → vermelho
+ *  - Selecionado (rota)              → borda mais espessa + halo verde
+ */
 const criarIcone = (
   status: StatusAprovacao,
-  hasSolicitacao: boolean,
+  hasSolicitacaoAtiva: boolean,
   selecionado: boolean,
-  modo: FiltroModo
 ) => {
-  let backgroundColor = "#9E9E9E";
+  let backgroundColor = "#9E9E9E"; // fallback cinza
 
-  if (modo === "apenas-solicitacoes") {
-    backgroundColor = hasSolicitacao ? "#1E88E5" : "#9E9E9E";
-  } else {
-    if (status === "APROVADO") {
-      backgroundColor = hasSolicitacao ? "#1E88E5" : "#4CAF50";
-    } else if (status === "PENDENTE") {
-      backgroundColor = "#FB8C00";
-    } else if (status === "REJEITADO") {
-      backgroundColor = "#E53935";
-    }
+  if (status === "APROVADO") {
+    backgroundColor = hasSolicitacaoAtiva ? "#1E88E5" : "#4CAF50";
+  } else if (status === "PENDENTE") {
+    backgroundColor = "#FB8C00";
+  } else if (status === "REJEITADO") {
+    backgroundColor = "#E53935";
   }
 
   const size = selecionado ? 32 : 26;
@@ -183,6 +219,10 @@ const criarIcone = (
   });
 };
 
+// ======================
+// CONTROLADOR DO MAPA
+// ======================
+
 function MapController({ rota, pontos }: MapControllerProps) {
   const map = useMap();
 
@@ -209,6 +249,10 @@ function MapController({ rota, pontos }: MapControllerProps) {
   return null;
 }
 
+// ======================
+// PÁGINA DO MAPA
+// ======================
+
 function MapPage() {
   const { addToast } = useToast();
   const [pontos, setPontos] = useState<GeocodedPoint[]>([]);
@@ -220,6 +264,79 @@ function MapPage() {
   const [carregandoPontos, setCarregandoPontos] = useState(true);
   const [carregandoRota, setCarregandoRota] = useState(false);
   const [modalRotaAberta, setModalRotaAberta] = useState(false);
+
+  // ======================
+  // NORMALIZAÇÃO
+  // ======================
+
+  const normalizarPonto = useCallback(
+    (
+      ponto: PontoColetaAdmin,
+      solicitacoes: SolicitacaoColeta[],
+    ): GeocodedPoint => {
+      const latlng = obterCoordenadasDoPonto(ponto);
+      const solicitacoesAtivas = solicitacoes.filter((s) =>
+        STATUS_ATIVOS.includes(s.status),
+      );
+      const hasSolicitacaoAtiva = solicitacoesAtivas.length > 0;
+
+      return {
+        ...ponto,
+        latlng: latlng || undefined,
+        geocodingError: !latlng,
+        hasSolicitacaoAtiva,
+        solicitacoesAtivas,
+        solicitacoes,
+      };
+    },
+    [],
+  );
+
+  // ======================
+  // CARREGAMENTO
+  // ======================
+
+  const carregarTodosOsPontos = useCallback(async (): Promise<
+    PontoColetaAdmin[]
+  > => {
+    const limit = 100;
+    let pagina = 1;
+    let totalPages = 1;
+    const todos: PontoColetaAdmin[] = [];
+
+    do {
+      const resposta = await adminPontosService.listarPontos({
+        page: pagina,
+        limit,
+      });
+      todos.push(...resposta.items);
+      totalPages = resposta.totalPages;
+      pagina++;
+    } while (pagina <= totalPages);
+
+    return todos;
+  }, []);
+
+  const carregarTodasSolicitacoes = useCallback(async (): Promise<
+    SolicitacaoColeta[]
+  > => {
+    const limit = 100;
+    let pagina = 1;
+    let totalPages = 1;
+    const todas: SolicitacaoColeta[] = [];
+
+    do {
+      const resposta = await adminSolicitacoesService.listar({
+        page: pagina,
+        limit,
+      });
+      todas.push(...resposta.items);
+      totalPages = resposta.totalPages;
+      pagina++;
+    } while (pagina <= totalPages);
+
+    return todas;
+  }, []);
 
   const carregarDados = useCallback(async () => {
     try {
@@ -239,20 +356,17 @@ function MapPage() {
         return acc;
       }, {});
 
-      const pontosNormalizados = todosPontos.map((ponto) => {
-        const solicitacoesDoPonto = solicitacoesPorPonto[ponto.id] || [];
-        return normalizarPonto(ponto, solicitacoesDoPonto);
-      });
+      const pontosNormalizados = todosPontos.map((ponto) =>
+        normalizarPonto(ponto, solicitacoesPorPonto[ponto.id] || []),
+      );
 
       setPontos(pontosNormalizados);
 
-      const semCoordenadas = pontosNormalizados.filter(
-        (p) => !p.latlng
-      ).length;
+      const semCoordenadas = pontosNormalizados.filter((p) => !p.latlng).length;
       if (semCoordenadas > 0) {
         addToast(
           `${semCoordenadas} ponto(s) não possuem coordenadas válidas`,
-          "warning"
+          "warning",
         );
       }
     } catch (error) {
@@ -262,65 +376,15 @@ function MapPage() {
     } finally {
       setCarregandoPontos(false);
     }
-  }, [addToast]);
-
-  const carregarTodosOsPontos = async (): Promise<PontoColetaAdmin[]> => {
-    const limit = 100;
-    let pagina = 1;
-    let totalPages = 1;
-    const todos: PontoColetaAdmin[] = [];
-
-    do {
-      const resposta = await adminPontosService.listarPontos({
-        page: pagina,
-        limit,
-      });
-      todos.push(...resposta.items);
-      totalPages = resposta.totalPages;
-      pagina++;
-    } while (pagina <= totalPages);
-
-    return todos;
-  };
-
-  const carregarTodasSolicitacoes = async (): Promise<SolicitacaoColeta[]> => {
-    const limit = 100;
-    let pagina = 1;
-    let totalPages = 1;
-    const todas: SolicitacaoColeta[] = [];
-
-    do {
-      const resposta = await adminSolicitacoesService.listar({
-        page: pagina,
-        limit,
-      });
-      todas.push(...resposta.items);
-      totalPages = resposta.totalPages;
-      pagina++;
-    } while (pagina <= totalPages);
-
-    return todas;
-  };
-
-  const normalizarPonto = (
-    ponto: PontoColetaAdmin,
-    solicitacoes: SolicitacaoColeta[]
-  ): GeocodedPoint => {
-    const latlng = obterCoordenadasDoPonto(ponto);
-    const hasSolicitacao = solicitacoes.length > 0;
-
-    return {
-      ...ponto,
-      latlng: latlng || undefined,
-      geocodingError: !latlng,
-      hasSolicitacao,
-      solicitacoes,
-    };
-  };
+  }, [addToast, carregarTodosOsPontos, carregarTodasSolicitacoes, normalizarPonto]);
 
   useEffect(() => {
     void carregarDados();
   }, [carregarDados]);
+
+  // ======================
+  // FILTRO
+  // ======================
 
   const pontosFiltrados = useMemo(() => {
     let resultado = pontos;
@@ -328,7 +392,8 @@ function MapPage() {
     if (filtroTexto.trim()) {
       const termo = filtroTexto.toLowerCase().trim();
       resultado = resultado.filter((ponto) => {
-        const endereco = `${ponto.logradouro}, ${ponto.numero} - ${ponto.bairro}, ${ponto.cidade} ${ponto.estado || ""}`.toLowerCase();
+        const endereco =
+          `${ponto.logradouro}, ${ponto.numero} - ${ponto.bairro}, ${ponto.cidade} ${ponto.estado || ""}`.toLowerCase();
         return (
           ponto.nomePontoColeta.toLowerCase().includes(termo) ||
           ponto.parceiro?.razaoSocial.toLowerCase().includes(termo) ||
@@ -337,16 +402,17 @@ function MapPage() {
       });
     }
 
-    if (modoFiltro === "apenas-pontos") {
-      return resultado;
-    }
-
     if (modoFiltro === "apenas-solicitacoes") {
-      return resultado.filter((p) => p.hasSolicitacao);
+      return resultado.filter((p) => p.hasSolicitacaoAtiva);
     }
 
+    // "todos" e "apenas-pontos" mostram tudo
     return resultado;
   }, [filtroTexto, pontos, modoFiltro]);
+
+  // ======================
+  // SELEÇÃO E ROTA
+  // ======================
 
   const togglePontoSelecionado = (ponto: GeocodedPoint) => {
     if (!ponto.latlng) {
@@ -391,9 +457,11 @@ function MapPage() {
       }
 
       const route = data.routes[0];
-      const rotaCoordenadas: [number, number][] = route.geometry.coordinates.map(
-        ([lng, lat]: [number, number]) => [lat, lng]
-      );
+      const rotaCoordenadas: [number, number][] =
+        route.geometry.coordinates.map(([lng, lat]: [number, number]) => [
+          lat,
+          lng,
+        ]);
 
       setRota({
         distanciaKm: route.distance / 1000,
@@ -416,6 +484,10 @@ function MapPage() {
     setRota(null);
     setModalRotaAberta(false);
   };
+
+  // ======================
+  // RENDER
+  // ======================
 
   return (
     <div className="min-h-screen flex flex-col bg-background overflow-x-hidden">
@@ -529,7 +601,9 @@ function MapPage() {
             {carregandoPontos ? (
               <div className="absolute inset-0 flex items-center justify-center bg-white z-[1001]">
                 <Loader2 className="w-8 h-8 text-green-primary animate-spin" />
-                <span className="ml-2 text-sm text-white-600">Carregando dados...</span>
+                <span className="ml-2 text-sm text-white-600">
+                  Carregando dados...
+                </span>
               </div>
             ) : (
               <MapContainer
@@ -555,7 +629,7 @@ function MapPage() {
                 {pontosFiltrados.map((ponto) => {
                   if (!ponto.latlng) return null;
                   const selecionado = selectedPontos.some(
-                    (p) => p.id === ponto.id
+                    (p) => p.id === ponto.id,
                   );
 
                   return (
@@ -564,66 +638,68 @@ function MapPage() {
                       position={ponto.latlng}
                       icon={criarIcone(
                         ponto.statusAprovacaoPontoColeta,
-                        ponto.hasSolicitacao,
+                        ponto.hasSolicitacaoAtiva,
                         selecionado,
-                        modoFiltro
                       )}
-                      eventHandlers={{ click: () => togglePontoSelecionado(ponto) }}
+                      eventHandlers={{
+                        click: () => togglePontoSelecionado(ponto),
+                      }}
                     >
                       <Popup>
                         <div className="text-sm max-w-xs">
                           <strong>{ponto.nomePontoColeta}</strong>
                           {ponto.parceiro?.razaoSocial && (
-                            <p className="mt-1">Parceiro: {ponto.parceiro.razaoSocial}</p>
+                            <p className="mt-1">
+                              Parceiro: {ponto.parceiro.razaoSocial}
+                            </p>
                           )}
                           <p>
                             {`${ponto.logradouro}, ${ponto.numero} - ${ponto.bairro}, ${ponto.cidade}${ponto.estado ? ` - ${ponto.estado}` : ""}`}
                           </p>
                           <p>Capacidade: {ponto.capacidadeBombona} L</p>
 
-                          {modoFiltro === "apenas-solicitacoes" ? (
-                            ponto.solicitacoes.length > 0 ? (
-                              <div className="mt-1">
-                                <span className="text-xs text-white-500">Status da solicitação:</span>
-                                <StatusBadge status={ponto.solicitacoes[0].status} />
-                                {ponto.solicitacoes.length > 1 && (
-                                  <span className="text-xs text-white-400 ml-1">
-                                    +{ponto.solicitacoes.length - 1} outras
-                                  </span>
-                                )}
-                              </div>
-                            ) : (
-                              <p className="text-xs text-white-400 mt-1">Sem solicitação</p>
-                            )
-                          ) : (
-                            <p className="mt-1">
-                              Status: {ponto.statusAprovacaoPontoColeta}
-                              {ponto.hasSolicitacao && (
-                                <span className="ml-1 text-xs text-blue-600 font-medium">
-                                  (com solicitação)
-                                </span>
-                              )}
-                            </p>
-                          )}
+                          {/* Status do ponto */}
+                          <p className="mt-1">
+                            Status: {ponto.statusAprovacaoPontoColeta}
+                            {ponto.hasSolicitacaoAtiva && (
+                              <span className="ml-1 text-xs text-blue-600 font-medium">
+                                (com solicitação ativa)
+                              </span>
+                            )}
+                          </p>
 
-                          {modoFiltro === "todos" && ponto.solicitacoes.length > 0 && (
+                          {/* Solicitações ATIVAS */}
+                          {ponto.solicitacoesAtivas.length > 0 && (
                             <div className="mt-2 pt-2 border-t border-white-200">
                               <p className="text-xs font-bold text-white-600">
-                                Solicitações ({ponto.solicitacoes.length})
+                                Solicitações ativas (
+                                {ponto.solicitacoesAtivas.length})
                               </p>
                               <ul className="mt-1 space-y-1 max-h-24 overflow-y-auto">
-                                {ponto.solicitacoes.slice(0, 3).map((sol) => (
-                                  <li key={sol.id} className="text-xs bg-white-50 p-1 rounded flex justify-between items-center">
-                                    <span>#{sol.id}</span>
-                                    <StatusBadge status={sol.status} />
-                                  </li>
-                                ))}
-                                {ponto.solicitacoes.length > 3 && (
-                                  <li className="text-xs text-white-400 text-center">
-                                    +{ponto.solicitacoes.length - 3} outras
-                                  </li>
-                                )}
+                                {ponto.solicitacoesAtivas
+                                  .slice(0, 3)
+                                  .map((sol) => (
+                                    <li
+                                      key={sol.id}
+                                      className="text-xs bg-white-50 p-1 rounded flex justify-between items-center"
+                                    >
+                                      <span>#{sol.id}</span>
+                                      <StatusBadge status={sol.status} />
+                                    </li>
+                                  ))}
                               </ul>
+                            </div>
+                          )}
+
+                          {/* Histórico — só mostra se houver concluídas */}
+                          {ponto.solicitacoes.length >
+                            ponto.solicitacoesAtivas.length && (
+                            <div className="mt-2 pt-2 border-t border-white-200">
+                              <p className="text-xs text-white-400">
+                                {ponto.solicitacoes.length -
+                                  ponto.solicitacoesAtivas.length}{" "}
+                                solicitação(ões) concluída(s)
+                              </p>
                             </div>
                           )}
 
@@ -635,7 +711,9 @@ function MapPage() {
                               togglePontoSelecionado(ponto);
                             }}
                           >
-                            {selecionado ? "Remover da rota" : "Adicionar à rota"}
+                            {selecionado
+                              ? "Remover da rota"
+                              : "Adicionar à rota"}
                           </button>
                         </div>
                       </Popup>
@@ -654,31 +732,38 @@ function MapPage() {
               </MapContainer>
             )}
 
-            {/* Legenda */}
+            {/* Legenda — reflete sempre as cores possíveis no modo atual */}
             <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-xs rounded-lg shadow-md p-2.5 z-[1000] text-xs">
               <h3 className="font-bold mb-1.5">Legenda</h3>
+
               {modoFiltro === "apenas-solicitacoes" ? (
                 <>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="w-3 h-3 rounded-full bg-blue-500 shrink-0" /> Com solicitação
+                    <span className="w-3 h-3 rounded-full bg-blue-500 shrink-0" />
+                    Com solicitação ativa
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="w-3 h-3 rounded-full bg-white-400 shrink-0" /> Sem solicitação
+                    <span className="w-3 h-3 rounded-full bg-green-500 shrink-0" />
+                    Aprovado (sem solicitação)
                   </div>
                 </>
               ) : (
                 <>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="w-3 h-3 rounded-full bg-green-500 shrink-0" /> Aprovado
+                    <span className="w-3 h-3 rounded-full bg-green-500 shrink-0" />
+                    Aprovado (sem solicitação)
                   </div>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="w-3 h-3 rounded-full bg-blue-500 shrink-0" /> Com solicitação
+                    <span className="w-3 h-3 rounded-full bg-blue-500 shrink-0" />
+                    Com solicitação ativa
                   </div>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="w-3 h-3 rounded-full bg-orange-500 shrink-0" /> Pendente
+                    <span className="w-3 h-3 rounded-full bg-orange-500 shrink-0" />
+                    Pendente
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="w-3 h-3 rounded-full bg-red-500 shrink-0" /> Rejeitado
+                    <span className="w-3 h-3 rounded-full bg-red-500 shrink-0" />
+                    Rejeitado
                   </div>
                 </>
               )}
@@ -694,28 +779,34 @@ function MapPage() {
               <ul className="space-y-2">
                 {pontosFiltrados.map((ponto) => {
                   const selecionado = selectedPontos.some(
-                    (p) => p.id === ponto.id
+                    (p) => p.id === ponto.id,
                   );
                   return (
                     <li
                       key={ponto.id}
                       className={`flex justify-between items-center p-2.5 rounded-lg transition-colors ${
-                        selecionado ? "bg-green-50 border border-green-200" : "hover:bg-white-50 border border-transparent"
+                        selecionado
+                          ? "bg-green-50 border border-green-200"
+                          : "hover:bg-white-50 border border-transparent"
                       } cursor-pointer`}
                       onClick={() => togglePontoSelecionado(ponto)}
                     >
                       <div className="min-w-0 pr-2">
-                        <p className="font-medium text-sm truncate">{ponto.nomePontoColeta}</p>
+                        <p className="font-medium text-sm truncate">
+                          {ponto.nomePontoColeta}
+                        </p>
                         <p className="text-xs text-white-500 truncate">
                           {`${ponto.logradouro}, ${ponto.numero} - ${ponto.bairro}, ${ponto.cidade}`}
                         </p>
                         <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
                           {modoFiltro === "apenas-solicitacoes" ? (
-                            ponto.solicitacoes.length > 0 ? (
-                              <StatusBadge status={ponto.solicitacoes[0].status} />
+                            ponto.solicitacoesAtivas.length > 0 ? (
+                              <StatusBadge
+                                status={ponto.solicitacoesAtivas[0].status}
+                              />
                             ) : (
                               <span className="text-xs bg-white-100 text-white-600 px-2 py-0.5 rounded-full">
-                                Sem solicitação
+                                Sem solicitação ativa
                               </span>
                             )
                           ) : (
@@ -724,16 +815,17 @@ function MapPage() {
                                 className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                                   ponto.statusAprovacaoPontoColeta === "APROVADO"
                                     ? "bg-green-100 text-green-700"
-                                    : ponto.statusAprovacaoPontoColeta === "PENDENTE"
-                                    ? "bg-orange-100 text-orange-600"
-                                    : "bg-red-100 text-red-700"
+                                    : ponto.statusAprovacaoPontoColeta ===
+                                        "PENDENTE"
+                                      ? "bg-orange-100 text-orange-600"
+                                      : "bg-red-100 text-red-700"
                                 }`}
                               >
                                 {ponto.statusAprovacaoPontoColeta}
                               </span>
-                              {ponto.hasSolicitacao && (
+                              {ponto.hasSolicitacaoAtiva && (
                                 <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">
-                                  {ponto.solicitacoes.filter((s) => s.status !== "CONCLUIDA").length} ativa(s)
+                                  {ponto.solicitacoesAtivas.length} ativa(s)
                                 </span>
                               )}
                             </>
@@ -745,7 +837,9 @@ function MapPage() {
                           )}
                         </div>
                       </div>
-                      {selecionado && <Check className="w-4 h-4 text-green-600 shrink-0" />}
+                      {selecionado && (
+                        <Check className="w-4 h-4 text-green-600 shrink-0" />
+                      )}
                     </li>
                   );
                 })}
@@ -764,11 +858,16 @@ function MapPage() {
               {selectedPontos.length ? (
                 <ul className="space-y-2 mb-4 max-h-40 overflow-y-auto pr-1">
                   {selectedPontos.map((ponto, index) => (
-                    <li key={ponto.id} className="flex items-center gap-2 text-sm bg-white-50 p-1.5 rounded-md">
+                    <li
+                      key={ponto.id}
+                      className="flex items-center gap-2 text-sm bg-white-50 p-1.5 rounded-md"
+                    >
                       <span className="bg-green-primary text-white w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold shrink-0">
                         {index + 1}
                       </span>
-                      <span className="flex-1 truncate">{ponto.nomePontoColeta}</span>
+                      <span className="flex-1 truncate">
+                        {ponto.nomePontoColeta}
+                      </span>
                       <button
                         type="button"
                         onClick={() => togglePontoSelecionado(ponto)}
@@ -798,9 +897,7 @@ function MapPage() {
                       Calculando...
                     </>
                   ) : (
-                    <>
-                      Traçar Rota
-                    </>
+                    <>Traçar Rota</>
                   )}
                 </Button>
                 <Button
@@ -833,13 +930,17 @@ function MapPage() {
             </h2>
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div className="bg-white-50 rounded-lg p-3">
-                <span className="text-xs sm:text-sm text-white-500">Distância total</span>
+                <span className="text-xs sm:text-sm text-white-500">
+                  Distância total
+                </span>
                 <p className="text-lg sm:text-xl font-bold text-white-800">
                   {rota.distanciaKm.toFixed(2)} km
                 </p>
               </div>
               <div className="bg-white-50 rounded-lg p-3">
-                <span className="text-xs sm:text-sm text-white-500">Tempo estimado</span>
+                <span className="text-xs sm:text-sm text-white-500">
+                  Tempo estimado
+                </span>
                 <p className="text-lg sm:text-xl font-bold text-white-800">
                   {Math.round(rota.duracaoMin)} min
                 </p>
@@ -855,7 +956,9 @@ function MapPage() {
                     {index + 1}
                   </span>
                   <div>
-                    <p className="font-medium text-sm text-white-800">{ponto.nomePontoColeta}</p>
+                    <p className="font-medium text-sm text-white-800">
+                      {ponto.nomePontoColeta}
+                    </p>
                     <p className="text-xs sm:text-sm text-white-500">
                       {`${ponto.logradouro}, ${ponto.numero} - ${ponto.bairro}, ${ponto.cidade}${ponto.estado ? ` - ${ponto.estado}` : ""}`}
                     </p>
@@ -864,7 +967,11 @@ function MapPage() {
               ))}
             </ol>
             <div className="flex justify-end gap-2">
-              <Button onClick={() => setModalRotaAberta(false)} variant="secondary" size="sm">
+              <Button
+                onClick={() => setModalRotaAberta(false)}
+                variant="secondary"
+                size="sm"
+              >
                 Fechar
               </Button>
               <Button

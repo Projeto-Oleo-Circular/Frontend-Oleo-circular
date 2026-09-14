@@ -34,7 +34,6 @@ import {
   FileText,
   Plus,
   Pencil,
-  Save,
 } from "lucide-react";
 
 import SummaryCard from "../../../../components/ui/SummaryCard";
@@ -57,6 +56,31 @@ type ModalTipo = "aprovar" | "rejeitar" | "detalhes" | "erro_parceiro" | null;
 function formatarEndereco(ponto: PontoColetaAdmin): string {
   const base = `${ponto.logradouro}, ${ponto.numero} - ${ponto.bairro}, ${ponto.cidade}`;
   return ponto.estado ? `${base}/${ponto.estado}` : base;
+}
+
+/**
+ * Formata valores numéricos de litros sem casas decimais desnecessárias.
+ *  - 50      → "50"
+ *  - 50.0    → "50"
+ *  - "50.00" → "50"
+ *  - 50.5    → "50,5"
+ *  - 50.55   → "50,55"
+ *  - null / undefined / "" → "—"
+ */
+function formatarLitros(valor: number | string | null | undefined): string {
+  if (valor === null || valor === undefined || valor === "") return "—";
+
+  const numero =
+    typeof valor === "string"
+      ? Number(valor.replace(",", "."))
+      : Number(valor);
+
+  if (!Number.isFinite(numero)) return "—";
+
+  return numero.toLocaleString("pt-BR", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  });
 }
 
 // Helper para obter o Nome do Ponto / Razão Social
@@ -106,7 +130,7 @@ export function PointsApproval() {
   const [isModalCriarOpen, setIsModalCriarOpen] = useState(false);
   const [isModalSelecionarParceiroOpen, setIsModalSelecionarParceiroOpen] = useState(false);
   const [mostrarResumoAmbiental, setMostrarResumoAmbiental] = useState(false);
-  
+
   // Estado para controlar modo de edição dentro do modal de detalhes
   const [editandoPonto, setEditandoPonto] = useState(false);
   const [formDataEdicao, setFormDataEdicao] = useState({
@@ -187,7 +211,10 @@ export function PointsApproval() {
 
   // Busca de coordenadas via Nominatim para edição
   const buscarCoordenadasEdicao = async () => {
-    const temDados = formDataEdicao.cep || (formDataEdicao.cidade && formDataEdicao.estado) || (formDataEdicao.logradouro && formDataEdicao.cidade);
+    const temDados =
+      formDataEdicao.cep ||
+      (formDataEdicao.cidade && formDataEdicao.estado) ||
+      (formDataEdicao.logradouro && formDataEdicao.cidade);
     if (!temDados) return;
 
     try {
@@ -199,11 +226,13 @@ export function PointsApproval() {
         formDataEdicao.estado,
         formDataEdicao.cep,
         "Brasil",
-      ].filter(Boolean).join(", ");
+      ]
+        .filter(Boolean)
+        .join(", ");
 
       const response = await fetch(
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(queryParts)}&limit=1`,
-        { headers: { "Accept-Language": "pt-BR" } }
+        { headers: { "Accept-Language": "pt-BR" } },
       );
 
       if (!response.ok) return;
@@ -235,7 +264,8 @@ export function PointsApproval() {
     if (atualizandoDoMapa.current) return;
     if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
 
-    const temMinimo = formDataEdicao.cep || (formDataEdicao.cidade && formDataEdicao.estado);
+    const temMinimo =
+      formDataEdicao.cep || (formDataEdicao.cidade && formDataEdicao.estado);
     if (!temMinimo) return;
 
     debounceTimeout.current = setTimeout(() => {
@@ -245,7 +275,15 @@ export function PointsApproval() {
     return () => {
       if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
     };
-  }, [editandoPonto, formDataEdicao.cep, formDataEdicao.logradouro, formDataEdicao.numero, formDataEdicao.bairro, formDataEdicao.cidade, formDataEdicao.estado]);
+  }, [
+    editandoPonto,
+    formDataEdicao.cep,
+    formDataEdicao.logradouro,
+    formDataEdicao.numero,
+    formDataEdicao.bairro,
+    formDataEdicao.cidade,
+    formDataEdicao.estado,
+  ]);
 
   const handleAbrirSelecionarParceiro = () => {
     setIsModalSelecionarParceiroOpen(true);
@@ -265,14 +303,14 @@ export function PointsApproval() {
         parceiroId: parceiroSelecionado?.id ? Number(parceiroSelecionado.id) : undefined,
         statusAprovacaoPontoColeta: "APROVADO" as const,
       };
-      
+
       await pontosColetaService.criarPontoColetaAdmin(payload);
-      
-      setStatusFiltro(""); 
+
+      setStatusFiltro("");
       setPage(1);
 
       await Promise.all([carregarPontos(), carregarContagensPontos()]);
-      
+
       setIsModalCriarOpen(false);
       setParceiroSelecionado(null);
     } catch (error) {
@@ -297,8 +335,9 @@ export function PointsApproval() {
         bairro: ponto.bairro || "",
         cidade: ponto.cidade || "",
         estado: ponto.estado || "",
-        capacidadeBombona: ponto.capacidadeBombona || 0,
-        expectativaGeracao: (ponto as any).expectativaGeracao || 0,
+        // 👇 normaliza para number para evitar "50.00" no input
+        capacidadeBombona: Number(ponto.capacidadeBombona) || 0,
+        expectativaGeracao: Number((ponto as any).expectativaGeracao) || 0,
         latitude: (ponto as any).latitude || "",
         longitude: (ponto as any).longitude || "",
       });
@@ -543,8 +582,9 @@ export function PointsApproval() {
                         </div>
                       </td>
 
+                      {/* 👇 Capacidade formatada sem .00 */}
                       <td className="p-4 text-sm text-black-primary whitespace-nowrap">
-                        {ponto.capacidadeBombona} L
+                        {formatarLitros(ponto.capacidadeBombona)} L
                       </td>
 
                       <td className="p-4 whitespace-nowrap">
@@ -627,20 +667,27 @@ export function PointsApproval() {
             <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl animate-slide-down">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-bold text-lg text-green-primary">
-                  {modal.tipo === "aprovar" ? "Confirmar Aprovação" : "Confirmar Rejeição"}
+                  {modal.tipo === "aprovar"
+                    ? "Confirmar Aprovação"
+                    : "Confirmar Rejeição"}
                 </h2>
-                <button onClick={fecharModal} className="text-red-primary hover:text-red-hover cursor-pointer">
+                <button
+                  onClick={fecharModal}
+                  className="text-red-primary hover:text-red-hover cursor-pointer"
+                >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
               <p className="text-sm text-white-600 mb-4">
-                Deseja {modal.tipo === "aprovar" ? "aprovar" : "rejeitar"} o ponto de coleta{" "}
-                <strong>{obterNomePontoOuRazaoSocial(modal.ponto)}</strong>?
+                Deseja {modal.tipo === "aprovar" ? "aprovar" : "rejeitar"} o ponto de
+                coleta <strong>{obterNomePontoOuRazaoSocial(modal.ponto)}</strong>?
               </p>
 
               <label className="block mb-4">
-                <span className="text-sm text-white-600 font-medium">Observações (opcional)</span>
+                <span className="text-sm text-white-600 font-medium">
+                  Observações (opcional)
+                </span>
                 <textarea
                   rows={3}
                   placeholder="Escreva um comentário..."
@@ -651,10 +698,22 @@ export function PointsApproval() {
               </label>
 
               <div className="flex gap-3">
-                <Button variant="danger" size="sm" onClick={fecharModal} disabled={salvando} fullWidth>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={fecharModal}
+                  disabled={salvando}
+                  fullWidth
+                >
                   Cancelar
                 </Button>
-                <Button variant="primary" size="sm" loading={salvando} onClick={processarAcaoModal} fullWidth>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  loading={salvando}
+                  onClick={processarAcaoModal}
+                  fullWidth
+                >
                   Confirmar
                 </Button>
               </div>
@@ -669,7 +728,9 @@ export function PointsApproval() {
               <div className="flex items-center justify-between pb-3 border-b border-white-100 mb-4">
                 <div>
                   <h2 className="font-bold text-xl text-green-primary">
-                    {editandoPonto ? "Editar Ponto de Coleta" : "Detalhes do Ponto de Coleta"}
+                    {editandoPonto
+                      ? "Editar Ponto de Coleta"
+                      : "Detalhes do Ponto de Coleta"}
                   </h2>
                   <p className="text-xs text-white-500">
                     ID do ponto: #{modal.ponto.id}
@@ -686,8 +747,6 @@ export function PointsApproval() {
                       <Pencil className="w-4 h-4" />
                     </button>
                   )}
-                  
-                 
                 </div>
               </div>
 
@@ -695,11 +754,18 @@ export function PointsApproval() {
                 /* FORMULÁRIO DE EDIÇÃO COM MAPA */
                 <div className="space-y-4">
                   <label className="block">
-                    <span className="text-xs text-white-600 font-medium">Nome do Ponto de Coleta</span>
+                    <span className="text-xs text-white-600 font-medium">
+                      Nome do Ponto de Coleta
+                    </span>
                     <input
                       type="text"
                       value={formDataEdicao.nomePontoColeta}
-                      onChange={(e) => setFormDataEdicao({ ...formDataEdicao, nomePontoColeta: e.target.value })}
+                      onChange={(e) =>
+                        setFormDataEdicao({
+                          ...formDataEdicao,
+                          nomePontoColeta: e.target.value,
+                        })
+                      }
                       className="w-full border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
                     />
                   </label>
@@ -710,16 +776,28 @@ export function PointsApproval() {
                       <input
                         type="text"
                         value={formDataEdicao.cep}
-                        onChange={(e) => setFormDataEdicao({ ...formDataEdicao, cep: e.target.value })}
+                        onChange={(e) =>
+                          setFormDataEdicao({
+                            ...formDataEdicao,
+                            cep: e.target.value,
+                          })
+                        }
                         className="w-full border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
                       />
                     </label>
                     <label className="block">
-                      <span className="text-xs text-white-600 font-medium">Logradouro</span>
+                      <span className="text-xs text-white-600 font-medium">
+                        Logradouro
+                      </span>
                       <input
                         type="text"
                         value={formDataEdicao.logradouro}
-                        onChange={(e) => setFormDataEdicao({ ...formDataEdicao, logradouro: e.target.value })}
+                        onChange={(e) =>
+                          setFormDataEdicao({
+                            ...formDataEdicao,
+                            logradouro: e.target.value,
+                          })
+                        }
                         className="w-full border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
                       />
                     </label>
@@ -727,20 +805,34 @@ export function PointsApproval() {
 
                   <div className="grid grid-cols-3 gap-2">
                     <label className="block">
-                      <span className="text-xs text-white-600 font-medium">Número</span>
+                      <span className="text-xs text-white-600 font-medium">
+                        Número
+                      </span>
                       <input
                         type="text"
                         value={formDataEdicao.numero}
-                        onChange={(e) => setFormDataEdicao({ ...formDataEdicao, numero: e.target.value })}
+                        onChange={(e) =>
+                          setFormDataEdicao({
+                            ...formDataEdicao,
+                            numero: e.target.value,
+                          })
+                        }
                         className="w-full border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
                       />
                     </label>
                     <label className="block col-span-2">
-                      <span className="text-xs text-white-600 font-medium">Bairro</span>
+                      <span className="text-xs text-white-600 font-medium">
+                        Bairro
+                      </span>
                       <input
                         type="text"
                         value={formDataEdicao.bairro}
-                        onChange={(e) => setFormDataEdicao({ ...formDataEdicao, bairro: e.target.value })}
+                        onChange={(e) =>
+                          setFormDataEdicao({
+                            ...formDataEdicao,
+                            bairro: e.target.value,
+                          })
+                        }
                         className="w-full border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
                       />
                     </label>
@@ -748,21 +840,35 @@ export function PointsApproval() {
 
                   <div className="grid grid-cols-2 gap-2">
                     <label className="block">
-                      <span className="text-xs text-white-600 font-medium">Cidade</span>
+                      <span className="text-xs text-white-600 font-medium">
+                        Cidade
+                      </span>
                       <input
                         type="text"
                         value={formDataEdicao.cidade}
-                        onChange={(e) => setFormDataEdicao({ ...formDataEdicao, cidade: e.target.value })}
+                        onChange={(e) =>
+                          setFormDataEdicao({
+                            ...formDataEdicao,
+                            cidade: e.target.value,
+                          })
+                        }
                         className="w-full border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
                       />
                     </label>
                     <label className="block">
-                      <span className="text-xs text-white-600 font-medium">Estado (UF)</span>
+                      <span className="text-xs text-white-600 font-medium">
+                        Estado (UF)
+                      </span>
                       <input
                         type="text"
                         maxLength={2}
                         value={formDataEdicao.estado}
-                        onChange={(e) => setFormDataEdicao({ ...formDataEdicao, estado: e.target.value.toUpperCase() })}
+                        onChange={(e) =>
+                          setFormDataEdicao({
+                            ...formDataEdicao,
+                            estado: e.target.value.toUpperCase(),
+                          })
+                        }
                         className="w-full border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
                       />
                     </label>
@@ -770,7 +876,9 @@ export function PointsApproval() {
 
                   {/* MAPA DE EDIÇÃO */}
                   <div className="pt-2">
-                    <span className="text-xs text-white-600 font-medium block mb-1">Localização no Mapa (Ajuste o pin se necessário)</span>
+                    <span className="text-xs text-white-600 font-medium block mb-1">
+                      Localização no Mapa (Ajuste o pin se necessário)
+                    </span>
                     <AddressMapPicker
                       value={{
                         cep: formDataEdicao.cep,
@@ -780,8 +888,12 @@ export function PointsApproval() {
                         estado: formDataEdicao.estado || "",
                         numero: formDataEdicao.numero || "",
                         complemento: "",
-                        latitude: formDataEdicao.latitude ? Number(formDataEdicao.latitude) : null,
-                        longitude: formDataEdicao.longitude ? Number(formDataEdicao.longitude) : null,
+                        latitude: formDataEdicao.latitude
+                          ? Number(formDataEdicao.latitude)
+                          : null,
+                        longitude: formDataEdicao.longitude
+                          ? Number(formDataEdicao.longitude)
+                          : null,
                       }}
                       onChange={(data: Partial<AddressMapValue>) => {
                         atualizandoDoMapa.current = true;
@@ -806,20 +918,38 @@ export function PointsApproval() {
 
                   <div className="grid grid-cols-2 gap-2">
                     <label className="block">
-                      <span className="text-xs text-white-600 font-medium">Capacidade Bombona (L)</span>
+                      <span className="text-xs text-white-600 font-medium">
+                        Capacidade Bombona (L)
+                      </span>
                       <input
                         type="number"
+                        step="1"
+                        min="0"
                         value={formDataEdicao.capacidadeBombona}
-                        onChange={(e) => setFormDataEdicao({ ...formDataEdicao, capacidadeBombona: Number(e.target.value) })}
+                        onChange={(e) =>
+                          setFormDataEdicao({
+                            ...formDataEdicao,
+                            capacidadeBombona: Number(e.target.value),
+                          })
+                        }
                         className="w-full border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
                       />
                     </label>
                     <label className="block">
-                      <span className="text-xs text-white-600 font-medium">Expectativa Geração (L/mês)</span>
+                      <span className="text-xs text-white-600 font-medium">
+                        Expectativa Geração (L/mês)
+                      </span>
                       <input
                         type="number"
+                        step="1"
+                        min="0"
                         value={formDataEdicao.expectativaGeracao}
-                        onChange={(e) => setFormDataEdicao({ ...formDataEdicao, expectativaGeracao: Number(e.target.value) })}
+                        onChange={(e) =>
+                          setFormDataEdicao({
+                            ...formDataEdicao,
+                            expectativaGeracao: Number(e.target.value),
+                          })
+                        }
                         className="w-full border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
                       />
                     </label>
@@ -854,7 +984,9 @@ export function PointsApproval() {
                         Status de Aprovação
                       </span>
                       <StatusBadge
-                        status={modal.ponto.statusAprovacaoPontoColeta || "PENDENTE"}
+                        status={
+                          modal.ponto.statusAprovacaoPontoColeta || "PENDENTE"
+                        }
                         tipo="ponto"
                       />
                     </div>
@@ -862,8 +994,9 @@ export function PointsApproval() {
                       <span className="text-xs text-white-500 block">
                         Capacidade Bombona
                       </span>
+                      {/* 👇 Capacidade formatada sem .00 */}
                       <span className="text-xs font-semibold text-black-primary">
-                        {modal.ponto.capacidadeBombona} Litros
+                        {formatarLitros(modal.ponto.capacidadeBombona)} Litros
                       </span>
                     </div>
                   </div>
@@ -919,7 +1052,8 @@ export function PointsApproval() {
                             </p>
                           </div>
                           <p className="text-xs text-white-500 mt-1">
-                            Consulte o impacto ambiental gerado pelas coletas realizadas neste ponto.
+                            Consulte o impacto ambiental gerado pelas coletas
+                            realizadas neste ponto.
                           </p>
                         </div>
                         <span className="text-xs font-semibold text-green-primary whitespace-nowrap">
@@ -979,8 +1113,8 @@ export function PointsApproval() {
                 </p>
                 <p className="text-xs text-white-500">
                   Você precisa primeiro aprovar o cadastro do parceiro{" "}
-                  <strong>{obterNomePontoOuRazaoSocial(modal.ponto)}</strong>{" "}
-                  para depois aprovar este ponto.
+                  <strong>{obterNomePontoOuRazaoSocial(modal.ponto)}</strong> para
+                  depois aprovar este ponto.
                 </p>
               </div>
 

@@ -56,7 +56,7 @@ function Points() {
         // TODO: confirmar com a colega se existe DELETE /pontos-coleta/{id}
         // ou se a exclusão é feita via PUT com um campo de status.
         setMenuAbertoId(null)
-        navigate(`/my-points/${id}`, { state: { abrirExclusao: true } })
+        navigate(`/points/${id}`, { state: { abrirExclusao: true } })
     }
 
     return (
@@ -147,7 +147,7 @@ function Points() {
                                         {menuAbertoId === ponto.id && (
                                             <div className="absolute right-0 mt-1 w-32 bg-white rounded-lg shadow-lg border border-white-100 py-1 z-10">
                                                 <button
-                                                    onClick={() => navigate(`/my-points/${ponto.id}`, { state: { editar: true } })}
+                                                    onClick={() => navigate(`/points/${ponto.id}`, { state: { editar: true } })}
                                                     className="w-full text-left px-3 py-2 text-sm text-black-200 hover:bg-green-50"
                                                 >
                                                     Editar
@@ -164,7 +164,7 @@ function Points() {
                                 </div>
 
                                 <button
-                                    onClick={() => navigate(`/my-points/${ponto.id}`)}
+                                    onClick={() => navigate(`/points/${ponto.id}`)}
                                     className="w-full text-left p-4 flex flex-col gap-1.5"
                                 >
                                     <p className="font-bold text-black-primary">{ponto.nomePontoColeta}</p>

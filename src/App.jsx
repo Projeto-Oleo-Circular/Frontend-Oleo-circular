@@ -59,8 +59,8 @@ function App() {
         <Route path="/map" element={<Map />} />
         <Route path="/my-requests" element={<MyRequests />} />
         <Route path="/my-requests/:id" element={<RequestDetail />} />
-        <Route path="/my-points" element={<Points />} />
-        <Route path="/my-points/:id" element={<PointDetail />} />
+        <Route path="/points" element={<Points />} />
+        <Route path="/points/:id" element={<PointDetail />} />
         <Route path="/report-barrel" element={<ReportBarrel />} />
         <Route path="/observations" element={<Observations />} />
         <Route path="/confirm-request" element={<ConfirmRequest />} />
@@ -77,7 +77,7 @@ function App() {
       <Route path="/admin/dashboard" element={<AdminProtectedRoute><Dashboard /></AdminProtectedRoute>} />
       <Route path="/admin/requests" element={<AdminProtectedRoute><Requests /></AdminProtectedRoute>} />
       <Route path="/admin/map" element={<AdminProtectedRoute><AdminMap /></AdminProtectedRoute>} />
-      <Route path="/admin/my-points" element={<AdminProtectedRoute><AdminPoints /></AdminProtectedRoute>} />
+      <Route path="/admin/points" element={<AdminProtectedRoute><AdminPoints /></AdminProtectedRoute>} />
       <Route path="/admin/profile-admin" element={<AdminProtectedRoute><ProfileAdmin /></AdminProtectedRoute>} />
       <Route path="/admin/partners-approval" element={<AdminProtectedRoute><PartnersApproval /></AdminProtectedRoute>} />
       <Route path="/admin/indicators" element={<AdminProtectedRoute><IndicatorsApproval /></AdminProtectedRoute>} />

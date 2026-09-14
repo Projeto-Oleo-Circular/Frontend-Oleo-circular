@@ -61,7 +61,7 @@ const NAV_ITEMS: NavItem[] = [
   },
 
   {
-    to: "/admin/my-points",
+    to: "/admin/points",
     label: "Pontos",
     iconSrc: "/assets/icons/icon-pontos.svg",
     badgeKey: "points",

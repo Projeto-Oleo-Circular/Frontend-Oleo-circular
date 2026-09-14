@@ -539,7 +539,7 @@ function IdentifyPoint({ categoria, totalSteps, onBack }: Props) {
                             <p className="text-sm text-green-primary leading-relaxed mb-6 px-2">
                                 Aguarde a aprovação da <strong>Equipe Óleo Circular</strong> para o cadastro do ponto de coleta. Você receberá um e-mail em breve com a confirmação.
                             </p>
-                            <Button onClick={() => navigate("/my-points")} variant="primary" fullWidth>
+                            <Button onClick={() => navigate("/points")} variant="primary" fullWidth>
                                 Ir para os meus pontos
                             </Button>
                         </div>

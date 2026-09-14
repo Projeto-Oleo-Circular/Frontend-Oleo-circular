@@ -411,7 +411,7 @@ function PointDetail() {
             setExcluindo(true)
             await pontosColetaService.excluirPontoColeta(ponto.id)
             addToast("Ponto excluído com sucesso", "success")
-            navigate("/my-points")
+            navigate("/points")
         } catch (error: any) {
             addToast(error.response?.data?.message || "Erro ao excluir ponto", "error")
             setExcluindo(false)
@@ -440,7 +440,7 @@ function PointDetail() {
 
                     <div className="flex items-center gap-4 pt-2">
                         <button
-                            onClick={() => navigate("/my-points")}
+                            onClick={() => navigate("/points")}
                             className="w-10 h-10 bg-green-400 text-white rounded-full flex items-center justify-center shadow-md shrink-0"
                         >
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
