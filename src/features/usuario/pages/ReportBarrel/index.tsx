@@ -209,13 +209,7 @@ function ReportBarrel() {
         capacidadeGeracao *
         (nivelSelecionado / 100);
 
-    console.log("Ponto selecionado:", {
-        id: ponto.id,
-        nome: ponto.nomePontoColeta,
-        expectativaGeracao: ponto.expectativaGeracao,
-        nivelSelecionado,
-        volumeEstimado,
-    });
+   
 
     navigate("/observations", {
         state: {

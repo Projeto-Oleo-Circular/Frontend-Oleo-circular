@@ -632,10 +632,7 @@ function PointDetail() {
 
                 } catch (error) {
 
-                    console.error(
-                        "Erro ao carregar ponto:",
-                        error
-                    );
+                   
 
                     addToast(
                         "Erro ao carregar dados do ponto",

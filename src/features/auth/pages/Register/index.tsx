@@ -397,7 +397,6 @@ function Register() {
       // Passa o dado da última tela para a função que monta o payload
       const registerData = getCompleteRegisterData(lastStepData); 
 
-      console.log("Payload enviado para cadastro:", registerData);
       await authService.register(registerData);
       
     } catch (err: any) {

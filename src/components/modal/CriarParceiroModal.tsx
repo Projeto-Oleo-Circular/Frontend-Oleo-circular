@@ -1116,11 +1116,6 @@ export function CriarParceiroModal({
           );
 
 
-        console.log(
-          "Resultado da disponibilidade:",
-          resultado
-        );
-
 
         setEmailDisponivel(
           resultado.emailDisponivel
@@ -1661,10 +1656,7 @@ export function CriarParceiroModal({
         };
 
 
-        console.log(
-          "PAYLOAD PARCEIRO:",
-          payloadFinal
-        );
+      
 
 
         await onSubmit(
