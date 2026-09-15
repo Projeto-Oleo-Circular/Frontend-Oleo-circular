@@ -25,7 +25,7 @@ export interface PontoColetaPublico {
     bombona: number;
     nivelAtual: number;
     status: string;
-    expectativaGeracao: number | null;
+   capacidadeBombona: number | null;
   };
   criadoEm: string;
   atualizadoEm: string;
@@ -55,7 +55,7 @@ export interface PontoColeta {
     estado: string | null;
     complemento: string | null;
     expectativaGeracao: number | string;
-    capacidadeBombona: number;
+    capacidadeBombona: number | string;
     nivelAtualPct: number;
     statusBombona: string;
     statusAprovacaoPontoColeta: string;
@@ -76,8 +76,8 @@ export interface CriarPontoColetaPayload {
     cidade: string;
     estado?: string;
     complemento?: string | null;
-    expectativaGeracao: number;
-    capacidadeBombona?: number;
+    expectativaGeracao: number | '';
+    capacidadeBombona?: number | '';
     nivelAtualPct?: number;
     statusBombona?: string;
     latitude?: string | number;

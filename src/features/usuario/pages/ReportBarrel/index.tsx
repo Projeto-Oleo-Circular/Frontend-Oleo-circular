@@ -203,7 +203,7 @@ function ReportBarrel() {
     // IMPORTANTE:
     // usa a expectativa de geração DO PONTO SELECIONADO
     const capacidadeGeracao =
-        Number(ponto.expectativaGeracao) || 0;
+        Number(ponto.capacidadeBombona) || 0;
 
     const volumeEstimado =
         capacidadeGeracao *
@@ -313,7 +313,7 @@ function ReportBarrel() {
     // ======================================================
 
 const capacidadeGeracao =
-    Number(ponto.expectativaGeracao) || 0;
+    Number(ponto.capacidadeBombona) || 0;
 
 const volumeEstimado =
     nivelSelecionado !== null

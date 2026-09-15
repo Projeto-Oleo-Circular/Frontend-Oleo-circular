@@ -34,8 +34,8 @@ export interface CriarPontoColetaPayload {
     cidade: string;
     estado?: string;
     complemento?: string | null;
-    expectativaGeracao: number;
-    capacidadeBombona?: number;
+    expectativaGeracao: number | '' ;
+    capacidadeBombona?: number |'';
     nivelAtualPct?: number;
     statusBombona?: string;
     latitude?: string | number;
@@ -62,8 +62,8 @@ const payloadDefault: CriarPontoColetaPayload = {
     cidade: '',
     estado: '',
     complemento: '',
-    expectativaGeracao: 0,
-    capacidadeBombona: 20,
+    expectativaGeracao: '',
+    capacidadeBombona: '',
     nivelAtualPct: 0,
     statusBombona: 'VAZIA',
     latitude: '',
@@ -529,25 +529,67 @@ export function CriarPontoColetaModal({
                     </div>
 
                     {/* Bloco 4: Parâmetros Operacionais */}
-                    <div className="p-4 bg-white-50/60 rounded-xl border border-white-100 space-y-3">
-                        <h3 className="text-xs font-bold text-green-primary uppercase tracking-wider">Parâmetros Operacionais</h3>
-                        
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <label className="block">
-                                <span className="text-xs text-white-600 font-medium">Expectativa de Geração (Litros/Mês) *</span>
-                                <input
-                                    type="number"
-                                    value={formData.expectativaGeracao}
-                                    onChange={(e) => atualizarCampo("expectativaGeracao", Number(e.target.value))}
-                                    className="w-full bg-white border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
-                                    placeholder="0"
-                                    disabled={loading}
-                                    required
-                                    min="0"
-                                />
-                            </label>
-                        </div>
-                    </div>
+<div className="p-4 bg-white-50/60 rounded-xl border border-white-100 space-y-3">
+    <h3 className="text-xs font-bold text-green-primary uppercase tracking-wider">
+        Parâmetros Operacionais
+    </h3>
+
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+        {/* EXPECTATIVA DE GERAÇÃO */}
+        <label className="block">
+            <span className="text-xs text-white-600 font-medium">
+                Expectativa de Geração (Litros/Mês) *
+            </span>
+
+            <input
+                type="number"
+                value={formData.expectativaGeracao ?? ""}
+                onChange={(e) => {
+                    const valor = e.target.value;
+
+                    atualizarCampo(
+                        "expectativaGeracao",
+                        valor === "" ? "" : Number(valor)
+                    );
+                }}
+                className="w-full bg-white border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
+                placeholder="0"
+                disabled={loading}
+                required
+                min={0}
+                step="any"
+            />
+        </label>
+
+        {/* CAPACIDADE DA BOMBONA */}
+        <label className="block">
+            <span className="text-xs text-white-600 font-medium">
+                Capacidade Bombona (Litros) *
+            </span>
+
+            <input
+                type="number"
+                value={formData.capacidadeBombona ?? ""}
+                onChange={(e) => {
+                    const valor = e.target.value;
+
+                    atualizarCampo(
+                        "capacidadeBombona",
+                        valor === "" ? "" : Number(valor)
+                    );
+                }}
+                className="w-full bg-white border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
+                placeholder="0"
+                disabled={loading}
+                required
+                min={0}
+                step="any"
+            />
+        </label>
+
+    </div>
+</div>
 
                     <div className="flex gap-3 pt-4 border-t border-white-100">
                         <Button 

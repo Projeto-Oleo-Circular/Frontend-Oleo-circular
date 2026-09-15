@@ -54,8 +54,8 @@ export interface RegisterCredentials {
   estado?: string;
   complemento?: string | null;
   categoria: number;
-  expectativaGeracao: number;
-  capacidadeBombona?: number;
+  expectativaGeracao: number | "";
+  capacidadeBombona?: number | "";
   nivelAtualPct?: number;
   statusBombona?: string;
   redesSociais?: string[]; 
@@ -102,7 +102,6 @@ export interface DisponibilidadeResponse {
   documentoDisponivel: boolean | null;
 }
 
-// 🚀 Atualizado para suportar a razão social, nome, telefone e os campos de segurança de senha
 export interface AtualizarPerfilPayload {
   razaoSocial?: string;
   nome?: string;

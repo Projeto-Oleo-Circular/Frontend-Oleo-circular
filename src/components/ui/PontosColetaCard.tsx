@@ -28,7 +28,7 @@ function PontosColetaCard({ pontos, currentIndex, onAnterior, onProximo, loading
     if (total === 0 || !pontoAtual) {
         return (
             <div className="bg-white-primary rounded-2xl shadow-card p-5">
-                <h2 className="text-lg font-bold text-green-primary mb-1">Pontos de xpto Coleta</h2>
+                <h2 className="text-lg font-bold text-green-primary mb-1">Pontos de  Coleta</h2>
                 <p className="text-sm text-white-500">
                     Você ainda não cadastrou nenhum ponto de coleta.
                 </p>
@@ -39,7 +39,7 @@ function PontosColetaCard({ pontos, currentIndex, onAnterior, onProximo, loading
     return (
         <div className="bg-white-primary rounded-2xl shadow-card p-5">
             <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold text-green-primary">Pontos de xpto Coleta</h2>
+                <h2 className="text-lg font-bold text-green-primary">Pontos de Coleta</h2>
                 <div className="flex gap-1.5">
                     {pontos.map((_, index) => (
                         <span
@@ -51,8 +51,21 @@ function PontosColetaCard({ pontos, currentIndex, onAnterior, onProximo, loading
                     ))}
                 </div>
             </div>
+           <div className="flex flex-col gap-1.5">
+    {/* Nome do ponto */}
+    <p className="text-base font-bold text-white-800 leading-tight">
+        {pontoAtual.nomePontoColeta || "Ponto de coleta"}
+    </p>
 
-            <p className="font-bold text-white-800">{pontoAtual.categoria}</p>
+    {/* Categoria */}
+    {pontoAtual.categoria && (
+        <div>
+            <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-green-50 text-green-primary text-xs font-semibold">
+                {pontoAtual.categoria}
+            </span>
+        </div>
+    )}
+</div>
             <p className="flex items-center gap-1.5 text-sm text-black-primary mt-1">
                 <img
                     src="/assets/icons/icon-local.svg"
