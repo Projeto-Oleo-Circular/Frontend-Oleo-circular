@@ -247,10 +247,10 @@ export default function LandingPageEstabelecimentos() {
         {/* BARRA SUPERIOR E CONTROLES (Search, Logo, Botões)              */}
         {/* ============================================================== */}
 
-        {/* 1. BARRA DE BUSCA (Sempre no topo absoluto) */}
+        {/* 1. BARRA DE BUSCA (Mobile: Desce para top-20 | Desktop: Fica no top-4) */}
         <form 
           onSubmit={handleSearchNominatim}
-          className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] w-[92%] md:w-[400px] lg:w-[500px]"
+          className="absolute top-20 md:top-4 left-1/2 -translate-x-1/2 z-[1000] w-[92%] md:w-[400px] lg:w-[500px]"
         >
           <div className="flex items-center bg-white rounded-2xl shadow-lg px-4 py-2.5 sm:py-3 border border-white-100">
             <button type="submit" disabled={isSearching} className="mr-2.5 text-white-500 hover:text-green-primary transition-colors">
@@ -272,17 +272,17 @@ export default function LandingPageEstabelecimentos() {
           </div>
         </form>
 
-        {/* 2. LOGO FLUTUANTE (Mobile: Desce para top-20 | Desktop: Fica no top-4) */}
-        <div className="absolute top-20 md:top-4 left-4 z-[1000]">
+        {/* 2. LOGO FLUTUANTE (Mobile & Desktop: Fica no top-4) */}
+        <div className="absolute top-4 left-4 z-[1000]">
           <img 
-            src="/assets/logo-horizontal.svg" // Ajuste a extensão para .png se necessário
+            src="/assets/logo-horizontal.svg" 
             alt="Óleo Circular" 
             className="h-12 sm:h-14 md:h-16 w-auto drop-shadow-md bg-white/95 backdrop-blur-sm p-1.5 sm:p-2 rounded-xl border border-white-100" 
           />
         </div>
 
-        {/* 3. BOTÕES DE AUTENTICAÇÃO (Mobile: Desce e empilha | Desktop: Fica no top-4 lado a lado) */}
-        <div className="absolute top-20 md:top-4 right-4 z-[1000] flex flex-row items-center gap-2">
+        {/* 3. BOTÕES DE AUTENTICAÇÃO (Mobile & Desktop: Fica no top-4) */}
+        <div className="absolute top-4 right-4 z-[1000] flex flex-row items-center gap-2">
           <Button 
             variant="primary"
             fullWidth={false}
