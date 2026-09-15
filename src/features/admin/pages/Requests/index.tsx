@@ -168,7 +168,7 @@ export function Requests() {
   const [pontoSelecionado, setPontoSelecionado] = useState<PontoColetaAdmin | null>(null);
   const [pontosDisponiveis, setPontosDisponiveis] = useState<PontoColetaAdmin[]>([]);
   const [observacaoCriar, setObservacaoCriar] = useState("");
-  const [volumeInformado, setVolumeInformado] = useState<number>(50);
+  const [volumeInformado, setVolumeInformado] = useState<number | "">(0)
   const [parceirosList, setParceirosList] = useState<Parceiro[]>([]);
   const [buscaParceiro, setBuscaParceiro] = useState("");
   const [carregandoParceiros, setCarregandoParceiros] = useState(false);
@@ -192,7 +192,7 @@ export function Requests() {
   const [horarioSelecionado, setHorarioSelecionado] = useState("");
   const [volumeColetado, setVolumeColetado] = useState("");
   const [salvando, setSalvando] = useState(false);
-
+    const hoje = new Date().toLocaleDateString("en-CA");
   const carregarLista = useCallback(async () => {
     setLoading(true);
     try {
@@ -894,19 +894,26 @@ export function Requests() {
 
                   {pontoSelecionado ? (
                     <>
-                      <label className="block">
+                     <label className="block">
                         <span className="text-xs text-white-600 font-medium">
-                          Volume Informado (Litros) *
+                            Volume Informado (Litros) *
                         </span>
+
                         <input
-                          type="number"
-                          min={1}
-                          value={volumeInformado}
-                          onChange={(e) => setVolumeInformado(Number(e.target.value))}
-                          className="w-full border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary bg-white"
-                          disabled={salvando}
+                            type="number"
+                            min={0}
+                            value={volumeInformado}
+                            onChange={(e) => {
+                            const value = e.target.value;
+
+                            setVolumeInformado(
+                                value === "" ? "" : Number(value)
+                            );
+                            }}
+                            className="w-full border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary bg-white"
+                            disabled={salvando}
                         />
-                      </label>
+                        </label>
 
                       <label className="block">
                         <span className="text-xs text-white-600 font-medium">
@@ -984,58 +991,75 @@ export function Requests() {
                 </button>
               </div>
 
-              <div className="space-y-4 mb-4">
-                <label className="block">
-                  <span className="text-sm text-white-700 font-medium">Data da Coleta</span>
-                  <input
-                    type="date"
-                    value={dataAgendamento}
-                    onChange={(e) => setDataAgendamento(e.target.value)}
-                    className="w-full border border-white-300 rounded-lg px-3 py-2 mt-1 text-sm focus:outline-none focus:border-green-primary bg-white cursor-pointer"
-                  />
-                </label>
+             <div className="space-y-4 mb-4">
+  <label className="block">
+    <span className="text-sm text-white-700 font-medium">
+      Data da Coleta
+    </span>
 
-                {dataAgendamento && (
-                  <div>
-                    <span className="text-sm text-white-700 font-medium block mb-2">
-                      Selecione o Turno e Horário (Blocos de 1h)
-                    </span>
-                    <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
-                      {TURNOS_AGENDAMENTO.map((grupo) => (
-                        <div
-                          key={grupo.turno}
-                          className="border border-white-100 p-2.5 rounded-lg bg-white-50"
-                        >
-                          <span className="text-xs font-bold text-green-700 uppercase">
-                            {" "}
-                            {grupo.turno}
-                          </span>
-                          <div className="grid grid-cols-2 gap-2 mt-2">
-                            {grupo.slots.map((slot) => {
-                              const isSelected = horarioSelecionado === slot;
-                              return (
-                                <button
-                                  key={slot}
-                                  type="button"
-                                  onClick={() => setHorarioSelecionado(slot)}
-                                  className={`py-2 px-3 text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
-                                    isSelected
-                                      ? "bg-green-600 text-white border-green-600 shadow-sm"
-                                      : "bg-white text-white-700 border-white-200 hover:border-green-400"
-                                  }`}
-                                >
-                                  {slot}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
+    <input
+      type="date"
+      min={hoje}
+      value={dataAgendamento}
+      onChange={(e) => {
+        const dataSelecionada = e.target.value;
 
+        if (dataSelecionada < hoje) {
+          setDataAgendamento(hoje);
+          return;
+        }
+
+        setDataAgendamento(dataSelecionada);
+
+        // Limpa o horário caso altere a data
+        setHorarioSelecionado("");
+      }}
+      className="w-full border border-white-300 rounded-lg px-3 py-2 mt-1 text-sm focus:outline-none focus:border-green-primary bg-white cursor-pointer"
+    />
+  </label>
+
+  {dataAgendamento && (
+    <div>
+      <span className="text-sm text-white-700 font-medium block mb-2">
+        Selecione o Turno e Horário (Blocos de 1h)
+      </span>
+
+      <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
+        {TURNOS_AGENDAMENTO.map((grupo) => (
+          <div
+            key={grupo.turno}
+            className="border border-white-100 p-2.5 rounded-lg bg-white-50"
+          >
+            <span className="text-xs font-bold text-green-700 uppercase">
+              {grupo.turno}
+            </span>
+
+            <div className="grid grid-cols-2 gap-2 mt-2">
+              {grupo.slots.map((slot) => {
+                const isSelected = horarioSelecionado === slot;
+
+                return (
+                  <button
+                    key={slot}
+                    type="button"
+                    onClick={() => setHorarioSelecionado(slot)}
+                    className={`py-2 px-3 text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
+                      isSelected
+                        ? "bg-green-600 text-white border-green-600 shadow-sm"
+                        : "bg-white text-white-700 border-white-200 hover:border-green-400"
+                    }`}
+                  >
+                    {slot}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )}
+</div>
               <div className="flex gap-3">
                 <Button
                   variant="secondary"
