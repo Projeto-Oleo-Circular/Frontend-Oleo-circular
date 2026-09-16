@@ -65,7 +65,7 @@ function VolumeSo({
                             Bem-vindo(a), {userName}!
                         </h1>
                         <p className="text-sm sm:text-base font-medium text-white-500">
-                            Informe a quantidade estimada de óleo que produzirá por semana em litros (L)
+                            Informe a quantidade estimada de óleo que produzirá por mês em litros (L)
                         </p>
                     </div>
                     

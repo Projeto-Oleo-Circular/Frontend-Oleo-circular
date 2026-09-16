@@ -198,7 +198,7 @@ function ComunicacaoIns({
                             font-medium
                             text-white-500
                         ">
-                            Informe suas redes sociais e site
+                            Informe suas redes sociais e o site
                             para divulgarmos sua empresa como parceira
                         </p>
 
