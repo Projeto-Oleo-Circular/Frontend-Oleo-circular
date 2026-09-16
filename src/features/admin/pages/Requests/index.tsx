@@ -123,9 +123,6 @@ function formatarEnderecoPonto(ponto: PontoColetaAdmin): string {
   return ponto.estado ? `${base}/${ponto.estado}` : base;
 }
 
-/**
- * Extrai uma mensagem legível de erros vindos do backend (axios) ou de Error genéricos.
- */
 function extrairMensagemErro(error: unknown, fallback: string): string {
   if (!error) return fallback;
 
@@ -168,7 +165,7 @@ export function Requests() {
   const [pontoSelecionado, setPontoSelecionado] = useState<PontoColetaAdmin | null>(null);
   const [pontosDisponiveis, setPontosDisponiveis] = useState<PontoColetaAdmin[]>([]);
   const [observacaoCriar, setObservacaoCriar] = useState("");
-  const [volumeInformado, setVolumeInformado] = useState<number | "">(0)
+  const [volumeInformado, setVolumeInformado] = useState<number | "">(0);
   const [parceirosList, setParceirosList] = useState<Parceiro[]>([]);
   const [buscaParceiro, setBuscaParceiro] = useState("");
   const [carregandoParceiros, setCarregandoParceiros] = useState(false);
@@ -192,7 +189,8 @@ export function Requests() {
   const [horarioSelecionado, setHorarioSelecionado] = useState("");
   const [volumeColetado, setVolumeColetado] = useState("");
   const [salvando, setSalvando] = useState(false);
-    const hoje = new Date().toLocaleDateString("en-CA");
+  const hoje = new Date().toLocaleDateString("en-CA");
+
   const carregarLista = useCallback(async () => {
     setLoading(true);
     try {
@@ -698,7 +696,9 @@ export function Requests() {
           }}
         />
 
+        {/* ========================================================= */}
         {/* MODAL: CRIAR SOLICITAÇÃO ADMIN */}
+        {/* ========================================================= */}
         {isModalCriarOpen && (
           <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl p-6 w-full max-w-2xl shadow-xl max-h-[90vh] overflow-y-auto">
@@ -718,9 +718,12 @@ export function Requests() {
                   </p>
                 </div>
                 <button
+                  type="button"
                   onClick={fecharModalCriar}
-                  className="text-red-primary hover:text-red-hover cursor-pointer"
+                  className="text-red-primary hover:opacity-70 transition-opacity cursor-pointer disabled:opacity-40"
                   disabled={salvando}
+                  title="Fechar"
+                  aria-label="Fechar"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -786,6 +789,18 @@ export function Requests() {
                         ))}
                       </div>
                     )}
+                  </div>
+
+                  {/* FOOTER CANCELAR */}
+                  <div className="pt-4 mt-4 border-t border-white-100">
+                    <button
+                      type="button"
+                      onClick={fecharModalCriar}
+                      disabled={salvando}
+                      className="w-full py-2.5 px-4 rounded-full border border-green-primary text-green-primary bg-white text-sm font-semibold hover:bg-green-50 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Cancelar
+                    </button>
                   </div>
                 </div>
               )}
@@ -854,6 +869,18 @@ export function Requests() {
                       ))
                     )}
                   </div>
+
+                  {/* FOOTER CANCELAR */}
+                  <div className="pt-4 border-t border-white-100">
+                    <button
+                      type="button"
+                      onClick={fecharModalCriar}
+                      disabled={salvando}
+                      className="w-full py-2.5 px-4 rounded-full border border-green-primary text-green-primary bg-white text-sm font-semibold hover:bg-green-50 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
                 </div>
               )}
 
@@ -894,26 +921,23 @@ export function Requests() {
 
                   {pontoSelecionado ? (
                     <>
-                     <label className="block">
+                      <label className="block">
                         <span className="text-xs text-white-600 font-medium">
-                            Volume Informado (Litros) *
+                          Volume Informado (Litros) *
                         </span>
 
                         <input
-                            type="number"
-                            min={0}
-                            value={volumeInformado}
-                            onChange={(e) => {
+                          type="number"
+                          min={0}
+                          value={volumeInformado}
+                          onChange={(e) => {
                             const value = e.target.value;
-
-                            setVolumeInformado(
-                                value === "" ? "" : Number(value)
-                            );
-                            }}
-                            className="w-full border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary bg-white"
-                            disabled={salvando}
+                            setVolumeInformado(value === "" ? "" : Number(value));
+                          }}
+                          className="w-full border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary bg-white"
+                          disabled={salvando}
                         />
-                        </label>
+                      </label>
 
                       <label className="block">
                         <span className="text-xs text-white-600 font-medium">
@@ -930,16 +954,15 @@ export function Requests() {
                       </label>
 
                       <div className="flex gap-3 pt-2">
-                        <Button
-                          variant="secondary"
-                          size="sm"
+                        <button
+                          type="button"
                           onClick={fecharModalCriar}
                           disabled={salvando}
-                          fullWidth
-                          className="rounded-full border border-green-primary text-green-primary bg-white hover:bg-green-50"
+                          className="w-full py-2.5 px-4 rounded-full border border-green-primary text-green-primary bg-white text-sm font-semibold hover:bg-green-50 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           Cancelar
-                        </Button>
+                        </button>
+
                         <Button
                           variant="primary"
                           size="sm"
@@ -966,6 +989,17 @@ export function Requests() {
                       >
                         Voltar para seleção de pontos
                       </Button>
+
+                      <div className="pt-4 mt-4 border-t border-white-100">
+                        <button
+                          type="button"
+                          onClick={fecharModalCriar}
+                          disabled={salvando}
+                          className="w-full py-2.5 px-4 rounded-full border border-green-primary text-green-primary bg-white text-sm font-semibold hover:bg-green-50 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Cancelar
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -974,7 +1008,9 @@ export function Requests() {
           </div>
         )}
 
+        {/* ========================================================= */}
         {/* MODAL: AGENDAR COLETA */}
+        {/* ========================================================= */}
         {modal.tipo === "agendar" && modal.solicitacao && (
           <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl animate-slide-down">
@@ -983,94 +1019,97 @@ export function Requests() {
                   Agendar coleta — #{modal.solicitacao.id}
                 </h2>
                 <button
+                  type="button"
                   onClick={fecharModal}
-                  className="text-red-primary hover:text-red-hover cursor-pointer"
+                  className="text-red-primary hover:opacity-70 transition-opacity cursor-pointer disabled:opacity-40"
                   disabled={salvando}
+                  title="Fechar"
+                  aria-label="Fechar"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-             <div className="space-y-4 mb-4">
-  <label className="block">
-    <span className="text-sm text-white-700 font-medium">
-      Data da Coleta
-    </span>
+              <div className="space-y-4 mb-4">
+                <label className="block">
+                  <span className="text-sm text-white-700 font-medium">
+                    Data da Coleta
+                  </span>
 
-    <input
-      type="date"
-      min={hoje}
-      value={dataAgendamento}
-      onChange={(e) => {
-        const dataSelecionada = e.target.value;
+                  <input
+                    type="date"
+                    min={hoje}
+                    value={dataAgendamento}
+                    onChange={(e) => {
+                      const dataSelecionada = e.target.value;
 
-        if (dataSelecionada < hoje) {
-          setDataAgendamento(hoje);
-          return;
-        }
+                      if (dataSelecionada < hoje) {
+                        setDataAgendamento(hoje);
+                        return;
+                      }
 
-        setDataAgendamento(dataSelecionada);
+                      setDataAgendamento(dataSelecionada);
 
-        // Limpa o horário caso altere a data
-        setHorarioSelecionado("");
-      }}
-      className="w-full border border-white-300 rounded-lg px-3 py-2 mt-1 text-sm focus:outline-none focus:border-green-primary bg-white cursor-pointer"
-    />
-  </label>
+                      // Limpa o horário caso altere a data
+                      setHorarioSelecionado("");
+                    }}
+                    className="w-full border border-white-300 rounded-lg px-3 py-2 mt-1 text-sm focus:outline-none focus:border-green-primary bg-white cursor-pointer"
+                  />
+                </label>
 
-  {dataAgendamento && (
-    <div>
-      <span className="text-sm text-white-700 font-medium block mb-2">
-        Selecione o Turno e Horário (Blocos de 1h)
-      </span>
+                {dataAgendamento && (
+                  <div>
+                    <span className="text-sm text-white-700 font-medium block mb-2">
+                      Selecione o Turno e Horário (Blocos de 1h)
+                    </span>
 
-      <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
-        {TURNOS_AGENDAMENTO.map((grupo) => (
-          <div
-            key={grupo.turno}
-            className="border border-white-100 p-2.5 rounded-lg bg-white-50"
-          >
-            <span className="text-xs font-bold text-green-700 uppercase">
-              {grupo.turno}
-            </span>
+                    <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
+                      {TURNOS_AGENDAMENTO.map((grupo) => (
+                        <div
+                          key={grupo.turno}
+                          className="border border-white-100 p-2.5 rounded-lg bg-white-50"
+                        >
+                          <span className="text-xs font-bold text-green-700 uppercase">
+                            {grupo.turno}
+                          </span>
 
-            <div className="grid grid-cols-2 gap-2 mt-2">
-              {grupo.slots.map((slot) => {
-                const isSelected = horarioSelecionado === slot;
+                          <div className="grid grid-cols-2 gap-2 mt-2">
+                            {grupo.slots.map((slot) => {
+                              const isSelected = horarioSelecionado === slot;
 
-                return (
-                  <button
-                    key={slot}
-                    type="button"
-                    onClick={() => setHorarioSelecionado(slot)}
-                    className={`py-2 px-3 text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
-                      isSelected
-                        ? "bg-green-600 text-white border-green-600 shadow-sm"
-                        : "bg-white text-white-700 border-white-200 hover:border-green-400"
-                    }`}
-                  >
-                    {slot}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  )}
-</div>
+                              return (
+                                <button
+                                  key={slot}
+                                  type="button"
+                                  onClick={() => setHorarioSelecionado(slot)}
+                                  className={`py-2 px-3 text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
+                                    isSelected
+                                      ? "bg-green-600 text-white border-green-600 shadow-sm"
+                                      : "bg-white text-white-700 border-white-200 hover:border-green-400"
+                                  }`}
+                                >
+                                  {slot}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div className="flex gap-3">
-                <Button
-                  variant="secondary"
-                  size="sm"
+                <button
+                  type="button"
                   onClick={fecharModal}
                   disabled={salvando}
-                  fullWidth
-                  className="rounded-full border border-green-primary text-green-primary bg-white hover:bg-green-50"
+                  className="w-full py-2.5 px-4 rounded-full border border-green-primary text-green-primary bg-white text-sm font-semibold hover:bg-green-50 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Cancelar
-                </Button>
+                </button>
+
                 <Button
                   variant="primary"
                   size="sm"
@@ -1087,7 +1126,9 @@ export function Requests() {
           </div>
         )}
 
+        {/* ========================================================= */}
         {/* MODAL: CONCLUIR COLETA */}
+        {/* ========================================================= */}
         {modal.tipo === "concluir" && modal.solicitacao && (
           <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl animate-slide-down">
@@ -1096,9 +1137,12 @@ export function Requests() {
                   Concluir coleta — #{modal.solicitacao.id}
                 </h2>
                 <button
+                  type="button"
                   onClick={fecharModal}
-                  className="text-red-primary hover:text-red-hover cursor-pointer"
+                  className="text-red-primary hover:opacity-70 transition-opacity cursor-pointer disabled:opacity-40"
                   disabled={salvando}
+                  title="Fechar"
+                  aria-label="Fechar"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -1119,16 +1163,15 @@ export function Requests() {
               </label>
 
               <div className="flex gap-3">
-                <Button
-                  variant="secondary"
-                  size="sm"
+                <button
+                  type="button"
                   onClick={fecharModal}
                   disabled={salvando}
-                  fullWidth
-                  className="rounded-full border border-green-primary text-green-primary bg-white hover:bg-green-50"
+                  className="w-full py-2.5 px-4 rounded-full border border-green-primary text-green-primary bg-white text-sm font-semibold hover:bg-green-50 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Cancelar
-                </Button>
+                </button>
+
                 <Button
                   variant="primary"
                   size="sm"
@@ -1145,7 +1188,9 @@ export function Requests() {
           </div>
         )}
 
+        {/* ========================================================= */}
         {/* MODAL: DETALHES DA SOLICITAÇÃO */}
+        {/* ========================================================= */}
         {modal.tipo === "detalhes" && modal.solicitacao && (
           <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl p-6 w-full max-w-lg shadow-xl animate-slide-down max-h-[90vh] overflow-y-auto">
@@ -1159,10 +1204,13 @@ export function Requests() {
                   </p>
                 </div>
                 <button
+                  type="button"
                   onClick={fecharModal}
-                  className="text-white-500 hover:text-black-primary cursor-pointer"
+                  className="text-red-primary hover:opacity-70 transition-opacity cursor-pointer"
+                  title="Fechar"
+                  aria-label="Fechar"
                 >
-                  <X className="w-5 h-5 text-red-primary" />
+                  <X className="w-5 h-5" />
                 </button>
               </div>
 
@@ -1259,7 +1307,16 @@ export function Requests() {
                 )}
               </div>
 
-              <div className="mt-6">
+              {/* FOOTER: FECHAR + CANCELAR (ambos) */}
+              <div className="mt-6 pt-4 border-t border-white-100 flex gap-3">
+                <button
+                  type="button"
+                  onClick={fecharModal}
+                  className="w-full py-2.5 px-4 rounded-full border border-green-primary text-green-primary bg-white text-sm font-semibold hover:bg-green-50 transition-colors cursor-pointer"
+                >
+                  Cancelar
+                </button>
+
                 <Button
                   variant="primary"
                   size="sm"

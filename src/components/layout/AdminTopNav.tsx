@@ -196,6 +196,9 @@ function AdminTopNav() {
   const dropdownRef =
     useRef<HTMLDivElement>(null);
 
+  const mobileNavRef =
+    useRef<HTMLDivElement>(null);
+
   // ==========================================================
   // NOTIFICAÇÕES
   // ==========================================================
@@ -308,6 +311,27 @@ function AdminTopNav() {
     const handleClickOutside = (
       event: MouseEvent
     ) => {
+      /*
+       * CORREÇÃO CRÍTICA:
+       *
+       * Quando o menu mobile está aberto, NÃO rodamos o
+       * click-outside do dropdown.
+       *
+       * Motivo: no mobile, o submenu do "Parceiros" fica
+       * renderizado DENTRO do sidebar mobile. Se o
+       * click-outside fechar o dropdown no `mousedown`
+       * (que dispara ANTES do `click`), o submenu é
+       * desmontado antes do <NavLink> receber o clique —
+       * ou seja, a navegação nunca acontece e o menu
+       * apenas fecha.
+       *
+       * Deixando o próprio submenu mobile fechar quando o
+       * usuário clica num item, a navegação funciona.
+       */
+      if (isMobileNavOpen) {
+        return;
+      }
+
       if (
         dropdownRef.current &&
         !dropdownRef.current.contains(
@@ -329,7 +353,7 @@ function AdminTopNav() {
         handleClickOutside
       );
     };
-  }, []);
+  }, [isMobileNavOpen]);
 
   // ==========================================================
   // FECHAR MENU DO USUÁRIO AO CLICAR FORA
@@ -361,6 +385,42 @@ function AdminTopNav() {
       );
     };
   }, []);
+
+  // ==========================================================
+  // FECHAR MENU MOBILE AO CLICAR FORA DO SIDEBAR
+  // ==========================================================
+
+  useEffect(() => {
+    if (!isMobileNavOpen) {
+      return;
+    }
+
+    const handleClickOutside = (
+      event: MouseEvent
+    ) => {
+      if (
+        mobileNavRef.current &&
+        !mobileNavRef.current.contains(
+          event.target as Node
+        )
+      ) {
+        setIsMobileNavOpen(false);
+        setOpenDropdown(null);
+      }
+    };
+
+    document.addEventListener(
+      "mousedown",
+      handleClickOutside
+    );
+
+    return () => {
+      document.removeEventListener(
+        "mousedown",
+        handleClickOutside
+      );
+    };
+  }, [isMobileNavOpen]);
 
   // ==========================================================
   // RENDERIZAR ITEM DO MENU
@@ -610,11 +670,19 @@ function AdminTopNav() {
                           null
                         );
 
-                        if (
-                          isMobile
-                        ) {
-                          setIsMobileNavOpen(
-                            false
+                        /*
+                         * No mobile, fechamos o sidebar
+                         * adiando a atualização de estado
+                         * para não desmontar o <NavLink>
+                         * antes da navegação concluir.
+                         */
+                        if (isMobile) {
+                          requestAnimationFrame(
+                            () => {
+                              setIsMobileNavOpen(
+                                false
+                              );
+                            }
                           );
                         }
                       }}
@@ -706,9 +774,16 @@ function AdminTopNav() {
           setOpenDropdown(null);
 
           if (isMobile) {
-            setIsMobileNavOpen(
-              false
-            );
+            /*
+             * Mesma proteção dos filhos do dropdown:
+             * fecha o sidebar no próximo frame para
+             * não interromper a navegação.
+             */
+            requestAnimationFrame(() => {
+              setIsMobileNavOpen(
+                false
+              );
+            });
           }
         }}
         className={({
@@ -1113,6 +1188,7 @@ function AdminTopNav() {
           {/* SIDEBAR */}
 
           <div
+            ref={mobileNavRef}
             className="
               relative
               w-4/5

@@ -698,15 +698,17 @@ export function PointsApproval() {
               </label>
 
               <div className="flex gap-3">
-                <Button
-                  variant="danger"
-                  size="sm"
-                  onClick={fecharModal}
-                  disabled={salvando}
-                  fullWidth
-                >
-                  Cancelar
-                </Button>
+               <Button
+  type="button"
+  variant="secondary"
+  size="sm"
+  onClick={fecharModal}
+  disabled={salvando}
+  fullWidth
+  className="rounded-full border border-green-primary text-green-primary bg-white hover:bg-green-50"
+>
+  Cancelar
+</Button>
                 <Button
                   variant="primary"
                   size="sm"

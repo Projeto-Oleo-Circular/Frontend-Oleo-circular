@@ -1393,6 +1393,16 @@ function MapPage() {
               w-full
               min-w-0
 
+              /* ============================================ */
+              /* CORREÇÃO DO Z-INDEX                            */
+              /* Cria um stacking context próprio e prende    */
+              /* todos os z-index internos do Leaflet dentro  */
+              /* deste container, evitando que o mapa fique   */
+              /* por cima do menu lateral do AdminTopNav.     */
+              /* ============================================ */
+              isolate
+              z-0
+
               h-[400px]
               xs:h-[430px]
               sm:h-[500px]
@@ -1425,7 +1435,7 @@ function MapPage() {
                   justify-center
                   gap-2
                   bg-white
-                  z-[1001]
+                  z-[10]
                   p-4
                 "
               >
@@ -1740,7 +1750,7 @@ function MapPage() {
                 p-2
                 sm:p-2.5
 
-                z-[1000]
+                z-[10]
 
                 text-[10px]
                 sm:text-xs

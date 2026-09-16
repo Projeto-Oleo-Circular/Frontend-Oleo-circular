@@ -17,7 +17,10 @@ import AdminTopNav from "../../../../components/layout/AdminTopNav";
 import AdminFilterDropdown, {
   type FilterOption,
 } from "../../../../components/ui/AdminFilterDropdown";
-import { CriarParceiroModal, NovoParceiroPayload } from "../../../../components/modal/CriarParceiroModal";
+import {
+  CriarParceiroModal,
+  NovoParceiroPayload,
+} from "../../../../components/modal/CriarParceiroModal";
 import {
   User,
   Phone,
@@ -29,8 +32,6 @@ import {
   Clock,
   CheckCircle2,
   XCircle,
-  ChevronLeft,
-  ChevronRight,
   Plus,
   Pencil,
 } from "lucide-react";
@@ -38,6 +39,7 @@ import Button from "../../../../components/ui/Button";
 import Footer from "../../../../components/layout/Footer";
 import SummaryCard from "../../../../components/ui/SummaryCard";
 import { IndicadoresAmbientais } from "../../../../components/dash/IndicadoresAmbientais";
+import Pagination from "../../../../components/ui/Pagination";
 
 interface ContagensParceiros {
   pendentes: number;
@@ -54,14 +56,18 @@ function formatarData(iso?: string | null): string {
   return data.toLocaleDateString("pt-BR");
 }
 
-function extrairTotal(resposta: ListarParceirosResponse | Parceiro[]): number {
+function extrairTotal(
+  resposta: ListarParceirosResponse | Parceiro[]
+): number {
   if (Array.isArray(resposta)) {
     return resposta.length;
   }
   return resposta.total ?? 0;
 }
 
-function extrairItens(resposta: ListarParceirosResponse | Parceiro[]): Parceiro[] {
+function extrairItens(
+  resposta: ListarParceirosResponse | Parceiro[]
+): Parceiro[] {
   if (Array.isArray(resposta)) {
     return resposta;
   }
@@ -69,7 +75,10 @@ function extrairItens(resposta: ListarParceirosResponse | Parceiro[]): Parceiro[
 }
 
 function obterNomeOuRazaoSocial(parceiro: Parceiro): string {
-  if (parceiro.tipoParceiro === "SOLIDARIO" || parceiro.tipoParceiro === "COMUNITARIO") {
+  if (
+    parceiro.tipoParceiro === "SOLIDARIO" ||
+    parceiro.tipoParceiro === "COMUNITARIO"
+  ) {
     return parceiro.nome || "—";
   }
   return parceiro.razaoSocial || parceiro.nome || "—";
@@ -84,14 +93,24 @@ export function PartnersApproval() {
   const [contagens, setContagens] = useState<ContagensParceiros | null>(null);
   const [isModalCriarOpen, setIsModalCriarOpen] = useState(false);
 
-  // Estado para edição
-  const [modoEdicao, setModoEdicao] = useState(false);
-  const [parceiroEditando, setParceiroEditando] = useState<Parceiro | null>(null);
-
-  // Paginação e Filtros
+  // ----------------------------------------------------------
+  // Paginação
+  // ----------------------------------------------------------
   const [page, setPage] = useState(1);
-  const [limit] = useState(10);
+  const [limit, setLimit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+
+  // ----------------------------------------------------------
+  // Edição
+  // ----------------------------------------------------------
+  const [modoEdicao, setModoEdicao] = useState(false);
+  const [parceiroEditando, setParceiroEditando] =
+    useState<Parceiro | null>(null);
+
+  // ----------------------------------------------------------
+  // Filtros
+  // ----------------------------------------------------------
   const [statusFiltro, setStatusFiltro] = useState<StatusAprovacao | "">("");
   const [termoBusca, setTermoBusca] = useState("");
 
@@ -112,6 +131,10 @@ export function PartnersApproval() {
 
   const [mostrarResumoAmbiental, setMostrarResumoAmbiental] = useState(false);
 
+  // ==========================================================
+  // CARREGAR PARCEIROS
+  // ==========================================================
+
   const carregarParceiros = useCallback(async () => {
     setLoading(true);
     try {
@@ -127,8 +150,10 @@ export function PartnersApproval() {
 
       if (!Array.isArray(resposta)) {
         setTotalPages(resposta.totalPages || 1);
+        setTotalItems(resposta.total ?? itens.length);
       } else {
         setTotalPages(Math.ceil(itens.length / limit) || 1);
+        setTotalItems(itens.length);
       }
     } catch (error) {
       console.error("Erro ao carregar parceiros:", error);
@@ -143,9 +168,15 @@ export function PartnersApproval() {
 
       if (!Array.isArray(resposta) && resposta.items) {
         const [pendentes, aprovados, rejeitados] = await Promise.all([
-          adminParceiroService.listarParceiros({ statusAprovacao: "PENDENTE" }),
-          adminParceiroService.listarParceiros({ statusAprovacao: "APROVADO" }),
-          adminParceiroService.listarParceiros({ statusAprovacao: "REJEITADO" }),
+          adminParceiroService.listarParceiros({
+            statusAprovacao: "PENDENTE",
+          }),
+          adminParceiroService.listarParceiros({
+            statusAprovacao: "APROVADO",
+          }),
+          adminParceiroService.listarParceiros({
+            statusAprovacao: "REJEITADO",
+          }),
         ]);
 
         setContagens({
@@ -160,9 +191,15 @@ export function PartnersApproval() {
       const lista = Array.isArray(resposta) ? resposta : [];
 
       setContagens({
-        pendentes: lista.filter((p) => p.statusAprovacaoParceiro === "PENDENTE").length,
-        aprovados: lista.filter((p) => p.statusAprovacaoParceiro === "APROVADO").length,
-        rejeitados: lista.filter((p) => p.statusAprovacaoParceiro === "REJEITADO").length,
+        pendentes: lista.filter(
+          (p) => p.statusAprovacaoParceiro === "PENDENTE"
+        ).length,
+        aprovados: lista.filter(
+          (p) => p.statusAprovacaoParceiro === "APROVADO"
+        ).length,
+        rejeitados: lista.filter(
+          (p) => p.statusAprovacaoParceiro === "REJEITADO"
+        ).length,
         total: lista.length,
       });
     } catch (error) {
@@ -190,6 +227,10 @@ export function PartnersApproval() {
     carregarIndicadores();
   }, []);
 
+  // ==========================================================
+  // HANDLERS DE FILTRO / PAGINAÇÃO
+  // ==========================================================
+
   const handleFilterChange = (val: StatusAprovacao | "") => {
     setStatusFiltro(val);
     setPage(1);
@@ -199,6 +240,19 @@ export function PartnersApproval() {
     setTermoBusca(e.target.value);
     setPage(1);
   };
+
+  const handlePageChange = (novaPagina: number) => {
+    setPage(novaPagina);
+  };
+
+  const handleItemsPerPageChange = (novoLimit: number) => {
+    setLimit(novoLimit);
+    setPage(1);
+  };
+
+  // ==========================================================
+  // HELPERS
+  // ==========================================================
 
   const obterNomeParceiroIndicador = (parceiro: Parceiro): string => {
     if (parceiro.parceiroIndicador?.nome) {
@@ -225,6 +279,10 @@ export function PartnersApproval() {
     return "CataUnidos";
   };
 
+  // ==========================================================
+  // CRIAR PARCEIRO
+  // ==========================================================
+
   const handleAbrirModalCriar = () => {
     setIsModalCriarOpen(true);
   };
@@ -232,42 +290,46 @@ export function PartnersApproval() {
   const handleCriarParceiro = async (dados: NovoParceiroPayload) => {
     setSalvando(true);
     try {
-     await authService.register({
-       tipoPessoa: dados.tipoPessoa,
-       tipoParceiro: dados.tipoParceiro,
-       razaoSocial: dados.razaoSocial,
-       nome: dados.nome,
-       email: dados.email,
-       senha: dados.senha,
-       documento: dados.documento,
-       telefone: dados.telefone,
-       porte: dados.porte,
-       aceiteMarketing: dados.aceiteMarketing,
-       responsavelLegal: dados.responsavelLegal,
-       responsavelLegalCpf: dados.responsavelLegalCpf,
-       cep: dados.cep,
-       logradouro: dados.logradouro,
-       numero: dados.numero,
-       cidade: dados.cidade,
-       bairro: dados.bairro,
-       estado: dados.estado,
-       complemento: dados.complemento,
-       categoria: dados.categoria,
-       expectativaGeracao: dados.expectativaGeracao,
-       capacidadeBombona: dados.capacidadeBombona,
-       nivelAtualPct: dados.nivelAtualPct,
-       statusBombona: dados.statusBombona,
-       redesSociais: dados.redesSociais,
-       site: dados.site,
-       aceiteDivulgacao: dados.aceiteDivulgacao,
-       parceiroIndicadorId: null,
-       outroParceiro: null,
-       comoConheceu: "Criado pelo Administrador",
-       observacao: dados.observacao,
-       longitude: dados.longitude,
-       latitude: dados.latitude,
-       criadoPorAdmin: true,
-     });
+      await authService.register({
+        tipoPessoa: dados.tipoPessoa,
+        tipoParceiro: dados.tipoParceiro,
+        razaoSocial: dados.razaoSocial,
+        nome: dados.nome,
+        email: dados.email,
+        senha: dados.senha,
+        documento: dados.documento,
+        telefone: dados.telefone,
+        aceiteMarketing: dados.aceiteMarketing,
+        responsavelLegal: dados.responsavelLegal,
+        responsavelLegalCpf: dados.responsavelLegalCpf,
+        cep: dados.cep,
+        logradouro: dados.logradouro,
+        numero: dados.numero,
+        cidade: dados.cidade,
+        bairro: dados.bairro,
+        estado: dados.estado,
+        complemento: dados.complemento,
+        categoria: dados.categoria,
+        expectativaGeracao: dados.expectativaGeracao,
+        capacidadeBombona: dados.capacidadeBombona,
+
+        // Redes sociais já vêm no formato { tipo, valor }[]
+        redesSociais: dados.redesSociais.map((rede) => rede.valor),
+
+        site: dados.site,
+        aceiteDivulgacao: dados.aceiteDivulgacao,
+
+        parceiroIndicadorId: dados.parceiroIndicadorId,
+        outroParceiro: dados.outroParceiro,
+        comoConheceu: dados.comoConheceu || "Criado pelo Administrador",
+        observacao: dados.observacao,
+
+        longitude: dados.longitude,
+        latitude: dados.latitude,
+
+        criadoPorAdmin: true,
+      });
+
       await Promise.all([carregarParceiros(), carregarContagensParceiros()]);
       setIsModalCriarOpen(false);
     } catch (error) {
@@ -277,6 +339,10 @@ export function PartnersApproval() {
       setSalvando(false);
     }
   };
+
+  // ==========================================================
+  // FILTRAGEM LOCAL
+  // ==========================================================
 
   const parceirosFiltrados = parceiros.filter((parceiro) => {
     const atendeStatus =
@@ -294,6 +360,10 @@ export function PartnersApproval() {
 
     return atendeStatus && atendeBusca;
   });
+
+  // ==========================================================
+  // MODAIS
+  // ==========================================================
 
   const abrirModal = (tipo: ModalTipo, parceiro: Parceiro) => {
     setObservacaoModal("");
@@ -336,6 +406,10 @@ export function PartnersApproval() {
     }
   };
 
+  // ==========================================================
+  // EDIÇÃO
+  // ==========================================================
+
   const handleEditarParceiro = () => {
     if (modal.parceiro) {
       setParceiroEditando({ ...modal.parceiro });
@@ -368,12 +442,12 @@ export function PartnersApproval() {
       });
 
       await Promise.all([carregarParceiros(), carregarContagensParceiros()]);
-      
+
       setModal((prev) => ({
         ...prev,
         parceiro: { ...parceiroEditando },
       }));
-      
+
       setModoEdicao(false);
       setParceiroEditando(null);
     } catch (error) {
@@ -392,6 +466,10 @@ export function PartnersApproval() {
       }));
     }
   };
+
+  // ==========================================================
+  // RENDER
+  // ==========================================================
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -424,7 +502,9 @@ export function PartnersApproval() {
               placeholder="Filtros"
               options={statusOptions}
               value={statusFiltro}
-              onChange={(val) => handleFilterChange(val as StatusAprovacao | "")}
+              onChange={(val) =>
+                handleFilterChange(val as StatusAprovacao | "")
+              }
             />
           </div>
         </div>
@@ -586,92 +666,85 @@ export function PartnersApproval() {
           </table>
         </div>
 
-        {/* CONTROLES DE PAGINAÇÃO */}
-        {totalPages > 1 && (
-          <div className="flex justify-end items-center gap-2 mt-4">
-            <button
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
-              className="p-2 rounded-lg border border-white-200 disabled:opacity-50 hover:bg-white-50 transition-colors"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <span className="text-sm text-white-600">
-              Página {page} de {totalPages}
-            </span>
-            <button
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
-              className="p-2 rounded-lg border border-white-200 disabled:opacity-50 hover:bg-white-50 transition-colors"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
+        {/* PAGINAÇÃO */}
+        {!loading && parceirosFiltrados.length > 0 && (
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            itemsPerPage={limit}
+            onPageChange={handlePageChange}
+            onItemsPerPageChange={handleItemsPerPageChange}
+            itemsPerPageOptions={[10, 20, 50]}
+          />
         )}
 
         {/* MODAL DE CONFIRMAÇÃO (APROVAR/REJEITAR) */}
-        {(modal.tipo === "aprovar" || modal.tipo === "rejeitar") && modal.parceiro && (
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl animate-slide-down">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="font-bold text-lg text-green-primary">
-                  {modal.tipo === "aprovar"
-                    ? "Confirmar Aprovação"
-                    : "Confirmar Rejeição"}
-                </h2>
-                <button
-                  onClick={fecharModal}
-                  className="text-red-primary hover:text-red-hover cursor-pointer"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
+        {(modal.tipo === "aprovar" || modal.tipo === "rejeitar") &&
+          modal.parceiro && (
+            <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl animate-slide-down">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="font-bold text-lg text-green-primary">
+                    {modal.tipo === "aprovar"
+                      ? "Confirmar Aprovação"
+                      : "Confirmar Rejeição"}
+                  </h2>
+                  <button
+                    onClick={fecharModal}
+                    className="text-red-primary hover:text-red-hover cursor-pointer"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
 
-              <p className="text-sm text-white-600 mb-4">
-                Deseja {modal.tipo === "aprovar" ? "aprovar" : "rejeitar"} o parceiro{" "}
-                <strong>{obterNomeOuRazaoSocial(modal.parceiro)}</strong>?
-              </p>
+                <p className="text-sm text-white-600 mb-4">
+                  Deseja{" "}
+                  {modal.tipo === "aprovar" ? "aprovar" : "rejeitar"} o
+                  parceiro{" "}
+                  <strong>{obterNomeOuRazaoSocial(modal.parceiro)}</strong>?
+                </p>
 
-              <label className="block mb-4">
-                <span className="text-sm text-white-600 font-medium">
-                  Observações (opcional)
-                </span>
-                <textarea
-                  rows={3}
-                  placeholder="Escreva um comentário..."
-                  value={observacaoModal}
-                  onChange={(e) => setObservacaoModal(e.target.value)}
-                  className="w-full border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary resize-none"
-                />
-              </label>
+                <label className="block mb-4">
+                  <span className="text-sm text-white-600 font-medium">
+                    Observações (opcional)
+                  </span>
+                  <textarea
+                    rows={3}
+                    placeholder="Escreva um comentário..."
+                    value={observacaoModal}
+                    onChange={(e) => setObservacaoModal(e.target.value)}
+                    className="w-full border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary resize-none"
+                  />
+                </label>
 
-              <div className="mt-6 flex gap-2">
-                <button
-                  type="button"
-                  onClick={fecharModal}
-                  disabled={salvando}
-                  className="w-full py-2 px-4 text-xs font-semibold rounded-full border border-green-primary text-green-primary bg-white hover:bg-green-50 transition-colors cursor-pointer disabled:opacity-50"
-                >
-                  Cancelar
-                </button>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  loading={salvando}
-                  onClick={processarAcaoModal}
-                  fullWidth
-                  className="rounded-full"
-                >
-                  Confirmar
-                </Button>
+                <div className="mt-6 flex gap-2">
+                  <button
+                    type="button"
+                    onClick={fecharModal}
+                    disabled={salvando}
+                    className="w-full py-2 px-4 text-xs font-semibold rounded-full border border-green-primary text-green-primary bg-white hover:bg-green-50 transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    Cancelar
+                  </button>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    loading={salvando}
+                    onClick={processarAcaoModal}
+                    fullWidth
+                    className="rounded-full"
+                  >
+                    Confirmar
+                  </Button>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
         {/* MODAL DETALHES COM EDIÇÃO */}
         {modal.tipo === "detalhes" && modal.parceiro && (
-           <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl p-6 w-full max-w-xl shadow-xl animate-slide-down max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between pb-3 border-b border-white-100 mb-4">
                 <div>
@@ -704,7 +777,9 @@ export function PartnersApproval() {
                       Status de Cadastro
                     </span>
                     <StatusBadge
-                      status={modal.parceiro.statusAprovacaoParceiro || "PENDENTE"}
+                      status={
+                        modal.parceiro.statusAprovacaoParceiro || "PENDENTE"
+                      }
                       tipo="parceiro"
                     />
                   </div>
@@ -730,16 +805,25 @@ export function PartnersApproval() {
                     <div className="space-y-2">
                       <div>
                         <label className="text-xs text-white-500">
-                          {modal.parceiro.tipoPessoa === "JURIDICA" 
-                            ? "Razão Social" 
+                          {modal.parceiro.tipoPessoa === "JURIDICA"
+                            ? "Razão Social"
                             : "Nome Completo"}
                         </label>
                         <input
                           type="text"
-                          value={parceiroEditando.razaoSocial || parceiroEditando.nome || ""}
+                          value={
+                            parceiroEditando.razaoSocial ||
+                            parceiroEditando.nome ||
+                            ""
+                          }
                           onChange={(e) => {
-                            if (modal.parceiro?.tipoPessoa === "JURIDICA") {
-                              handleInputEditChange("razaoSocial", e.target.value);
+                            if (
+                              modal.parceiro?.tipoPessoa === "JURIDICA"
+                            ) {
+                              handleInputEditChange(
+                                "razaoSocial",
+                                e.target.value
+                              );
                             } else {
                               handleInputEditChange("nome", e.target.value);
                             }
@@ -749,41 +833,60 @@ export function PartnersApproval() {
                       </div>
 
                       <div>
-                        <label className="text-xs text-white-500">E-mail</label>
+                        <label className="text-xs text-white-500">
+                          E-mail
+                        </label>
                         <input
                           type="email"
                           value={parceiroEditando.email || ""}
-                          onChange={(e) => handleInputEditChange("email", e.target.value)}
+                          onChange={(e) =>
+                            handleInputEditChange("email", e.target.value)
+                          }
                           className="w-full border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
                         />
                       </div>
 
                       <div>
-                        <label className="text-xs text-white-500">Telefone</label>
+                        <label className="text-xs text-white-500">
+                          Telefone
+                        </label>
                         <input
                           type="text"
                           value={parceiroEditando.telefone || ""}
-                          onChange={(e) => handleInputEditChange("telefone", e.target.value)}
+                          onChange={(e) =>
+                            handleInputEditChange("telefone", e.target.value)
+                          }
                           className="w-full border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
                         />
                       </div>
 
                       <div>
-                        <label className="text-xs text-white-500">CPF/CNPJ</label>
+                        <label className="text-xs text-white-500">
+                          CPF/CNPJ
+                        </label>
                         <input
                           type="text"
                           value={parceiroEditando.documento || ""}
-                          onChange={(e) => handleInputEditChange("documento", e.target.value)}
+                          onChange={(e) =>
+                            handleInputEditChange("documento", e.target.value)
+                          }
                           className="w-full border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
                         />
                       </div>
 
                       <div>
-                        <label className="text-xs text-white-500">Responsável Legal</label>
+                        <label className="text-xs text-white-500">
+                          Responsável Legal
+                        </label>
                         <input
                           type="text"
                           value={parceiroEditando.responsavelLegal || ""}
-                          onChange={(e) => handleInputEditChange("responsavelLegal", e.target.value)}
+                          onChange={(e) =>
+                            handleInputEditChange(
+                              "responsavelLegal",
+                              e.target.value
+                            )
+                          }
                           className="w-full border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
                         />
                       </div>
@@ -808,7 +911,8 @@ export function PartnersApproval() {
                       )}
 
                       <p className="text-xs text-white-500 mt-1">
-                        Tipo: <strong>{modal.parceiro.tipoPessoa}</strong> ({modal.parceiro.tipoParceiro})
+                        Tipo: <strong>{modal.parceiro.tipoPessoa}</strong> (
+                        {modal.parceiro.tipoParceiro})
                       </p>
 
                       <div className="mt-3 pt-3 border-t border-white-100 space-y-1">
@@ -846,20 +950,28 @@ export function PartnersApproval() {
 
                     <div className="space-y-2">
                       <div>
-                        <label className="text-xs text-white-500">E-mail</label>
+                        <label className="text-xs text-white-500">
+                          E-mail
+                        </label>
                         <input
                           type="email"
                           value={parceiroEditando.email || ""}
-                          onChange={(e) => handleInputEditChange("email", e.target.value)}
+                          onChange={(e) =>
+                            handleInputEditChange("email", e.target.value)
+                          }
                           className="w-full border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
                         />
                       </div>
                       <div>
-                        <label className="text-xs text-white-500">Telefone</label>
+                        <label className="text-xs text-white-500">
+                          Telefone
+                        </label>
                         <input
                           type="text"
                           value={parceiroEditando.telefone || ""}
-                          onChange={(e) => handleInputEditChange("telefone", e.target.value)}
+                          onChange={(e) =>
+                            handleInputEditChange("telefone", e.target.value)
+                          }
                           className="w-full border border-white-200 rounded-lg p-2 mt-1 text-sm focus:outline-none focus:border-green-primary"
                         />
                       </div>
@@ -888,44 +1000,48 @@ export function PartnersApproval() {
                 )}
 
                 {/* IMPACTO AMBIENTAL */}
-                {modal.parceiro.statusAprovacaoParceiro === "APROVADO" && !modoEdicao && (
-                  <div className="border border-green-100 rounded-lg overflow-hidden">
-                    <button
-                      type="button"
-                      onClick={() => setMostrarResumoAmbiental((valorAtual) => !valorAtual)}
-                      className="w-full flex items-center justify-between p-4 bg-green-50 hover:bg-green-100 transition-colors cursor-pointer"
-                    >
-                      <div className="text-left">
-                        <p className="text-sm font-bold text-green-primary">
-                          Resumo Ambiental
-                        </p>
-                        <p className="text-xs text-white-500 mt-0.5">
-                          Consulte o impacto gerado pelas coletas deste parceiro
-                        </p>
-                      </div>
-                      <span className="text-xs font-semibold text-green-primary">
-                        {mostrarResumoAmbiental ? "Ocultar" : "Visualizar"}
-                      </span>
-                    </button>
+                {modal.parceiro.statusAprovacaoParceiro === "APROVADO" &&
+                  !modoEdicao && (
+                    <div className="border border-green-100 rounded-lg overflow-hidden">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setMostrarResumoAmbiental((valorAtual) => !valorAtual)
+                        }
+                        className="w-full flex items-center justify-between p-4 bg-green-50 hover:bg-green-100 transition-colors cursor-pointer"
+                      >
+                        <div className="text-left">
+                          <p className="text-sm font-bold text-green-primary">
+                            Resumo Ambiental
+                          </p>
+                          <p className="text-xs text-white-500 mt-0.5">
+                            Consulte o impacto gerado pelas coletas deste
+                            parceiro
+                          </p>
+                        </div>
+                        <span className="text-xs font-semibold text-green-primary">
+                          {mostrarResumoAmbiental ? "Ocultar" : "Visualizar"}
+                        </span>
+                      </button>
 
-                    {mostrarResumoAmbiental && (
-                      <div className="p-4 border-t border-green-100">
-                        <IndicadoresAmbientais
-                          tipo="admin-parceiro"
-                          parceiroId={modal.parceiro.id}
-                          titulo="Impacto Ambiental do Parceiro"
-                          variant="modal"
-                        />
-                      </div>
-                    )}
-                  </div>
-                )}
+                      {mostrarResumoAmbiental && (
+                        <div className="p-4 border-t border-green-100">
+                          <IndicadoresAmbientais
+                            tipo="admin-parceiro"
+                            parceiroId={modal.parceiro.id}
+                            titulo="Impacto Ambiental do Parceiro"
+                            variant="modal"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
               </div>
 
               {/* BOTÕES DE AÇÃO */}
-             {modoEdicao ? (
+              {modoEdicao ? (
                 <div className="flex gap-3 mt-6 pt-4 border-t border-white-100">
-                 <Button
+                  <Button
                     variant="secondary"
                     size="sm"
                     onClick={handleCancelarEdicao}
@@ -935,8 +1051,7 @@ export function PartnersApproval() {
                   >
                     Cancelar
                   </Button>
-                  
-                
+
                   <Button
                     variant="primary"
                     size="sm"
