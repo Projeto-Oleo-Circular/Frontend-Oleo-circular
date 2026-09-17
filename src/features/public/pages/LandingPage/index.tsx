@@ -1,8 +1,25 @@
-import { useState, useEffect, useMemo } from "react";
+import {
+  useState,
+  useEffect,
+  useMemo,
+} from "react";
+
 import { useNavigate } from "react-router-dom";
-import { renderToStaticMarkup } from "react-dom/server";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+
+import {
+  renderToStaticMarkup,
+} from "react-dom/server";
+
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  useMap,
+} from "react-leaflet";
+
 import L from "leaflet";
+
 import {
   ChefHat,
   Factory,
@@ -11,612 +28,2597 @@ import {
   UtensilsCrossed,
   Building2,
   Tent,
-  HeartHandshake,
+  UsersRound,
+  Recycle,
+  HandHeart,
   MapPin,
   Tag,
   Frown,
   type LucideIcon,
 } from "lucide-react";
+
 import Button from "../../../../components/ui/Button";
-import { publicPontosService, type PontoColetaPublico } from "../../../../services/pontosColetaService";
 
-// Ícone customizado para o mapa
-const customIcon = new L.Icon({
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
-});
+import {
+  publicPontosService,
+  type PontoColetaPublico,
+} from "../../../../services/pontosColetaService";
 
-type TileStyle = 'standard' | 'satellite';
+// ============================================================
+// TIPOS
+// ============================================================
+
+type TileStyle =
+  | "standard"
+  | "satellite";
+
+/**
+ * Categorias públicas.
+ *
+ * IMPORTANTE:
+ *
+ * A categoria 8 (Doador Avulso)
+ * NÃO faz mais parte do mapa público.
+ *
+ * 1 - Cozinha Industrial
+ * 2 - Empresa / Indústria
+ * 3 - Escola / Universidade
+ * 4 - Hotel / Pousada
+ * 5 - Restaurante / Bar
+ * 6 - Condomínio
+ * 7 - Feira Livre / Eventos
+ *
+ * 9  - Associação
+ * 10 - Cooperativa
+ * 11 - ONG
+ */
+type CategoriaPontoColeta =
+  | 1
+  | 2
+  | 3
+  | 4
+  | 5
+  | 6
+  | 7
+  | 9
+  | 10
+  | 11;
+
+type TipoCategoria =
+  | "LOCAL"
+  | "INDICADOR";
+
+interface CategoriaInfo {
+  label: string;
+
+  icon: LucideIcon;
+
+  color: string;
+
+  tipo: TipoCategoria;
+}
+
+interface EstabelecimentoCompleto
+  extends PontoColetaPublico {
+  categoriaInfo: CategoriaInfo;
+
+  categoriaNumero:
+    CategoriaPontoColeta;
+}
+
+// ============================================================
+// TILE LAYERS
+// ============================================================
 
 const TILE_LAYERS = {
   standard: {
-    url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    url:
+      "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
   },
+
   satellite: {
-    url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-    attribution: 'Tiles &copy; Esri &mdash; Source: Esri'
-  }
+    url:
+      "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+
+    attribution:
+      "Tiles &copy; Esri &mdash; Source: Esri",
+  },
 };
 
-// ============================================
-// CATEGORIAS CORRETAS DO BACKEND
-// ============================================
-type CategoriaPontoColeta = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+// ============================================================
+// CATEGORIAS
+// ============================================================
 
-const CATEGORIA_MAP: Record<CategoriaPontoColeta, { label: string; icon: LucideIcon; color: string }> = {
-  1: { label: "Cozinha Industrial", icon: ChefHat, color: "#E67E22" },
-  2: { label: "Empresa / Indústria", icon: Factory, color: "#2C3E50" },
-  3: { label: "Escola / Universidade", icon: GraduationCap, color: "#2980B9" },
-  4: { label: "Hotel / Pousada", icon: BedDouble, color: "#8E44AD" },
-  5: { label: "Restaurante / Bar", icon: UtensilsCrossed, color: "#E74C3C" },
-  6: { label: "Condomínio", icon: Building2, color: "#16A085" },
-  7: { label: "Feira Livre / Eventos", icon: Tent, color: "#F39C12" },
-  8: { label: "Doador Avulso", icon: HeartHandshake, color: "#1ABC9C" },
+const CATEGORIA_MAP: Record<
+  CategoriaPontoColeta,
+  CategoriaInfo
+> = {
+  // ==========================================================
+  // PARCEIROS LOCAIS
+  // ==========================================================
+
+  1: {
+    label:
+      "Cozinha Industrial",
+
+    icon:
+      ChefHat,
+
+    color:
+      "#E67E22",
+
+    tipo:
+      "LOCAL",
+  },
+
+  2: {
+    label:
+      "Empresa / Indústria",
+
+    icon:
+      Factory,
+
+    color:
+      "#2C3E50",
+
+    tipo:
+      "LOCAL",
+  },
+
+  3: {
+    label:
+      "Escola / Universidade",
+
+    icon:
+      GraduationCap,
+
+    color:
+      "#2980B9",
+
+    tipo:
+      "LOCAL",
+  },
+
+  4: {
+    label:
+      "Hotel / Pousada",
+
+    icon:
+      BedDouble,
+
+    color:
+      "#8E44AD",
+
+    tipo:
+      "LOCAL",
+  },
+
+  5: {
+    label:
+      "Restaurante / Bar",
+
+    icon:
+      UtensilsCrossed,
+
+    color:
+      "#E74C3C",
+
+    tipo:
+      "LOCAL",
+  },
+
+  6: {
+    label:
+      "Condomínio",
+
+    icon:
+      Building2,
+
+    color:
+      "#16A085",
+
+    tipo:
+      "LOCAL",
+  },
+
+  7: {
+    label:
+      "Feira Livre / Eventos",
+
+    icon:
+      Tent,
+
+    color:
+      "#F39C12",
+
+    tipo:
+      "LOCAL",
+  },
+
+  // ==========================================================
+  // PARCEIROS INDICADORES
+  // ==========================================================
+
+  9: {
+    label:
+      "Associação",
+
+    icon:
+      UsersRound,
+
+    color:
+      "#2563EB",
+
+    tipo:
+      "INDICADOR",
+  },
+
+  10: {
+    label:
+      "Cooperativa",
+
+    icon:
+      Recycle,
+
+    color:
+      "#059669",
+
+    tipo:
+      "INDICADOR",
+  },
+
+  11: {
+    label:
+      "ONG",
+
+    icon:
+      HandHeart,
+
+    color:
+      "#7C3AED",
+
+    tipo:
+      "INDICADOR",
+  },
 };
 
-const CATEGORIA_LABEL_TO_NUMBER: Record<string, CategoriaPontoColeta> = {
-  "Cozinha Industrial": 1,
-  "Empresa / Indústria": 2,
-  "Escola / Universidade": 3,
-  "Hotel / Pousada": 4,
-  "Restaurante / Bar": 5,
-  "Condomínio": 6,
-  "Feira Livre / Eventos": 7,
-  "Doador Avulso": 8,
+// ============================================================
+// LABEL -> CATEGORIA
+// ============================================================
+
+const CATEGORIA_LABEL_TO_NUMBER: Record<
+  string,
+  CategoriaPontoColeta
+> = {
+  "Cozinha Industrial":
+    1,
+
+  "Empresa / Indústria":
+    2,
+
+  "Escola / Universidade":
+    3,
+
+  "Hotel / Pousada":
+    4,
+
+  "Restaurante / Bar":
+    5,
+
+  "Condomínio":
+    6,
+
+  "Feira Livre / Eventos":
+    7,
+
+  "Associação":
+    9,
+
+ 
+  "Cooperativa":
+    10,
+
+  "ONG":
+    11,
 };
 
-const getCategoriaInfo = (categoria: string | number) => {
-  if (typeof categoria === 'string') {
-    const num = CATEGORIA_LABEL_TO_NUMBER[categoria];
-    if (num) {
-      return CATEGORIA_MAP[num];
+// ============================================================
+// NORMALIZA CATEGORIA
+// ============================================================
+
+const getCategoriaNumero = (
+  categoria:
+    | string
+    | number
+): CategoriaPontoColeta | null => {
+  // ----------------------------------------------------------
+  // NÚMERO
+  // ----------------------------------------------------------
+
+  if (
+    typeof categoria ===
+    "number"
+  ) {
+    /**
+     * Categoria 8:
+     * Doador Avulso.
+     *
+     * Não aparece no mapa.
+     */
+    if (
+      categoria === 8
+    ) {
+      return null;
     }
-    return CATEGORIA_MAP[8];
+
+    if (
+      categoria in
+      CATEGORIA_MAP
+    ) {
+      return categoria as CategoriaPontoColeta;
+    }
+
+    return null;
   }
-  return CATEGORIA_MAP[categoria as CategoriaPontoColeta] || CATEGORIA_MAP[8];
+
+  // ----------------------------------------------------------
+  // STRING
+  // ----------------------------------------------------------
+
+  const valor =
+    String(
+      categoria
+    ).trim();
+
+  if (!valor) {
+    return null;
+  }
+
+  // ----------------------------------------------------------
+  // DOADOR AVULSO
+  // ----------------------------------------------------------
+
+  const valorNormalizado =
+    valor
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(
+        /[\u0300-\u036f]/g,
+        ""
+      );
+
+  if (
+    valor === "8" ||
+    valorNormalizado ===
+      "doador avulso"
+  ) {
+    return null;
+  }
+
+  // ----------------------------------------------------------
+  // LABEL
+  // ----------------------------------------------------------
+
+  const categoriaLabel =
+    CATEGORIA_LABEL_TO_NUMBER[
+      valor
+    ];
+
+  if (
+    categoriaLabel
+  ) {
+    return categoriaLabel;
+  }
+
+  // ----------------------------------------------------------
+  // LABEL CASE INSENSITIVE
+  // ----------------------------------------------------------
+
+  const entradaEncontrada =
+    Object.entries(
+      CATEGORIA_LABEL_TO_NUMBER
+    ).find(
+      ([label]) =>
+        label
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(
+            /[\u0300-\u036f]/g,
+            ""
+          ) ===
+        valorNormalizado
+    );
+
+  if (
+    entradaEncontrada
+  ) {
+    return entradaEncontrada[1];
+  }
+
+  // ----------------------------------------------------------
+  // STRING NUMÉRICA
+  // ----------------------------------------------------------
+
+  const numero =
+    Number(valor);
+
+  if (
+    !Number.isNaN(
+      numero
+    ) &&
+    numero !== 8 &&
+    numero in
+      CATEGORIA_MAP
+  ) {
+    return numero as CategoriaPontoColeta;
+  }
+
+  // ----------------------------------------------------------
+  // DESCONHECIDA
+  // ----------------------------------------------------------
+
+  /**
+   * Antes seu código transformava
+   * categoria desconhecida em 8.
+   *
+   * Isso fazia pontos aparecerem
+   * como Doador Avulso.
+   *
+   * Agora ignoramos.
+   */
+  return null;
 };
 
-const getCategoriaNumero = (categoria: string | number): CategoriaPontoColeta => {
-  if (typeof categoria === 'string') {
-    return CATEGORIA_LABEL_TO_NUMBER[categoria] || 8;
+// ============================================================
+// INFORMAÇÕES DA CATEGORIA
+// ============================================================
+
+const getCategoriaInfo = (
+  categoria:
+    | string
+    | number
+): CategoriaInfo | null => {
+  const numero =
+    getCategoriaNumero(
+      categoria
+    );
+
+  if (
+    numero === null
+  ) {
+    return null;
   }
-  return categoria as CategoriaPontoColeta;
+
+  return CATEGORIA_MAP[
+    numero
+  ];
 };
 
-interface EstabelecimentoCompleto extends PontoColetaPublico {
-  categoriaInfo: { label: string; icon: LucideIcon; color: string };
-  categoriaNumero: CategoriaPontoColeta;
-}
+// ============================================================
+// MAP CONTROLLER
+// ============================================================
 
-function MapController({ center }: { center: [number, number] }) {
-  const map = useMap();
-  useEffect(() => {
-    map.flyTo(center, 14, { duration: 1.5 });
-  }, [center, map]);
+function MapController({
+  center,
+}: {
+  center: [
+    number,
+    number
+  ];
+}) {
+  const map =
+    useMap();
+
+  useEffect(
+    () => {
+      map.flyTo(
+        center,
+        14,
+        {
+          duration:
+            1.5,
+        }
+      );
+    },
+    [
+      center,
+      map,
+    ]
+  );
+
   return null;
 }
 
+// ============================================================
+// COMPONENTE
+// ============================================================
+
 export default function LandingPageEstabelecimentos() {
-  const navigate = useNavigate();
-  
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isSearching, setIsSearching] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [currentTile, setCurrentTile] = useState<TileStyle>('standard');
-  const [isLayerMenuOpen, setIsLayerMenuOpen] = useState(false);
-  const [mapCenter, setMapCenter] = useState<[number, number]>([-15.2483, -40.2481]);
-  const [estabelecimentos, setEstabelecimentos] = useState<EstabelecimentoCompleto[]>([]);
-  const [carregando, setCarregando] = useState(true);
-  const [categoriaFiltro, setCategoriaFiltro] = useState<CategoriaPontoColeta | "TODAS">("TODAS");
-  const [erro, setErro] = useState<string | null>(null);
+  const navigate =
+    useNavigate();
 
-  const carregarEstabelecimentos = async () => {
-    try {
-      setCarregando(true);
-      setErro(null);
+  // ==========================================================
+  // STATES
+  // ==========================================================
 
-      const response = await publicPontosService.listarPontosPublicos({
-        limit: 100,
-      });
+  const [
+    searchQuery,
+    setSearchQuery,
+  ] = useState(
+    ""
+  );
 
-      const estabelecimentosProcessados: EstabelecimentoCompleto[] = response.items.map((ponto) => {
-        const categoriaNumero = getCategoriaNumero(ponto.categoria);
-        return {
-          ...ponto,
-          categoriaInfo: getCategoriaInfo(ponto.categoria),
-          categoriaNumero,
-        };
-      });
+  const [
+    isSearching,
+    setIsSearching,
+  ] = useState(
+    false
+  );
 
-      setEstabelecimentos(estabelecimentosProcessados);
+  const [
+    isMenuOpen,
+    setIsMenuOpen,
+  ] = useState(
+    false
+  );
 
-      if (estabelecimentosProcessados.length > 0) {
-        const primeiroComCoordenadas = estabelecimentosProcessados.find(
-          e => e.localizacao
+  const [
+    currentTile,
+    setCurrentTile,
+  ] =
+    useState<TileStyle>(
+      "standard"
+    );
+
+  const [
+    isLayerMenuOpen,
+    setIsLayerMenuOpen,
+  ] = useState(
+    false
+  );
+
+  const [
+    mapCenter,
+    setMapCenter,
+  ] = useState<
+    [
+      number,
+      number
+    ]
+  >([
+    -15.2483,
+    -40.2481,
+  ]);
+
+  const [
+    estabelecimentos,
+    setEstabelecimentos,
+  ] = useState<
+    EstabelecimentoCompleto[]
+  >([]);
+
+  const [
+    carregando,
+    setCarregando,
+  ] = useState(
+    true
+  );
+
+  const [
+    categoriaFiltro,
+    setCategoriaFiltro,
+  ] = useState<
+    | CategoriaPontoColeta
+    | "TODAS"
+  >(
+    "TODAS"
+  );
+
+  const [
+    erro,
+    setErro,
+  ] = useState<
+    string | null
+  >(
+    null
+  );
+
+  // ==========================================================
+  // CARREGAR ESTABELECIMENTOS
+  // ==========================================================
+
+  const carregarEstabelecimentos =
+    async () => {
+      try {
+        setCarregando(
+          true
         );
-        if (primeiroComCoordenadas?.localizacao) {
-          setMapCenter([
-            primeiroComCoordenadas.localizacao.latitude,
-            primeiroComCoordenadas.localizacao.longitude,
-          ]);
-        }
-      }
-    } catch (error) {
-      console.error("Erro ao carregar estabelecimentos:", error);
-      setErro("Não foi possível carregar os estabelecimentos. Tente novamente mais tarde.");
-      setEstabelecimentos([]);
-    } finally {
-      setCarregando(false);
-    }
-  };
 
-  useEffect(() => {
-    carregarEstabelecimentos();
-  }, []);
-
-  const estabelecimentosFiltrados = useMemo(() => {
-    let resultado = estabelecimentos;
-
-    if (searchQuery.trim()) {
-      const termo = searchQuery.toLowerCase().trim();
-      resultado = resultado.filter((item) => {
-        const endereco = `${item.endereco.logradouro || ""} ${item.endereco.numero || ""} ${item.endereco.bairro || ""} ${item.endereco.cidade || ""} ${item.endereco.estado || ""}`.toLowerCase();
-        return (
-          item.nomePontoColeta.toLowerCase().includes(termo) ||
-          endereco.includes(termo)
+        setErro(
+          null
         );
-      });
-    }
 
-    if (categoriaFiltro !== "TODAS") {
-      resultado = resultado.filter((item) => {
-        return item.categoriaNumero === categoriaFiltro;
-      });
-    }
+        const response =
+          await publicPontosService.listarPontosPublicos(
+            {
+              limit:
+                100,
+            }
+          );
 
-    return resultado;
-  }, [estabelecimentos, searchQuery, categoriaFiltro]);
+        // ====================================================
+        // PROCESSAR PONTOS
+        // ====================================================
 
-  const handleSearchNominatim = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!searchQuery.trim()) return;
+        const estabelecimentosProcessados =
+          response.items
+            .map(
+              (
+                ponto
+              ): EstabelecimentoCompleto | null => {
+                const categoriaNumero =
+                  getCategoriaNumero(
+                    ponto.categoria
+                  );
 
-    setIsSearching(true);
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-          searchQuery
-        )}&limit=1`,
-        {
-          headers: {
-            "User-Agent": "OleoCircularApp/1.0"
+                const categoriaInfo =
+                  getCategoriaInfo(
+                    ponto.categoria
+                  );
+
+                /**
+                 * Não mostra:
+                 *
+                 * - Doador Avulso
+                 * - categoria 8
+                 * - categoria desconhecida
+                 */
+                if (
+                  categoriaNumero ===
+                    null ||
+                  categoriaInfo ===
+                    null
+                ) {
+                  return null;
+                }
+
+                return {
+                  ...ponto,
+
+                  categoriaInfo,
+
+                  categoriaNumero,
+                };
+              }
+            )
+            .filter(
+              (
+                ponto
+              ): ponto is EstabelecimentoCompleto =>
+                ponto !==
+                null
+            );
+
+        setEstabelecimentos(
+          estabelecimentosProcessados
+        );
+
+        // ====================================================
+        // CENTRALIZAR NO PRIMEIRO PONTO
+        // ====================================================
+
+        if (
+          estabelecimentosProcessados.length >
+          0
+        ) {
+          const primeiroComCoordenadas =
+            estabelecimentosProcessados.find(
+              (
+                estabelecimento
+              ) =>
+                estabelecimento.localizacao
+            );
+
+          if (
+            primeiroComCoordenadas?.localizacao
+          ) {
+            setMapCenter(
+              [
+                Number(
+                  primeiroComCoordenadas
+                    .localizacao
+                    .latitude
+                ),
+
+                Number(
+                  primeiroComCoordenadas
+                    .localizacao
+                    .longitude
+                ),
+              ]
+            );
           }
         }
-      );
-      const data = await response.json();
+      } catch (
+        error
+      ) {
+        console.error(
+          "Erro ao carregar estabelecimentos:",
+          error
+        );
 
-      if (data && data.length > 0) {
-        const { lat, lon } = data[0];
-        setMapCenter([parseFloat(lat), parseFloat(lon)]);
-      } else {
-        alert("Endereço não encontrado. Tente buscar com mais detalhes.");
+        setErro(
+          "Não foi possível carregar os estabelecimentos. Tente novamente mais tarde."
+        );
+
+        setEstabelecimentos(
+          []
+        );
+      } finally {
+        setCarregando(
+          false
+        );
       }
-    } catch (error) {
-      console.error("Erro na busca do Nominatim:", error);
-      alert("Erro ao conectar com o serviço de busca de endereços.");
-    } finally {
-      setIsSearching(false);
-    }
-  };
+    };
 
-  const handleGeoLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          setMapCenter([pos.coords.latitude, pos.coords.longitude]);
-        },
-        () => {
-          alert("Não foi possível obter sua localização exata.");
+  // ==========================================================
+  // USE EFFECT
+  // ==========================================================
+
+  useEffect(
+    () => {
+      carregarEstabelecimentos();
+    },
+    []
+  );
+
+  // ==========================================================
+  // FILTROS
+  // ==========================================================
+
+  const estabelecimentosFiltrados =
+    useMemo(
+      () => {
+        let resultado =
+          estabelecimentos;
+
+        // ====================================================
+        // PESQUISA
+        // ====================================================
+
+        if (
+          searchQuery.trim()
+        ) {
+          const termo =
+            searchQuery
+              .toLowerCase()
+              .trim();
+
+          resultado =
+            resultado.filter(
+              (
+                item
+              ) => {
+                const endereco =
+                  `
+                    ${
+                      item
+                        .endereco
+                        .logradouro ||
+                      ""
+                    }
+                    ${
+                      item
+                        .endereco
+                        .numero ||
+                      ""
+                    }
+                    ${
+                      item
+                        .endereco
+                        .bairro ||
+                      ""
+                    }
+                    ${
+                      item
+                        .endereco
+                        .cidade ||
+                      ""
+                    }
+                    ${
+                      item
+                        .endereco
+                        .estado ||
+                      ""
+                    }
+                  `
+                    .toLowerCase()
+                    .trim();
+
+                const categoria =
+                  item
+                    .categoriaInfo
+                    .label
+                    .toLowerCase();
+
+                return (
+                  item
+                    .nomePontoColeta
+                    .toLowerCase()
+                    .includes(
+                      termo
+                    ) ||
+                  endereco.includes(
+                    termo
+                  ) ||
+                  categoria.includes(
+                    termo
+                  )
+                );
+              }
+            );
         }
+
+        // ====================================================
+        // CATEGORIA
+        // ====================================================
+
+        if (
+          categoriaFiltro !==
+          "TODAS"
+        ) {
+          resultado =
+            resultado.filter(
+              (
+                item
+              ) =>
+                item.categoriaNumero ===
+                categoriaFiltro
+            );
+        }
+
+        return resultado;
+      },
+      [
+        estabelecimentos,
+        searchQuery,
+        categoriaFiltro,
+      ]
+    );
+
+  // ==========================================================
+  // BUSCA NO NOMINATIM
+  // ==========================================================
+
+  const handleSearchNominatim =
+    async (
+      e: React.FormEvent
+    ) => {
+      e.preventDefault();
+
+      if (
+        !searchQuery.trim()
+      ) {
+        return;
+      }
+
+      setIsSearching(
+        true
       );
-    }
-  };
 
-  const contagemCategorias = useMemo(() => {
-    const contagem: Record<number, number> = {};
-    
-    estabelecimentos.forEach((item) => {
-      const cat = item.categoriaNumero;
-      contagem[cat] = (contagem[cat] || 0) + 1;
-    });
+      try {
+        const response =
+          await fetch(
+            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+              searchQuery
+            )}&limit=1`,
+            {
+              headers:
+                {
+                  "User-Agent":
+                    "OleoCircularApp/1.0",
+                },
+            }
+          );
 
-    return contagem;
-  }, [estabelecimentos]);
+        const data =
+          await response.json();
+
+        if (
+          data &&
+          data.length >
+            0
+        ) {
+          const {
+            lat,
+            lon,
+          } =
+            data[0];
+
+          setMapCenter(
+            [
+              parseFloat(
+                lat
+              ),
+
+              parseFloat(
+                lon
+              ),
+            ]
+          );
+        } else {
+          alert(
+            "Endereço não encontrado. Tente buscar com mais detalhes."
+          );
+        }
+      } catch (
+        error
+      ) {
+        console.error(
+          "Erro na busca do Nominatim:",
+          error
+        );
+
+        alert(
+          "Erro ao conectar com o serviço de busca de endereços."
+        );
+      } finally {
+        setIsSearching(
+          false
+        );
+      }
+    };
+
+  // ==========================================================
+  // GEOLOCALIZAÇÃO
+  // ==========================================================
+
+  const handleGeoLocation =
+    () => {
+      if (
+        navigator.geolocation
+      ) {
+        navigator.geolocation.getCurrentPosition(
+          (
+            pos
+          ) => {
+            setMapCenter(
+              [
+                pos
+                  .coords
+                  .latitude,
+
+                pos
+                  .coords
+                  .longitude,
+              ]
+            );
+          },
+
+          () => {
+            alert(
+              "Não foi possível obter sua localização exata."
+            );
+          }
+        );
+      }
+    };
+
+  // ==========================================================
+  // CONTAGEM DE CATEGORIAS
+  // ==========================================================
+
+  const contagemCategorias =
+    useMemo(
+      () => {
+        const contagem: Partial<
+          Record<
+            CategoriaPontoColeta,
+            number
+          >
+        > = {};
+
+        estabelecimentos.forEach(
+          (
+            item
+          ) => {
+            const categoria =
+              item.categoriaNumero;
+
+            contagem[
+              categoria
+            ] =
+              (
+                contagem[
+                  categoria
+                ] ||
+                0
+              ) +
+              1;
+          }
+        );
+
+        return contagem;
+      },
+      [
+        estabelecimentos,
+      ]
+    );
+
+  // ==========================================================
+  // RENDER
+  // ==========================================================
 
   return (
     <div className="flex flex-col h-screen overflow-hidden relative bg-background">
       <main className="flex-1 relative w-full h-full">
-        
-        {/* ============================================================== */}
-        {/* BARRA SUPERIOR E CONTROLES (Search, Logo, Botões)              */}
-        {/* ============================================================== */}
 
-        {/* 1. BARRA DE BUSCA (Mobile: Desce para top-20 | Desktop: Fica no top-4) */}
-        <form 
-          onSubmit={handleSearchNominatim}
-          className="absolute top-20 md:top-4 left-1/2 -translate-x-1/2 z-[1000] w-[92%] md:w-[400px] lg:w-[500px]"
+        {/* ================================================== */}
+        {/* BUSCA                                              */}
+        {/* ================================================== */}
+
+        <form
+          onSubmit={
+            handleSearchNominatim
+          }
+          className="
+            absolute
+            top-20
+            md:top-4
+            left-1/2
+            -translate-x-1/2
+            z-[1000]
+            w-[92%]
+            md:w-[400px]
+            lg:w-[500px]
+          "
         >
-          <div className="flex items-center bg-white rounded-2xl shadow-lg px-4 py-2.5 sm:py-3 border border-white-100">
-            <button type="submit" disabled={isSearching} className="mr-2.5 text-white-500 hover:text-green-primary transition-colors">
+          <div
+            className="
+              flex
+              items-center
+              bg-white
+              rounded-2xl
+              shadow-lg
+              px-4
+              py-2.5
+              sm:py-3
+              border
+              border-white-100
+            "
+          >
+            <button
+              type="submit"
+              disabled={
+                isSearching
+              }
+              className="
+                mr-2.5
+                text-white-500
+                hover:text-green-primary
+                transition-colors
+              "
+            >
               {isSearching ? (
-                <div className="w-5 h-5 border-2 border-green-primary border-t-transparent rounded-full animate-spin" />
+                <div
+                  className="
+                    w-5
+                    h-5
+                    border-2
+                    border-green-primary
+                    border-t-transparent
+                    rounded-full
+                    animate-spin
+                  "
+                />
               ) : (
-                <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                <svg
+                  className="w-5 h-5 shrink-0"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={
+                      2
+                    }
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
                 </svg>
               )}
             </button>
+
             <input
               type="text"
               placeholder="Buscar por nome, endereço ou categoria..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-transparent text-xs sm:text-sm text-black-200 outline-none placeholder-black-100"
+              value={
+                searchQuery
+              }
+              onChange={(
+                e
+              ) =>
+                setSearchQuery(
+                  e.target
+                    .value
+                )
+              }
+              className="
+                w-full
+                bg-transparent
+                text-xs
+                sm:text-sm
+                text-black-200
+                outline-none
+                placeholder-black-100
+              "
             />
           </div>
         </form>
 
-        {/* 2. LOGO FLUTUANTE (Mobile & Desktop: Fica no top-4) */}
+        {/* ================================================== */}
+        {/* LOGO                                               */}
+        {/* ================================================== */}
+
         <div className="absolute top-4 left-4 z-[1000]">
-          <img 
-            src="/assets/logo-horizontal.svg" 
-            alt="Óleo Circular" 
-            className="h-12 sm:h-14 md:h-16 w-auto drop-shadow-md bg-white/95 backdrop-blur-sm p-1.5 sm:p-2 rounded-xl border border-white-100" 
+          <img
+            src="/assets/logo-horizontal.svg"
+            alt="Óleo Circular"
+            className="
+              h-12
+              sm:h-14
+              md:h-16
+              w-auto
+              drop-shadow-md
+              bg-white/95
+              backdrop-blur-sm
+              p-1.5
+              sm:p-2
+              rounded-xl
+              border
+              border-white-100
+            "
           />
         </div>
 
-        {/* 3. BOTÕES DE AUTENTICAÇÃO (Mobile & Desktop: Fica no top-4) */}
-        <div className="absolute top-4 right-4 z-[1000] flex flex-row items-center gap-2">
-          <Button 
+        {/* ================================================== */}
+        {/* AUTENTICAÇÃO                                       */}
+        {/* ================================================== */}
+
+        <div
+          className="
+            absolute
+            top-4
+            right-4
+            z-[1000]
+            flex
+            flex-row
+            items-center
+            gap-2
+          "
+        >
+          <Button
             variant="primary"
-            fullWidth={false}
-            onClick={() => navigate("/register")}
-            className="shadow-md !py-2 !px-3 md:!px-4 !text-xs md:!text-sm whitespace-nowrap"
+            fullWidth={
+              false
+            }
+            onClick={() =>
+              navigate(
+                "/register"
+              )
+            }
+            className="
+              shadow-md
+              !py-2
+              !px-3
+              md:!px-4
+              !text-xs
+              md:!text-sm
+              whitespace-nowrap
+            "
           >
             Criar Conta
           </Button>
-          <Button 
+
+          <Button
             variant="secondary"
-            fullWidth={false}
-            onClick={() => navigate("/login")}
-            className="shadow-md !py-2 !px-3 md:!px-4 !text-xs md:!text-sm whitespace-nowrap"
+            fullWidth={
+              false
+            }
+            onClick={() =>
+              navigate(
+                "/login"
+              )
+            }
+            className="
+              shadow-md
+              !py-2
+              !px-3
+              md:!px-4
+              !text-xs
+              md:!text-sm
+              whitespace-nowrap
+            "
           >
             Entrar
           </Button>
         </div>
 
+        {/* ================================================== */}
+        {/* MAPA                                               */}
+        {/* ================================================== */}
 
-        {/* ============================================================== */}
-        {/* MAPA E MARCADORES                                              */}
-        {/* ============================================================== */}
         <MapContainer
-          center={mapCenter}
-          zoom={14}
-          zoomControl={false}
+          center={
+            mapCenter
+          }
+          zoom={
+            14
+          }
+          zoomControl={
+            false
+          }
           className="w-full h-full z-0"
         >
-          <MapController center={mapCenter} />
-
-          <TileLayer
-            key={currentTile}
-            attribution={TILE_LAYERS[currentTile].attribution}
-            url={TILE_LAYERS[currentTile].url}
+          <MapController
+            center={
+              mapCenter
+            }
           />
 
-          {estabelecimentosFiltrados.map((estabelecimento) => {
-            if (!estabelecimento.localizacao) return null;
-            
-            const { latitude, longitude } = estabelecimento.localizacao;
-            const { icon: CategoriaIcon, color, label } = estabelecimento.categoriaInfo;
+          <TileLayer
+            key={
+              currentTile
+            }
+            attribution={
+              TILE_LAYERS[
+                currentTile
+              ]
+                .attribution
+            }
+            url={
+              TILE_LAYERS[
+                currentTile
+              ].url
+            }
+          />
 
-            const iconMarkup = renderToStaticMarkup(
-              <CategoriaIcon color="#ffffff" size={18} strokeWidth={2.25} />
-            );
+          {/* ================================================ */}
+          {/* MARCADORES                                       */}
+          {/* ================================================ */}
 
-            const categoriaIcon = L.divIcon({
-              html: `
-                <div style="
-                  background-color: ${color};
-                  width: 36px;
-                  height: 36px;
-                  border-radius: 50%;
-                  border: 3px solid white;
-                  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                ">
-                  ${iconMarkup}
-                </div>
-              `,
-              className: "",
-              iconSize: [36, 36],
-              iconAnchor: [18, 36],
-              popupAnchor: [0, -36],
-            });
+          {estabelecimentosFiltrados.map(
+            (
+              estabelecimento
+            ) => {
+              if (
+                !estabelecimento.localizacao
+              ) {
+                return null;
+              }
 
-            return (
-              <Marker
-                key={estabelecimento.id}
-                position={[Number(latitude), Number(longitude)]}
-                icon={categoriaIcon}
-              >
-                <Popup className="max-w-xs">
-                  <div className="p-2">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span
-                        className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
-                        style={{ backgroundColor: color }}
+              const {
+                latitude,
+                longitude,
+              } =
+                estabelecimento.localizacao;
+
+              const {
+                icon:
+                  CategoriaIcon,
+
+                color,
+
+                label,
+
+                tipo,
+              } =
+                estabelecimento.categoriaInfo;
+
+              const ehIndicador =
+                tipo ===
+                "INDICADOR";
+
+              // ==============================================
+              // ÍCONE SVG
+              // ==============================================
+
+              const iconMarkup =
+                renderToStaticMarkup(
+                  <CategoriaIcon
+                    color="#ffffff"
+                    size={
+                      ehIndicador
+                        ? 20
+                        : 18
+                    }
+                    strokeWidth={
+                      2.25
+                    }
+                  />
+                );
+
+              // ==============================================
+              // MARCADOR LEAFLET
+              // ==============================================
+
+              const categoriaIcon =
+                L.divIcon(
+                  {
+                    html: `
+                      <div
+                        style="
+                          position: relative;
+
+                          width: ${
+                            ehIndicador
+                              ? "44px"
+                              : "38px"
+                          };
+
+                          height: ${
+                            ehIndicador
+                              ? "44px"
+                              : "38px"
+                          };
+
+                          background-color: ${color};
+
+                          border-radius: ${
+                            ehIndicador
+                              ? "12px"
+                              : "50%"
+                          };
+
+                          border: ${
+                            ehIndicador
+                              ? "4px solid #ffffff"
+                              : "3px solid #ffffff"
+                          };
+
+                          box-shadow: ${
+                            ehIndicador
+                              ? "0 4px 14px rgba(0,0,0,0.40)"
+                              : "0 2px 8px rgba(0,0,0,0.30)"
+                          };
+
+                          display: flex;
+                          align-items: center;
+                          justify-content: center;
+                        "
                       >
-                        <CategoriaIcon color="#ffffff" size={16} strokeWidth={2.25} />
-                      </span>
-                      <h3 className="font-bold text-green-primary text-base">
-                        {estabelecimento.nomePontoColeta}
-                      </h3>
-                    </div>
-                    
-                    <div className="space-y-1.5 text-sm">
-                      <p className="flex items-start gap-2">
-                        <Tag className="w-4 h-4 text-white-400 shrink-0 mt-0.5" />
-                        <span className="text-white-600">
-                          <span className="font-medium">Categoria:</span> {label}
-                        </span>
-                      </p>
+                        ${iconMarkup}
 
-                      <p className="flex items-start gap-2">
-                        <MapPin className="w-4 h-4 text-white-400 shrink-0 mt-0.5" />
-                        <span className="text-white-600 text-xs">
-                          {estabelecimento.endereco.logradouro}, {estabelecimento.endereco.numero}<br />
-                          {estabelecimento.endereco.bairro}, {estabelecimento.endereco.cidade} {estabelecimento.endereco.estado || ""}
+                        ${
+                          ehIndicador
+                            ? `
+                              <div
+                                style="
+                                  position: absolute;
+                                  top: -6px;
+                                  right: -6px;
+
+                                  width: 15px;
+                                  height: 15px;
+
+                                  background: #ffffff;
+
+                                  border: 3px solid ${color};
+
+                                  border-radius: 50%;
+
+                                  box-shadow:
+                                    0 1px 3px
+                                    rgba(0,0,0,0.25);
+                                "
+                              ></div>
+                            `
+                            : ""
+                        }
+                      </div>
+                    `,
+
+                    className:
+                      "",
+
+                    iconSize:
+                      ehIndicador
+                        ? [
+                            44,
+                            44,
+                          ]
+                        : [
+                            38,
+                            38,
+                          ],
+
+                    iconAnchor:
+                      ehIndicador
+                        ? [
+                            22,
+                            44,
+                          ]
+                        : [
+                            19,
+                            38,
+                          ],
+
+                    popupAnchor:
+                      ehIndicador
+                        ? [
+                            0,
+                            -44,
+                          ]
+                        : [
+                            0,
+                            -38,
+                          ],
+                  }
+                );
+
+              // ==============================================
+              // MARKER
+              // ==============================================
+
+              return (
+                <Marker
+                  key={
+                    estabelecimento.id
+                  }
+                  position={[
+                    Number(
+                      latitude
+                    ),
+
+                    Number(
+                      longitude
+                    ),
+                  ]}
+                  icon={
+                    categoriaIcon
+                  }
+                >
+                  <Popup className="max-w-xs">
+                    <div className="p-2">
+
+                      {/* ==================================== */}
+                      {/* CABEÇALHO                            */}
+                      {/* ==================================== */}
+
+                      <div className="flex items-center gap-2 mb-2">
+                        <span
+                          className={`
+                            flex
+                            items-center
+                            justify-center
+                            shrink-0
+
+                            ${
+                              ehIndicador
+                                ? "w-10 h-10 rounded-xl"
+                                : "w-8 h-8 rounded-full"
+                            }
+                          `}
+                          style={{
+                            backgroundColor:
+                              color,
+                          }}
+                        >
+                          <CategoriaIcon
+                            color="#ffffff"
+                            size={
+                              ehIndicador
+                                ? 19
+                                : 16
+                            }
+                            strokeWidth={
+                              2.25
+                            }
+                          />
                         </span>
-                      </p>
+
+                        <div>
+                          <h3
+                            className="
+                              font-bold
+                              text-green-primary
+                              text-base
+                            "
+                          >
+                            {
+                              estabelecimento.nomePontoColeta
+                            }
+                          </h3>
+
+                          {ehIndicador && (
+                            <span
+                              className="
+                                text-[10px]
+                                font-semibold
+                                uppercase
+                                tracking-wide
+                              "
+                              style={{
+                                color,
+                              }}
+                            >
+                              Parceiro
+                              Indicador
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* ==================================== */}
+                      {/* INFORMAÇÕES                          */}
+                      {/* ==================================== */}
+
+                      <div className="space-y-1.5 text-sm">
+
+                        {/* CATEGORIA */}
+
+                        <p className="flex items-start gap-2">
+                          <Tag
+                            className="
+                              w-4
+                              h-4
+                              text-white-400
+                              shrink-0
+                              mt-0.5
+                            "
+                          />
+
+                          <span className="text-white-600">
+                            <span className="font-medium">
+                              {ehIndicador
+                                ? "Parceiro Indicador:"
+                                : "Categoria:"}
+                            </span>{" "}
+                            {
+                              label
+                            }
+                          </span>
+                        </p>
+
+                        {/* ENDEREÇO */}
+
+                        <p className="flex items-start gap-2">
+                          <MapPin
+                            className="
+                              w-4
+                              h-4
+                              text-white-400
+                              shrink-0
+                              mt-0.5
+                            "
+                          />
+
+                          <span className="text-white-600 text-xs">
+                            {
+                              estabelecimento
+                                .endereco
+                                .logradouro
+                            }
+                            ,{" "}
+                            {
+                              estabelecimento
+                                .endereco
+                                .numero
+                            }
+
+                            <br />
+
+                            {
+                              estabelecimento
+                                .endereco
+                                .bairro
+                            }
+                            ,{" "}
+                            {
+                              estabelecimento
+                                .endereco
+                                .cidade
+                            }{" "}
+                            {
+                              estabelecimento
+                                .endereco
+                                .estado ||
+                              ""
+                            }
+                          </span>
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                </Popup>
-              </Marker>
-            );
-          })}
+                  </Popup>
+                </Marker>
+              );
+            }
+          )}
         </MapContainer>
 
-        {/* ============================================================== */}
-        {/* LEGENDA E CONTROLES INFERIORES                                 */}
-        {/* ============================================================== */}
+        {/* ================================================== */}
+        {/* CONTROLES INFERIORES                               */}
+        {/* ================================================== */}
 
-        {/* Botões de Controle do Mapa (Localização e Camadas) */}
-        <div className="absolute bottom-4 sm:bottom-6 left-4 z-[1000] flex flex-col gap-2.5 sm:gap-3">
+        <div
+          className="
+            absolute
+            bottom-4
+            sm:bottom-6
+            left-4
+            z-[1000]
+            flex
+            flex-col
+            gap-2.5
+            sm:gap-3
+          "
+        >
+          {/* ================================================ */}
+          {/* LOCALIZAÇÃO                                      */}
+          {/* ================================================ */}
+
           <button
-            onClick={handleGeoLocation}
+            onClick={
+              handleGeoLocation
+            }
             type="button"
-            className="w-12 h-12 sm:w-14 sm:h-14 bg-white hover:bg-teal-50 rounded-full flex items-center justify-center shadow-lg border border-white-100 cursor-pointer active:scale-95 transition-all"
+            className="
+              w-12
+              h-12
+              sm:w-14
+              sm:h-14
+              bg-white
+              hover:bg-teal-50
+              rounded-full
+              flex
+              items-center
+              justify-center
+              shadow-lg
+              border
+              border-white-100
+              cursor-pointer
+              active:scale-95
+              transition-all
+            "
             title="Minha Localização"
           >
-            <svg className="w-5 h-5 sm:w-6 sm:h-6 text-teal-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            <svg
+              className="
+                w-5
+                h-5
+                sm:w-6
+                sm:h-6
+                text-teal-primary
+              "
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={
+                  2
+                }
+                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+              />
+
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={
+                  2
+                }
+                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+              />
             </svg>
           </button>
 
+          {/* ================================================ */}
+          {/* CAMADAS                                          */}
+          {/* ================================================ */}
+
           <div className="relative">
             {isLayerMenuOpen && (
-              <div className="absolute bottom-14 sm:bottom-16 left-0 bg-white rounded-2xl shadow-xl p-2 border border-white-100 flex flex-col gap-1.5 w-40 sm:w-44 animate-in fade-in slide-in-from-bottom-2 duration-150">
+              <div
+                className="
+                  absolute
+                  bottom-14
+                  sm:bottom-16
+                  left-0
+                  bg-white
+                  rounded-2xl
+                  shadow-xl
+                  p-2
+                  border
+                  border-white-100
+                  flex
+                  flex-col
+                  gap-1.5
+                  w-40
+                  sm:w-44
+                  animate-in
+                  fade-in
+                  slide-in-from-bottom-2
+                  duration-150
+                "
+              >
+                {/* PADRÃO */}
+
                 <button
                   type="button"
-                  onClick={() => { setCurrentTile('standard'); setIsLayerMenuOpen(false); }}
-                  className={`flex items-center gap-2.5 p-1.5 rounded-xl text-left transition-colors ${
-                    currentTile === 'standard' ? 'bg-teal-50 text-teal-primary font-bold' : 'hover:bg-teal-100 text-black-200 font-medium'
-                  }`}
+                  onClick={() => {
+                    setCurrentTile(
+                      "standard"
+                    );
+
+                    setIsLayerMenuOpen(
+                      false
+                    );
+                  }}
+                  className={`
+                    flex
+                    items-center
+                    gap-2.5
+                    p-1.5
+                    rounded-xl
+                    text-left
+                    transition-colors
+
+                    ${
+                      currentTile ===
+                      "standard"
+                        ? "bg-teal-50 text-teal-primary font-bold"
+                        : "hover:bg-teal-100 text-black-200 font-medium"
+                    }
+                  `}
                 >
-                  <img 
-                    src="/assets/padrao.png" 
-                    alt="Mapa Padrão" 
-                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg object-cover border border-black-100/10 shrink-0"
+                  <img
+                    src="/assets/padrao.png"
+                    alt="Mapa Padrão"
+                    className="
+                      w-7
+                      h-7
+                      sm:w-8
+                      sm:h-8
+                      rounded-lg
+                      object-cover
+                      border
+                      border-black-100/10
+                      shrink-0
+                    "
                   />
-                  <span className="text-xs">Padrão</span>
+
+                  <span className="text-xs">
+                    Padrão
+                  </span>
                 </button>
+
+                {/* SATÉLITE */}
+
                 <button
                   type="button"
-                  onClick={() => { setCurrentTile('satellite'); setIsLayerMenuOpen(false); }}
-                  className={`flex items-center gap-2.5 p-1.5 rounded-xl text-left transition-colors ${
-                    currentTile === 'satellite' ? 'bg-teal-50 text-teal-primary font-bold' : 'hover:bg-teal-100 text-black-200 font-medium'
-                  }`}
+                  onClick={() => {
+                    setCurrentTile(
+                      "satellite"
+                    );
+
+                    setIsLayerMenuOpen(
+                      false
+                    );
+                  }}
+                  className={`
+                    flex
+                    items-center
+                    gap-2.5
+                    p-1.5
+                    rounded-xl
+                    text-left
+                    transition-colors
+
+                    ${
+                      currentTile ===
+                      "satellite"
+                        ? "bg-teal-50 text-teal-primary font-bold"
+                        : "hover:bg-teal-100 text-black-200 font-medium"
+                    }
+                  `}
                 >
-                  <img 
-                    src="/assets/satelite.png" 
-                    alt="Mapa Satélite" 
-                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg object-cover border border-black-100/10 shrink-0"
+                  <img
+                    src="/assets/satelite.png"
+                    alt="Mapa Satélite"
+                    className="
+                      w-7
+                      h-7
+                      sm:w-8
+                      sm:h-8
+                      rounded-lg
+                      object-cover
+                      border
+                      border-black-100/10
+                      shrink-0
+                    "
                   />
-                  <span className="text-xs">Satélite</span>
+
+                  <span className="text-xs">
+                    Satélite
+                  </span>
                 </button>
               </div>
             )}
+
             <button
-              onClick={() => setIsLayerMenuOpen((prev) => !prev)}
+              onClick={() =>
+                setIsLayerMenuOpen(
+                  (
+                    prev
+                  ) =>
+                    !prev
+                )
+              }
               type="button"
-              className="w-12 h-12 sm:w-14 sm:h-14 bg-teal-primary hover:bg-teal-hover rounded-full flex items-center justify-center shadow-lg text-white cursor-pointer active:scale-95 transition-all"
+              className="
+                w-12
+                h-12
+                sm:w-14
+                sm:h-14
+                bg-teal-primary
+                hover:bg-teal-hover
+                rounded-full
+                flex
+                items-center
+                justify-center
+                shadow-lg
+                text-white
+                cursor-pointer
+                active:scale-95
+                transition-all
+              "
               title="Escolher Camada do Mapa"
             >
-              <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              <svg
+                className="
+                  w-5
+                  h-5
+                  sm:w-6
+                  sm:h-6
+                "
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={
+                    2
+                  }
+                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                />
               </svg>
             </button>
           </div>
         </div>
 
-        {/* LEGENDA DE CATEGORIAS - Desktop */}
-        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-[1000] bg-white/95 backdrop-blur-sm rounded-xl shadow-lg p-3 max-w-[90%] max-h-[40vh] overflow-y-auto border border-white-200 hidden sm:block">
+        {/* ================================================== */}
+        {/* LEGENDA DESKTOP                                    */}
+        {/* ================================================== */}
+
+        <div
+          className="
+            absolute
+            top-20
+            left-1/2
+            -translate-x-1/2
+            z-[1000]
+            bg-white/95
+            backdrop-blur-sm
+            rounded-xl
+            shadow-lg
+            p-3
+            max-w-[90%]
+            max-h-[40vh]
+            overflow-y-auto
+            border
+            border-white-200
+            hidden
+            sm:block
+          "
+        >
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-xs font-bold text-white-600 mr-1">Categorias:</span>
+            <span className="text-xs font-bold text-white-600 mr-1">
+              Categorias:
+            </span>
+
+            {/* TODAS */}
+
             <button
-              onClick={() => setCategoriaFiltro("TODAS")}
-              className={`text-xs px-2.5 py-1 rounded-full transition-all ${
-                categoriaFiltro === "TODAS"
-                  ? "bg-green-primary text-white-primary font-bold"
-                  : "bg-white-100 text-white-600 hover:bg-white-200"
-              }`}
+              onClick={() =>
+                setCategoriaFiltro(
+                  "TODAS"
+                )
+              }
+              className={`
+                text-xs
+                px-2.5
+                py-1
+                rounded-full
+                transition-all
+
+                ${
+                  categoriaFiltro ===
+                  "TODAS"
+                    ? "bg-green-primary text-white-primary font-bold"
+                    : "bg-white-100 text-white-600 hover:bg-white-200"
+                }
+              `}
             >
-              Todas ({estabelecimentos.length})
+              Todas (
+              {
+                estabelecimentos.length
+              }
+              )
             </button>
-            {Object.entries(CATEGORIA_MAP).map(([key, config]) => {
-              const numKey = parseInt(key) as CategoriaPontoColeta;
-              const count = contagemCategorias[numKey] || 0;
-              if (count === 0) return null;
-              const Icon = config.icon;
-              
-              return (
-                <button
-                  key={key}
-                  onClick={() => setCategoriaFiltro(numKey)}
-                  className={`text-xs px-2.5 py-1 rounded-full transition-all flex items-center gap-1 ${
-                    categoriaFiltro === numKey
-                      ? "text-white font-bold"
-                      : "bg-white-100 text-white-600 hover:bg-white-200"
-                  }`}
-                  style={categoriaFiltro === numKey ? { backgroundColor: config.color } : {}}
-                >
-                  <Icon className="w-3.5 h-3.5" />
-                  <span>{config.label}</span>
-                  <span className="text-[10px] opacity-70">({count})</span>
-                </button>
-              );
-            })}
+
+            {/* CATEGORIAS */}
+
+            {(
+              Object.entries(
+                CATEGORIA_MAP
+              ) as [
+                string,
+                CategoriaInfo,
+              ][]
+            ).map(
+              ([
+                key,
+                config,
+              ]) => {
+                const numKey =
+                  Number(
+                    key
+                  ) as CategoriaPontoColeta;
+
+                const count =
+                  contagemCategorias[
+                    numKey
+                  ] ||
+                  0;
+
+                /**
+                 * Não mostra categoria
+                 * sem ponto.
+                 */
+                if (
+                  count ===
+                  0
+                ) {
+                  return null;
+                }
+
+                const Icon =
+                  config.icon;
+
+                const ehIndicador =
+                  config.tipo ===
+                  "INDICADOR";
+
+                return (
+                  <button
+                    key={
+                      key
+                    }
+                    onClick={() =>
+                      setCategoriaFiltro(
+                        numKey
+                      )
+                    }
+                    className={`
+                      text-xs
+                      px-2.5
+                      py-1
+                      transition-all
+                      flex
+                      items-center
+                      gap-1
+
+                      ${
+                        ehIndicador
+                          ? "rounded-lg"
+                          : "rounded-full"
+                      }
+
+                      ${
+                        categoriaFiltro ===
+                        numKey
+                          ? "text-white font-bold"
+                          : "bg-white-100 text-white-600 hover:bg-white-200"
+                      }
+                    `}
+                    style={
+                      categoriaFiltro ===
+                      numKey
+                        ? {
+                            backgroundColor:
+                              config.color,
+                          }
+                        : {}
+                    }
+                  >
+                    <Icon className="w-3.5 h-3.5" />
+
+                    <span>
+                      {
+                        config.label
+                      }
+                    </span>
+
+                    {ehIndicador && (
+                      <span className="text-[9px] opacity-70">
+                        Indicador
+                      </span>
+                    )}
+
+                    <span className="text-[10px] opacity-70">
+                      (
+                      {
+                        count
+                      }
+                      )
+                    </span>
+                  </button>
+                );
+              }
+            )}
           </div>
         </div>
 
-        {/* Versão mobile da legenda */}
-        <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-[1000] bg-white/95 backdrop-blur-sm rounded-xl shadow-lg p-2 max-w-[92%] overflow-x-auto border border-white-200 sm:hidden flex items-center gap-1">
+        {/* ================================================== */}
+        {/* LEGENDA MOBILE                                     */}
+        {/* ================================================== */}
+
+        <div
+          className="
+            absolute
+            bottom-24
+            left-1/2
+            -translate-x-1/2
+            z-[1000]
+            bg-white/95
+            backdrop-blur-sm
+            rounded-xl
+            shadow-lg
+            p-2
+            max-w-[92%]
+            overflow-x-auto
+            border
+            border-white-200
+            sm:hidden
+            flex
+            items-center
+            gap-1
+          "
+        >
           <button
-            onClick={() => setCategoriaFiltro("TODAS")}
-            className={`text-[10px] px-2 py-0.5 rounded-full whitespace-nowrap ${
-              categoriaFiltro === "TODAS"
-                ? "bg-green-primary text-white font-bold"
-                : "bg-white-100 text-white-600"
-            }`}
+            onClick={() =>
+              setCategoriaFiltro(
+                "TODAS"
+              )
+            }
+            className={`
+              text-[10px]
+              px-2
+              py-0.5
+              rounded-full
+              whitespace-nowrap
+
+              ${
+                categoriaFiltro ===
+                "TODAS"
+                  ? "bg-green-primary text-white font-bold"
+                  : "bg-white-100 text-white-600"
+              }
+            `}
           >
             Todas
           </button>
-          {Object.entries(CATEGORIA_MAP).map(([key, config]) => {
-            const numKey = parseInt(key) as CategoriaPontoColeta;
-            const count = contagemCategorias[numKey] || 0;
-            if (count === 0) return null;
-            const Icon = config.icon;
-            
-            return (
-              <button
-                key={key}
-                onClick={() => setCategoriaFiltro(numKey)}
-                className={`text-[10px] px-2 py-0.5 rounded-full whitespace-nowrap flex items-center gap-0.5 ${
-                  categoriaFiltro === numKey
-                    ? "text-white font-bold"
-                    : "bg-white-100 text-white-600"
-                }`}
-                style={categoriaFiltro === numKey ? { backgroundColor: config.color } : {}}
-              >
-                <Icon className="w-3 h-3" />
-                <span>{count}</span>
-              </button>
-            );
-          })}
+
+          {(
+            Object.entries(
+              CATEGORIA_MAP
+            ) as [
+              string,
+              CategoriaInfo,
+            ][]
+          ).map(
+            ([
+              key,
+              config,
+            ]) => {
+              const numKey =
+                Number(
+                  key
+                ) as CategoriaPontoColeta;
+
+              const count =
+                contagemCategorias[
+                  numKey
+                ] ||
+                0;
+
+              if (
+                count ===
+                0
+              ) {
+                return null;
+              }
+
+              const Icon =
+                config.icon;
+
+              const ehIndicador =
+                config.tipo ===
+                "INDICADOR";
+
+              return (
+                <button
+                  key={
+                    key
+                  }
+                  onClick={() =>
+                    setCategoriaFiltro(
+                      numKey
+                    )
+                  }
+                  title={
+                    config.label
+                  }
+                  className={`
+                    text-[10px]
+                    px-2
+                    py-0.5
+                    whitespace-nowrap
+                    flex
+                    items-center
+                    gap-0.5
+
+                    ${
+                      ehIndicador
+                        ? "rounded-lg"
+                        : "rounded-full"
+                    }
+
+                    ${
+                      categoriaFiltro ===
+                      numKey
+                        ? "text-white font-bold"
+                        : "bg-white-100 text-white-600"
+                    }
+                  `}
+                  style={
+                    categoriaFiltro ===
+                    numKey
+                      ? {
+                          backgroundColor:
+                            config.color,
+                        }
+                      : {}
+                  }
+                >
+                  <Icon className="w-3 h-3" />
+
+                  <span>
+                    {
+                      count
+                    }
+                  </span>
+                </button>
+              );
+            }
+          )}
         </div>
 
-        {/* Botão de Menu Flutuante (Direita Inferior) */}
-        <div className="absolute bottom-4 sm:bottom-6 right-4 z-[1002] flex flex-col gap-2.5 sm:gap-3 items-end">
+        {/* ================================================== */}
+        {/* MENU FLUTUANTE                                     */}
+        {/* ================================================== */}
+
+        <div
+          className="
+            absolute
+            bottom-4
+            sm:bottom-6
+            right-4
+            z-[1002]
+            flex
+            flex-col
+            gap-2.5
+            sm:gap-3
+            items-end
+          "
+        >
           <button
-            onClick={() => setIsMenuOpen((prev) => !prev)}
+            onClick={() =>
+              setIsMenuOpen(
+                (
+                  prev
+                ) =>
+                  !prev
+              )
+            }
             type="button"
-            className="w-12 h-12 sm:w-14 sm:h-14 bg-white hover:bg-teal-50 rounded-full flex items-center justify-center shadow-lg border border-white-100 text-teal-primary cursor-pointer active:scale-95 transition-all"
+            className="
+              w-12
+              h-12
+              sm:w-14
+              sm:h-14
+              bg-white
+              hover:bg-teal-50
+              rounded-full
+              flex
+              items-center
+              justify-center
+              shadow-lg
+              border
+              border-white-100
+              text-teal-primary
+              cursor-pointer
+              active:scale-95
+              transition-all
+            "
             title="Menu"
           >
-            <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            <svg
+              className="
+                w-5
+                h-5
+                sm:w-6
+                sm:h-6
+              "
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={
+                  2
+                }
+                d="M4 6h16M4 12h16M4 18h16"
+              />
             </svg>
           </button>
         </div>
 
-        {/* Modal de Menu Lateral */}
+        {/* ================================================== */}
+        {/* MENU                                               */}
+        {/* ================================================== */}
+
         {isMenuOpen && (
-          <div className="absolute bottom-[140px] sm:bottom-[160px] right-4 z-[1001] w-64 sm:w-72 bg-white rounded-[24px] sm:rounded-[28px] shadow-xl p-4 sm:p-6 border border-white-100 animate-in fade-in slide-in-from-bottom-3 duration-200">
-            <span className="text-[10px] sm:text-xs font-bold text-white-600 tracking-wider uppercase px-1 mb-3 sm:mb-4 block">
+          <div
+            className="
+              absolute
+              bottom-[140px]
+              sm:bottom-[160px]
+              right-4
+              z-[1001]
+              w-64
+              sm:w-72
+              bg-white
+              rounded-[24px]
+              sm:rounded-[28px]
+              shadow-xl
+              p-4
+              sm:p-6
+              border
+              border-white-100
+              animate-in
+              fade-in
+              slide-in-from-bottom-3
+              duration-200
+            "
+          >
+            <span
+              className="
+                text-[10px]
+                sm:text-xs
+                font-bold
+                text-white-600
+                tracking-wider
+                uppercase
+                px-1
+                mb-3
+                sm:mb-4
+                block
+              "
+            >
               MENU
             </span>
+
             <ul className="space-y-2 sm:space-y-3">
+
+              {/* SOBRE */}
+
               <li>
                 <button
-                  onClick={() => navigate("/sobre")}
-                  className="w-full flex items-center gap-3 p-1.5 sm:p-2 rounded-2xl hover:bg-green-50 text-left transition-colors"
+                  onClick={() =>
+                    navigate(
+                      "/sobre"
+                    )
+                  }
+                  className="
+                    w-full
+                    flex
+                    items-center
+                    gap-3
+                    p-1.5
+                    sm:p-2
+                    rounded-2xl
+                    hover:bg-green-50
+                    text-left
+                    transition-colors
+                  "
                 >
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-green-100 flex items-center justify-center shrink-0">
-                    <img src="/assets/icons/icon-info2.svg" alt="Sobre" className="w-5 h-5 sm:w-6 sm:h-6" />
+                  <div
+                    className="
+                      w-10
+                      h-10
+                      sm:w-12
+                      sm:h-12
+                      rounded-2xl
+                      bg-green-100
+                      flex
+                      items-center
+                      justify-center
+                      shrink-0
+                    "
+                  >
+                    <img
+                      src="/assets/icons/icon-info2.svg"
+                      alt="Sobre"
+                      className="w-5 h-5 sm:w-6 sm:h-6"
+                    />
                   </div>
-                  <span className="text-xs sm:text-sm font-semibold text-black-200">Sobre o aplicativo</span>
+
+                  <span className="text-xs sm:text-sm font-semibold text-black-200">
+                    Sobre o
+                    aplicativo
+                  </span>
                 </button>
               </li>
+
+              {/* PRIVACIDADE */}
+
               <li>
                 <button
-                  onClick={() => navigate("/privacidade")}
-                  className="w-full flex items-center gap-3 p-1.5 sm:p-2 rounded-2xl hover:bg-green-50 text-left transition-colors"
+                  onClick={() =>
+                    navigate(
+                      "/privacidade"
+                    )
+                  }
+                  className="
+                    w-full
+                    flex
+                    items-center
+                    gap-3
+                    p-1.5
+                    sm:p-2
+                    rounded-2xl
+                    hover:bg-green-50
+                    text-left
+                    transition-colors
+                  "
                 >
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-green-100 flex items-center justify-center shrink-0">
-                    <img src="/assets/icons/icon-privacidade.svg" alt="Privacidade" className="w-5 h-5 sm:w-6 sm:h-6" />
+                  <div
+                    className="
+                      w-10
+                      h-10
+                      sm:w-12
+                      sm:h-12
+                      rounded-2xl
+                      bg-green-100
+                      flex
+                      items-center
+                      justify-center
+                      shrink-0
+                    "
+                  >
+                    <img
+                      src="/assets/icons/icon-privacidade.svg"
+                      alt="Privacidade"
+                      className="w-5 h-5 sm:w-6 sm:h-6"
+                    />
                   </div>
-                  <span className="text-xs sm:text-sm font-semibold text-black-200">Política de Privacidade</span>
+
+                  <span className="text-xs sm:text-sm font-semibold text-black-200">
+                    Política de
+                    Privacidade
+                  </span>
                 </button>
               </li>
+
+              {/* TERMOS */}
+
               <li>
                 <button
-                  onClick={() => navigate("/termos")}
-                  className="w-full flex items-center gap-3 p-1.5 sm:p-2 rounded-2xl hover:bg-green-50 bg-green-50/40 text-left transition-colors"
+                  onClick={() =>
+                    navigate(
+                      "/termos"
+                    )
+                  }
+                  className="
+                    w-full
+                    flex
+                    items-center
+                    gap-3
+                    p-1.5
+                    sm:p-2
+                    rounded-2xl
+                    hover:bg-green-50
+                    bg-green-50/40
+                    text-left
+                    transition-colors
+                  "
                 >
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-green-100 flex items-center justify-center shrink-0">
-                    <img src="/assets/icons/icon-termos.svg" alt="Termos" className="w-5 h-5 sm:w-6 sm:h-6" />
+                  <div
+                    className="
+                      w-10
+                      h-10
+                      sm:w-12
+                      sm:h-12
+                      rounded-2xl
+                      bg-green-100
+                      flex
+                      items-center
+                      justify-center
+                      shrink-0
+                    "
+                  >
+                    <img
+                      src="/assets/icons/icon-termos.svg"
+                      alt="Termos"
+                      className="w-5 h-5 sm:w-6 sm:h-6"
+                    />
                   </div>
-                  <span className="text-xs sm:text-sm font-semibold text-black-200">Termos de uso</span>
+
+                  <span className="text-xs sm:text-sm font-semibold text-black-200">
+                    Termos de uso
+                  </span>
                 </button>
               </li>
             </ul>
           </div>
         )}
 
-        {/* Feedbacks Visuais */}
+        {/* ================================================== */}
+        {/* CARREGANDO                                         */}
+        {/* ================================================== */}
+
         {carregando && (
-          <div className="absolute inset-0 z-[999] flex items-center justify-center bg-white/60 backdrop-blur-sm">
-            <div className="bg-white rounded-xl shadow-lg p-6 flex items-center gap-3">
-              <div className="w-6 h-6 border-3 border-green-primary border-t-transparent rounded-full animate-spin" />
-              <span className="text-sm text-white-600">Carregando estabelecimentos...</span>
+          <div
+            className="
+              absolute
+              inset-0
+              z-[999]
+              flex
+              items-center
+              justify-center
+              bg-white/60
+              backdrop-blur-sm
+            "
+          >
+            <div
+              className="
+                bg-white
+                rounded-xl
+                shadow-lg
+                p-6
+                flex
+                items-center
+                gap-3
+              "
+            >
+              <div
+                className="
+                  w-6
+                  h-6
+                  border-3
+                  border-green-primary
+                  border-t-transparent
+                  rounded-full
+                  animate-spin
+                "
+              />
+
+              <span className="text-sm text-white-600">
+                Carregando
+                estabelecimentos...
+              </span>
             </div>
           </div>
         )}
 
-        {erro && !carregando && (
-          <div className="absolute inset-0 z-[999] flex items-center justify-center bg-white/60 backdrop-blur-sm">
-            <div className="bg-white rounded-xl shadow-lg p-6 max-w-md text-center">
-              <Frown className="w-10 h-10 mx-auto mb-3 text-red-600" strokeWidth={1.75} />
-              <h3 className="text-lg font-bold text-red-600 mb-2">Ops! Algo deu errado</h3>
-              <p className="text-sm text-white-600">{erro}</p>
-              <button
-                onClick={carregarEstabelecimentos}
-                className="mt-4 px-4 py-2 bg-green-primary text-white rounded-lg hover:bg-green-600 transition-colors"
+        {/* ================================================== */}
+        {/* ERRO                                               */}
+        {/* ================================================== */}
+
+        {erro &&
+          !carregando && (
+            <div
+              className="
+                absolute
+                inset-0
+                z-[999]
+                flex
+                items-center
+                justify-center
+                bg-white/60
+                backdrop-blur-sm
+              "
+            >
+              <div
+                className="
+                  bg-white
+                  rounded-xl
+                  shadow-lg
+                  p-6
+                  max-w-md
+                  text-center
+                "
               >
-                Tentar novamente
-              </button>
+                <Frown
+                  className="
+                    w-10
+                    h-10
+                    mx-auto
+                    mb-3
+                    text-red-600
+                  "
+                  strokeWidth={
+                    1.75
+                  }
+                />
+
+                <h3
+                  className="
+                    text-lg
+                    font-bold
+                    text-red-600
+                    mb-2
+                  "
+                >
+                  Ops! Algo deu
+                  errado
+                </h3>
+
+                <p className="text-sm text-white-600">
+                  {erro}
+                </p>
+
+                <button
+                  onClick={
+                    carregarEstabelecimentos
+                  }
+                  className="
+                    mt-4
+                    px-4
+                    py-2
+                    bg-green-primary
+                    text-white
+                    rounded-lg
+                    hover:bg-green-600
+                    transition-colors
+                  "
+                >
+                  Tentar novamente
+                </button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
       </main>
     </div>
   );
