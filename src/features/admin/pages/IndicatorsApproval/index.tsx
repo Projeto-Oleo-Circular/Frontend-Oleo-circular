@@ -867,7 +867,7 @@ function CriarPontoColetaIndicadorModal({
           <div className="flex gap-3 pt-4 border-t border-white-100">
             <Button
               type="button"
-              variant="secondary"
+              variant="danger"
               size="sm"
               onClick={handleClose}
               disabled={loading}
@@ -1344,12 +1344,11 @@ function IndicadorModal({
 
             <div className="flex gap-3 justify-end mt-6 pt-4 border-t border-white-100">
               <Button
-                variant="secondary"
+                variant="danger"
                 size="sm"
                 onClick={onClose}
                 disabled={salvando}
                 fullWidth
-                className="rounded-full border border-green-primary text-green-primary bg-white hover:bg-green-50"
               >
                 Cancelar
               </Button>
@@ -2577,7 +2576,7 @@ export function ParceirosIndicadores() {
               {modoEdicaoDetalhes ? (
                 <div className="flex gap-3 mt-6 pt-4 border-t border-white-100">
                   <Button
-                    variant="secondary"
+                    variant="danger"
                     size="sm"
                     onClick={() => {
                       setModoEdicaoDetalhes(false);
@@ -2618,7 +2617,6 @@ export function ParceirosIndicadores() {
                                       }}
                     disabled={salvando}
                     fullWidth
-                    className="rounded-full border border-green-primary text-green-primary bg-white hover:bg-green-50"
                   >
                     Cancelar
                   </Button>

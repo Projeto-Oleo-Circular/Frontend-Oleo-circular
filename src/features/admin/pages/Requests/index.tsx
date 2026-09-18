@@ -793,14 +793,16 @@ export function Requests() {
 
                   {/* FOOTER CANCELAR */}
                   <div className="pt-4 mt-4 border-t border-white-100">
-                    <button
-                      type="button"
-                      onClick={fecharModalCriar}
-                      disabled={salvando}
-                      className="w-full py-2.5 px-4 rounded-full border border-green-primary text-green-primary bg-white text-sm font-semibold hover:bg-green-50 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    <Button 
+                        type="button"
+                        variant="danger" 
+                        size="sm" 
+                        onClick={fecharModalCriar} 
+                        disabled={salvando} 
+                        fullWidth
                     >
-                      Cancelar
-                    </button>
+                        Cancelar
+                    </Button>
                   </div>
                 </div>
               )}
@@ -872,14 +874,16 @@ export function Requests() {
 
                   {/* FOOTER CANCELAR */}
                   <div className="pt-4 border-t border-white-100">
-                    <button
+                    <Button 
                       type="button"
-                      onClick={fecharModalCriar}
-                      disabled={salvando}
-                      className="w-full py-2.5 px-4 rounded-full border border-green-primary text-green-primary bg-white text-sm font-semibold hover:bg-green-50 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                      variant="danger" 
+                      size="sm" 
+                      onClick={fecharModalCriar} 
+                      disabled={salvando} 
+                      fullWidth
                     >
                       Cancelar
-                    </button>
+                    </Button>
                   </div>
                 </div>
               )}
@@ -954,14 +958,16 @@ export function Requests() {
                       </label>
 
                       <div className="flex gap-3 pt-2">
-                        <button
+                        <Button 
                           type="button"
-                          onClick={fecharModalCriar}
-                          disabled={salvando}
-                          className="w-full py-2.5 px-4 rounded-full border border-green-primary text-green-primary bg-white text-sm font-semibold hover:bg-green-50 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                          variant="danger" 
+                          size="sm" 
+                          onClick={fecharModalCriar} 
+                          disabled={salvando} 
+                          fullWidth
                         >
                           Cancelar
-                        </button>
+                        </Button>
 
                         <Button
                           variant="primary"
@@ -991,14 +997,16 @@ export function Requests() {
                       </Button>
 
                       <div className="pt-4 mt-4 border-t border-white-100">
-                        <button
+                        <Button 
                           type="button"
+                          variant="danger"
+                          size="sm"
                           onClick={fecharModalCriar}
                           disabled={salvando}
-                          className="w-full py-2.5 px-4 rounded-full border border-green-primary text-green-primary bg-white text-sm font-semibold hover:bg-green-50 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                          fullWidth
                         >
                           Cancelar
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   )}
@@ -1101,14 +1109,15 @@ export function Requests() {
               </div>
 
               <div className="flex gap-3">
-                <button
-                  type="button"
+                <Button
+                  variant="danger"
+                  size="sm"
                   onClick={fecharModal}
                   disabled={salvando}
-                  className="w-full py-2.5 px-4 rounded-full border border-green-primary text-green-primary bg-white text-sm font-semibold hover:bg-green-50 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  fullWidth
                 >
                   Cancelar
-                </button>
+                </Button>
 
                 <Button
                   variant="primary"
@@ -1163,14 +1172,15 @@ export function Requests() {
               </label>
 
               <div className="flex gap-3">
-                <button
-                  type="button"
+                <Button
+                  variant="danger"
+                  size="sm"
                   onClick={fecharModal}
                   disabled={salvando}
-                  className="w-full py-2.5 px-4 rounded-full border border-green-primary text-green-primary bg-white text-sm font-semibold hover:bg-green-50 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  fullWidth
                 >
                   Cancelar
-                </button>
+                </Button>
 
                 <Button
                   variant="primary"
@@ -1307,21 +1317,11 @@ export function Requests() {
                 )}
               </div>
 
-              {/* FOOTER: FECHAR + CANCELAR (ambos) */}
-              <div className="mt-6 pt-4 border-t border-white-100 flex gap-3">
-                <button
-                  type="button"
-                  onClick={fecharModal}
-                  className="w-full py-2.5 px-4 rounded-full border border-green-primary text-green-primary bg-white text-sm font-semibold hover:bg-green-50 transition-colors cursor-pointer"
-                >
-                  Cancelar
-                </button>
-
+              <div className="mt-6 pt-4 border-t border-white-100 flex">
                 <Button
-                  variant="primary"
+                  variant="danger"
                   size="sm"
                   onClick={fecharModal}
-                  className="rounded-full"
                   fullWidth
                 >
                   Fechar

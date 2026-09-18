@@ -2727,7 +2727,7 @@ function PointDetail() {
                                     onClick={
                                         handleCancelarEdicao
                                     }
-                                    variant="secondary"
+                                    variant="danger"
                                     fullWidth
                                     disabled={
                                         salvando
@@ -2904,7 +2904,7 @@ function PointDetail() {
                                             false
                                         )
                                     }
-                                    variant="outline"
+                                    variant="danger"
                                     fullWidth
                                     disabled={
                                         excluindo

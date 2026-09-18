@@ -719,14 +719,16 @@ export function PartnersApproval() {
                 </label>
 
                 <div className="mt-6 flex gap-2">
-                  <button
+                  <Button 
                     type="button"
-                    onClick={fecharModal}
-                    disabled={salvando}
-                    className="w-full py-2 px-4 text-xs font-semibold rounded-full border border-green-primary text-green-primary bg-white hover:bg-green-50 transition-colors cursor-pointer disabled:opacity-50"
-                  >
-                    Cancelar
-                  </button>
+                    variant="danger" 
+                    size="sm" 
+                    onClick={fecharModal} 
+                    disabled={loading} 
+                    fullWidth
+                    >
+                      Cancelar
+                  </Button>
                   <Button
                     variant="primary"
                     size="sm"
@@ -1042,12 +1044,11 @@ export function PartnersApproval() {
               {modoEdicao ? (
                 <div className="flex gap-3 mt-6 pt-4 border-t border-white-100">
                   <Button
-                    variant="secondary"
+                    variant="danger"
                     size="sm"
                     onClick={handleCancelarEdicao}
                     disabled={salvando}
                     fullWidth
-                    className="rounded-full border border-green-primary text-green-primary bg-white hover:bg-green-50"
                   >
                     Cancelar
                   </Button>

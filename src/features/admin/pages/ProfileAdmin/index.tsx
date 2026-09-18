@@ -290,7 +290,7 @@ function Profile() {
                                 <Button onClick={handleSalvar} loading={salvando} variant="primary" fullWidth>
                                     Salvar alterações
                                 </Button>
-                                <Button onClick={handleCancelarEdicao} variant="secondary" fullWidth disabled={salvando}>
+                                <Button onClick={handleCancelarEdicao} variant="danger" fullWidth disabled={salvando}>
                                     Cancelar
                                 </Button>
                             </div>
@@ -325,7 +325,7 @@ function Profile() {
                                 </Button>
                                 <Button
                                     onClick={() => setModalSaidaAberta(false)}
-                                    variant="outline"
+                                    variant="danger"
                                     fullWidth
                                     disabled={saindo}
                                 >

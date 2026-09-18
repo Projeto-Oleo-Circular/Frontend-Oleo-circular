@@ -594,7 +594,7 @@ export function CriarPontoColetaModal({
                     <div className="flex gap-3 pt-4 border-t border-white-100">
                         <Button 
                             type="button"
-                            variant="secondary" 
+                            variant="danger" 
                             size="sm" 
                             onClick={handleClose} 
                             disabled={loading} 

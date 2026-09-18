@@ -1146,7 +1146,7 @@ function Profile() {
                                     onClick={
                                         handleCancelarEdicao
                                     }
-                                    variant="secondary"
+                                    variant="danger"
                                     fullWidth
                                     disabled={
                                         salvando
@@ -1950,7 +1950,7 @@ function Profile() {
                                             false
                                         )
                                     }
-                                    variant="outline"
+                                    variant="danger"
                                     fullWidth
                                     disabled={
                                         saindo

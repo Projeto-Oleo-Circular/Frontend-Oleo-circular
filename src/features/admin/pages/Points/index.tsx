@@ -699,16 +699,15 @@ export function PointsApproval() {
 
               <div className="flex gap-3">
                <Button
-  type="button"
-  variant="secondary"
-  size="sm"
-  onClick={fecharModal}
-  disabled={salvando}
-  fullWidth
-  className="rounded-full border border-green-primary text-green-primary bg-white hover:bg-green-50"
->
-  Cancelar
-</Button>
+                  type="button"
+                  variant="danger"
+                  size="sm"
+                  onClick={fecharModal}
+                  disabled={salvando}
+                  fullWidth
+                >
+                  Cancelar
+              </Button>
                 <Button
                   variant="primary"
                   size="sm"
@@ -959,7 +958,7 @@ export function PointsApproval() {
 
                   <div className="mt-6 flex gap-2">
                     <Button
-                      variant="secondary"
+                      variant="danger"
                       size="sm"
                       onClick={() => setEditandoPonto(false)}
                       fullWidth

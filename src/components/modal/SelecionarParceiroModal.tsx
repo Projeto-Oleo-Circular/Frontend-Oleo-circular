@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { X, Search, User } from "lucide-react";
 import { adminParceiroService, type Parceiro } from "../../services/adminParceiroService";
+import Button from "../ui/Button";
 
 interface SelecionarParceiroModalProps {
   isOpen: boolean;
@@ -172,14 +173,16 @@ export function SelecionarParceiroModal({
         {/* FOOTER COM BOTÃO CANCELAR */}
         {/* ===================================================== */}
         <div className="pt-4 border-t border-white-100 mt-4">
-          <button
+          <Button 
             type="button"
-            onClick={onClose}
-            disabled={loading}
-            className="w-full py-2.5 px-4 rounded-full border border-green-primary text-green-primary bg-white text-sm font-semibold hover:bg-green-50 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            variant="danger" 
+            size="sm" 
+            onClick={onClose} 
+            disabled={loading} 
+            fullWidth
           >
             Cancelar
-          </button>
+          </Button>
         </div>
 
       </div>
