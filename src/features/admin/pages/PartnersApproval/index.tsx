@@ -498,14 +498,17 @@ export function PartnersApproval() {
               <Search className="w-4 h-4 text-white-400 absolute left-3 top-2.5" />
             </div>
 
-            <AdminFilterDropdown
-              placeholder="Filtros"
-              options={statusOptions}
-              value={statusFiltro}
-              onChange={(val) =>
-                handleFilterChange(val as StatusAprovacao | "")
-              }
-            />
+             <div className="flex flex-row items-center gap-2 w-full sm:w-auto">
+
+              <AdminFilterDropdown
+                placeholder="Filtros"
+                options={statusOptions}
+                value={statusFiltro}
+                onChange={(val) =>
+                  handleFilterChange(val as StatusAprovacao | "")
+                }
+                />
+              </div>
           </div>
         </div>
 

@@ -1950,7 +1950,8 @@ export function ParceirosIndicadores() {
               />
               <Search className="w-4 h-4 text-white-400 absolute left-3 top-2.5" />
             </div>
-
+          
+          <div className="flex flex-row items-center gap-2 w-full sm:w-auto">
             <AdminFilterDropdown
               placeholder="Status"
               options={statusOptions}
@@ -1970,6 +1971,7 @@ export function ParceirosIndicadores() {
                 setPage(1);
               }}
             />
+          </div>
           </div>
         </div>
 

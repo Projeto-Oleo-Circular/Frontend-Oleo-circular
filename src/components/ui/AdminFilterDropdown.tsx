@@ -11,6 +11,7 @@ interface AdminFilterDropdownProps {
     options: FilterOption[];
     value: string;
     onChange: (value: string) => void;
+    className?: string;
 }
 
 export default function AdminFilterDropdown({
@@ -18,6 +19,7 @@ export default function AdminFilterDropdown({
     options,
     value,
     onChange,
+    className = "",
 }: AdminFilterDropdownProps) {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -36,7 +38,7 @@ export default function AdminFilterDropdown({
     const labelExibido = selectedOption && selectedOption.value !== "" ? selectedOption.label : placeholder;
 
     return (
-        <div className="relative inline-block text-left" ref={dropdownRef}>
+        <div className={`relative inline-block text-left ${className}`} ref={dropdownRef}>
             <button
                 type="button"
                 onClick={() => setIsOpen((prev) => !prev)}
