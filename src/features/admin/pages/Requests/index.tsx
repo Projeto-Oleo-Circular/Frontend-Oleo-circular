@@ -1319,7 +1319,7 @@ export function Requests() {
 
               <div className="mt-6 pt-4 border-t border-white-100 flex">
                 <Button
-                  variant="danger"
+                  variant="primary"
                   size="sm"
                   onClick={fecharModal}
                   fullWidth

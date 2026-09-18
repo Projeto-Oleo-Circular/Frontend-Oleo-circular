@@ -1899,7 +1899,7 @@ export function CriarParceiroModal({
           </div>
 
           {/* BOTÕES */}
-          <div className="flex flex-col sm:flex-row gap-3 mt-6 pt-4 border-t border-white-100">
+          <div className="flex sm:flex-row gap-3 mt-6 pt-4 border-t border-white-100">
             {currentStep === 2 && (
               <Button
                 type="button"
@@ -1915,30 +1915,44 @@ export function CriarParceiroModal({
             )}
 
             {currentStep === 1 ? (
-              <Button
-                type="button"
-                variant="primary"
-                size="sm"
-                onClick={proximoPasso}
-                disabled={loading || verificandoDisponibilidade}
-                loading={verificandoDisponibilidade}
-                fullWidth={false}
-                className="flex-1 ml-auto"
-              >
-                {verificandoDisponibilidade ? "Verificando..." : "Próximo"}
-              </Button>
-            ) : (
-              <Button
-                type="submit"
-                variant="primary"
-                size="sm"
-                loading={loading}
-                disabled={loading}
-                fullWidth={false}
-                className="flex-1"
-              >
-                Salvar Parceiro
-              </Button>
+              <>
+                <Button
+                  type="button"
+                  variant="danger"
+                  size="sm"
+                  onClick={handleClose}
+                  disabled={loading || verificandoDisponibilidade}
+                  fullWidth={false}
+                  className="flex-1"
+                >
+                  Cancelar
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="sm"
+                  onClick={proximoPasso}
+                  disabled={loading || verificandoDisponibilidade}
+                  loading={verificandoDisponibilidade}
+                  fullWidth={false}
+                  className="flex-1"
+                >
+                  {verificandoDisponibilidade ? "Verificando..." : "Próximo"}
+                </Button>
+              </>
+              ) : (
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="sm"
+                  loading={loading}
+                  disabled={loading}
+                  fullWidth={false}
+                  className="flex-1"
+                >
+                  Salvar Parceiro
+                </Button>
             )}
           </div>
         </form>
