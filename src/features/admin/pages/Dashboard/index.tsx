@@ -1,5 +1,3 @@
-// Dashboard.tsx - ALTERADO
-
 import {
   useEffect,
   useState,
@@ -63,12 +61,7 @@ import Footer from "../../../../components/layout/Footer";
 
 import { IndicadoresAmbientais } from "../../../../components/dash/IndicadoresAmbientais";
 
-// ALTERADO: Import do componente de PDF direto
 import PdfReportButtonDirect from "../../../../components/report/PdfReportDirectButton";
-
-// ============================================================
-// FUNÇÕES DE DATA
-// ============================================================
 
 function startOfDay(d: Date) {
   const x = new Date(d);
@@ -95,10 +88,6 @@ function startOfYear(offsetYears = 0) {
   d.setHours(0, 0, 0, 0);
   return d;
 }
-
-// ============================================================
-// FUNÇÕES DE CÁLCULO
-// ============================================================
 
 function sumVolumeColetado(
   items: SolicitacaoColeta[],
@@ -134,10 +123,6 @@ function formatLitros(v: number) {
   })} L`;
 }
 
-// ============================================================
-// BUSCAR TODAS AS SOLICITAÇÕES CONCLUÍDAS
-// ============================================================
-
 async function fetchTodasConcluidas(): Promise<SolicitacaoColeta[]> {
   const limit = 200;
   let page = 1;
@@ -162,9 +147,6 @@ async function fetchTodasConcluidas(): Promise<SolicitacaoColeta[]> {
   return all;
 }
 
-// ============================================================
-// PREVISÃO DE COLETA
-// ============================================================
 
 async function fetchPrevisaoColeta(): Promise<{
   total: number;
@@ -225,10 +207,6 @@ async function fetchPrevisaoColeta(): Promise<{
   };
 }
 
-// ============================================================
-// CONTAGEM DAS SOLICITAÇÕES
-// ============================================================
-
 async function fetchContagemPorStatus(): Promise<Record<StatusSolicitacao, number>> {
   const statusList: StatusSolicitacao[] = ["AGUARDANDO", "AGENDADA", "EM_ROTA", "CONCLUIDA"];
 
@@ -255,10 +233,6 @@ async function fetchContagemPorStatus(): Promise<Record<StatusSolicitacao, numbe
   );
 }
 
-// ============================================================
-// TOTAL PARCEIROS
-// ============================================================
-
 async function fetchTotalParceirosAprovados(): Promise<number> {
   const resp = await adminParceiroService.listarParceiros({
     statusAprovacao: "APROVADO",
@@ -272,10 +246,6 @@ async function fetchTotalParceirosAprovados(): Promise<number> {
   return resp.total;
 }
 
-// ============================================================
-// TOTAL PONTOS
-// ============================================================
-
 async function fetchTotalPontosAprovados(): Promise<number> {
   const resp = await adminPontosService.listarPontos({
     statusAprovacao: "APROVADO",
@@ -285,10 +255,6 @@ async function fetchTotalPontosAprovados(): Promise<number> {
 
   return resp.total;
 }
-
-// ============================================================
-// MAPA (mantido igual)
-// ============================================================
 
 interface ParceiroAdmin {
   id: number;
@@ -656,7 +622,7 @@ function MapSection({ solicitacoes }: { solicitacoes: SolicitacaoColeta[] }) {
           </div>
         </div>
 
-        <div className="h-[400px] rounded-xl overflow-hidden bg-white-100">
+        <div className="relative w-full isolate z-0 h-[400px] rounded-xl overflow-hidden bg-white-100">
           {carregandoPontos ? (
             <div className="flex items-center justify-center h-full">
               <div className="w-8 h-8 border-4 border-green-primary border-t-transparent rounded-full animate-spin" />
@@ -768,11 +734,6 @@ function MapSection({ solicitacoes }: { solicitacoes: SolicitacaoColeta[] }) {
     </div>
   );
 }
-
-// ============================================================
-// DASHBOARD STATS
-// ============================================================
-
 interface DashboardStats {
   volumeSemana: number;
   volumeSemanaPct: number;
@@ -801,10 +762,6 @@ interface DashboardStats {
   }[];
 }
 
-// ============================================================
-// DASHBOARD
-// ============================================================
-
 function Dashboard() {
   const { addToast } = useToast();
   const navigate = useNavigate();
@@ -814,10 +771,6 @@ function Dashboard() {
   const [erro, setErro] = useState<string | null>(null);
   const [todasSolicitacoes, setTodasSolicitacoes] = useState<SolicitacaoColeta[]>([]);
   const [periodoHistorico, setPeriodoHistorico] = useState<number>(12);
-
-  // ==========================================================
-  // CARREGAR DASHBOARD
-  // ==========================================================
 
   useEffect(() => {
     async function carregar() {
@@ -947,19 +900,11 @@ function Dashboard() {
     carregar();
   }, [addToast]);
 
-  // ==========================================================
-  // DATA
-  // ==========================================================
-
   const hoje = new Date().toLocaleDateString("pt-BR", {
     day: "2-digit",
     month: "long",
     year: "numeric",
   });
-
-  // ==========================================================
-  // HISTÓRICO FILTRADO
-  // ==========================================================
 
   const dadosHistoricoFiltrados = useMemo(() => {
     if (!stats) {
@@ -968,10 +913,6 @@ function Dashboard() {
 
     return stats.historicoMensal.slice(-periodoHistorico);
   }, [stats, periodoHistorico]);
-
-  // ==========================================================
-  // MÉTRICAS HISTÓRICO
-  // ==========================================================
 
   const metricasHistorico = useMemo(() => {
     const dados = dadosHistoricoFiltrados;
@@ -992,10 +933,6 @@ function Dashboard() {
     };
   }, [dadosHistoricoFiltrados]);
 
-  // ==========================================================
-  // SPARKLINE SEMANA
-  // ==========================================================
-
   const sparklineSemana = useMemo(() => {
     if (!todasSolicitacoes.length) {
       return [0, 0, 0, 0, 0, 0, 0];
@@ -1009,10 +946,6 @@ function Dashboard() {
     });
   }, [todasSolicitacoes]);
 
-  // ==========================================================
-  // SPARKLINE MENSAL
-  // ==========================================================
-
   const sparklineMensal = useMemo(() => {
     if (!stats) {
       return [];
@@ -1020,10 +953,6 @@ function Dashboard() {
 
     return stats.historicoMensal.map((h) => h.volume);
   }, [stats]);
-
-  // ==========================================================
-  // PREPARA DADOS PARA O PDF DIRETO
-  // ==========================================================
 
   const dadosPdf = useMemo(() => {
     if (!stats) return null;
@@ -1044,10 +973,6 @@ function Dashboard() {
     };
   }, [stats]);
 
-  // ==========================================================
-  // LOADING
-  // ==========================================================
-
   if (loading || !stats) {
     return (
       <div className="min-h-screen flex flex-col bg-background">
@@ -1062,19 +987,11 @@ function Dashboard() {
     );
   }
 
-  // ==========================================================
-  // RENDER
-  // ==========================================================
-
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <AdminTopNav />
 
       <main className="w-full max-w-[1440px] mx-auto p-6 flex-1">
-        {/* ================================================= */}
-        {/* CABEÇALHO DA TELA                                */}
-        {/* ================================================= */}
-
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-green-primary mt-2">
@@ -1091,9 +1008,6 @@ function Dashboard() {
               Hoje, {hoje}
             </div>
 
-            {/* ============================================= */}
-            {/* NOVO BOTÃO PDF DIRETO                         */}
-            {/* ============================================= */}
             {dadosPdf && (
               <PdfReportButtonDirect
                 dados={dadosPdf}
@@ -1103,36 +1017,20 @@ function Dashboard() {
           </div>
         </div>
 
-        {/* ================================================= */}
-        {/* CONTEÚDO DO DASHBOARD                           */}
-        {/* ================================================= */}
-
         {erro && (
           <div className="mb-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md p-3">
             {erro}
           </div>
         )}
 
-        {/* ================================================= */}
-        {/* LINHA 1 - IMPACTO AMBIENTAL                     */}
-        {/* ================================================= */}
-
         <IndicadoresAmbientais
           tipo="admin-geral"
           titulo="Impacto Ambiental Geral"
         />
 
-        {/* ================================================= */}
-        {/* LINHA 2 - MAPA                                  */}
-        {/* ================================================= */}
-
         <div className="mb-6">
           <MapSection solicitacoes={todasSolicitacoes} />
         </div>
-
-        {/* ================================================= */}
-        {/* LINHA 3 - CARDS                                 */}
-        {/* ================================================= */}
 
         <div className="mb-6">
           {/* 3 CARDS */}
@@ -1222,10 +1120,6 @@ function Dashboard() {
             />
           </div>
         </div>
-
-        {/* ================================================= */}
-        {/* LINHA 4                                        */}
-        {/* ================================================= */}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {/* SOLICITAÇÕES */}
@@ -1380,10 +1274,6 @@ function Dashboard() {
           </div>
         </div>
 
-        {/* ================================================= */}
-        {/* LINHA 5                                        */}
-        {/* ================================================= */}
-
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* PREVISÃO */}
           <div className="bg-white rounded-xl shadow-sm border border-white-200 p-4">
@@ -1463,10 +1353,6 @@ function Dashboard() {
             )}
           </div>
         </div>
-
-        {/* ================================================= */}
-        {/* RODAPÉ DO RELATÓRIO                             */}
-        {/* ================================================= */}
 
         <div className="mt-6 pt-4 border-t border-white-200">
           <div className="flex flex-col sm:flex-row justify-between gap-2 text-xs text-white-400">
